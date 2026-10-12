@@ -1,0 +1,54 @@
+{
+  "case_version": "1.0",
+  "comparison_mode": "jax-jit",
+  "expected_classification": "numerical_discrepancy",
+  "fault": {
+    "label": "synthetic-control",
+    "output_offset": 0.125
+  },
+  "minimization": {
+    "accepted_reductions": 5,
+    "budget_exhausted": false,
+    "candidates_evaluated": 5,
+    "original_elements": 192,
+    "original_nodes": 5,
+    "preserved_classification": "numerical_discrepancy",
+    "reduced_elements": 1,
+    "reduced_nodes": 1
+  },
+  "provenance": "synthetic-control",
+  "sha256": "e28229cd296667c764c619f1b59880996be4dfb7aa36efd5d97c263f237b569c",
+  "workload": {
+    "identifier": "synthetic-control-17",
+    "inputs": [
+      {
+        "dtype": "float32",
+        "name": "x",
+        "shape": [1, 1],
+        "value_mode": "zeros"
+      }
+    ],
+    "metadata": {
+      "kind": "synthetic-control",
+      "warning": "not a real compiler anomaly"
+    },
+    "nodes": [
+      {
+        "inputs": ["x"],
+        "op": "tanh",
+        "output": "b",
+        "params": {}
+      }
+    ],
+    "outputs": ["b"],
+    "policy": {
+      "atol": 2e-06,
+      "check_signed_zero": true,
+      "equal_nan": true,
+      "identifier": "dtype-aware-v1",
+      "rtol": 2e-05
+    },
+    "schema_version": "1.0",
+    "seed": 17
+  }
+}

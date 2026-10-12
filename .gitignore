@@ -208,6 +208,10 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# XLAxiom local verification and package smoke-test artifacts
+.verification-results/
+.package-smoke/
+
 # PyPI configuration file
 .pypirc
 
