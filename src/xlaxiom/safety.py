@@ -22,7 +22,11 @@ class WorkerResult:
 
 
 def _comparison_worker(
-    payload: dict[str, Any], mode: str, fault_data: dict[str, Any] | None, delay_s: float, output: Any
+    payload: dict[str, Any],
+    mode: str,
+    fault_data: dict[str, Any] | None,
+    delay_s: float,
+    output: Any,
 ) -> None:
     """Top-level target required by Windows' spawn multiprocessing implementation."""
     try:
@@ -30,7 +34,9 @@ def _comparison_worker(
             time.sleep(delay_s)
         workload = Workload.from_dict(payload)
         fault = FaultInjection(**fault_data) if fault_data else None
-        output.put({"kind": "result", "comparison": run_comparison(workload, mode, fault).to_dict()})
+        output.put(
+            {"kind": "result", "comparison": run_comparison(workload, mode, fault).to_dict()}
+        )
     except BaseException:
         output.put({"kind": "crash", "error": traceback.format_exc()})
 
@@ -44,7 +50,8 @@ def compare_isolated(
 ) -> WorkerResult:
     """Run one declared case in a spawned child, terminating it on timeout.
 
-    The delay parameter exists solely for deterministic timeout tests and is never read from an artifact.
+    The delay parameter exists solely for deterministic timeout tests and is never read from
+    an artifact.
     """
     if timeout_s <= 0:
         raise ValueError("timeout_s must be positive")

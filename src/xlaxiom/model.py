@@ -61,10 +61,15 @@ class InputSpec:
             raise ValidationError(f"invalid input name: {self.name!r}")
         if self.dtype not in DTYPES:
             raise ValidationError(f"unsupported dtype: {self.dtype}")
-        if len(self.shape) > limits.max_rank or any(not isinstance(d, int) or d < 1 for d in self.shape):
+        if len(self.shape) > limits.max_rank or any(
+            not isinstance(d, int) or d < 1 for d in self.shape
+        ):
             raise ValidationError(f"input {self.name} has invalid shape {self.shape}")
         elements = _checked_product(self.shape)
-        if elements > limits.max_elements_per_tensor or elements * _dtype_bytes(self.dtype) > limits.max_tensor_bytes:
+        if (
+            elements > limits.max_elements_per_tensor
+            or elements * _dtype_bytes(self.dtype) > limits.max_tensor_bytes
+        ):
             raise ValidationError(f"input {self.name} exceeds element budget")
 
 
@@ -137,10 +142,17 @@ class Workload:
                 raise ValidationError(f"intermediate {node.output} exceeds rank budget")
             bytes_per_element = max(known[name][1] for name in node.inputs)
             allocation = _checked_product(shape) * bytes_per_element
-            if _checked_product(shape) > limits.max_elements_per_tensor or allocation > limits.max_tensor_bytes:
-                raise ValidationError(f"intermediate {node.output} exceeds tensor allocation budget")
+            if (
+                _checked_product(shape) > limits.max_elements_per_tensor
+                or allocation > limits.max_tensor_bytes
+            ):
+                raise ValidationError(
+                    f"intermediate {node.output} exceeds tensor allocation budget"
+                )
             if allocation > limits.max_intermediate_bytes:
-                raise ValidationError(f"intermediate {node.output} exceeds intermediate allocation budget")
+                raise ValidationError(
+                    f"intermediate {node.output} exceeds intermediate allocation budget"
+                )
             cumulative_bytes += allocation
             if cumulative_bytes > limits.max_cumulative_bytes:
                 raise ValidationError("workload exceeds cumulative allocation budget")
@@ -260,7 +272,9 @@ def _matmul_shape(left: tuple[int, ...], right: tuple[int, ...]) -> tuple[int, .
     left_contract = left[-1]
     right_contract = right[0] if len(right) == 1 else right[-2]
     if left_contract != right_contract:
-        raise ValidationError(f"matmul contracting dimensions differ: {left_contract} and {right_contract}")
+        raise ValidationError(
+            f"matmul contracting dimensions differ: {left_contract} and {right_contract}"
+        )
     left_batch = left[:-2] if len(left) > 1 else ()
     right_batch = right[:-2] if len(right) > 1 else ()
     batch = _broadcast_shape(left_batch, right_batch)

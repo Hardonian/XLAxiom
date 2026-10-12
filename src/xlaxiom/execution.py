@@ -176,7 +176,9 @@ def execute_jax(
         )
     except Exception:
         status = ExecutionStatus.COMPILATION_FAILURE if jit else ExecutionStatus.EXECUTION_FAILURE
-        return ExecutionResult(f"jax-{requested_platform}", mode, status, error=traceback.format_exc())
+        return ExecutionResult(
+            f"jax-{requested_platform}", mode, status, error=traceback.format_exc()
+        )
 
 
 def benchmark_jax(workload: Workload, measurements: int = 10) -> dict[str, float | int | str]:

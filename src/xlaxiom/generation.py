@@ -19,31 +19,52 @@ class GenerationConfig:
 
 
 def generate(config: GenerationConfig) -> Workload:
-    """Make a bounded graph; its seed is all that is needed to recreate inputs."""
+    """Systematically vary bounded elementwise, broadcast, reduction, and matmul motifs."""
     rng = np.random.default_rng(config.seed)
-    rank = int(rng.integers(1, config.max_rank + 1))
-    shape = tuple(int(rng.integers(2, config.max_dim + 1)) for _ in range(rank))
-    inputs = (
-        InputSpec("x", shape, config.dtype),
-        InputSpec("y", shape, config.dtype),
-        InputSpec("unused", shape, config.dtype),
-    )
-    nodes: list[Node] = [Node("add", ("x", "y"), "n0")]
-    source = "n0"
-    unary = ("sin", "tanh", "abs", "neg")
-    for index in range(1, max(2, config.max_nodes - 1)):
-        op = unary[int(rng.integers(0, len(unary)))]
-        output = f"n{index}"
-        nodes.append(Node(op, (source,), output))
-        source = output
-    # A valid deliberately dead branch exercises graph-branch minimization.
-    nodes.append(Node("mul", ("unused", "unused"), "dead"))
+
+    def dim() -> int:
+        return int(rng.integers(2, config.max_dim + 1))
+
+    motif = config.seed % 4
+    if motif == 0:
+        shape = (dim(), dim())
+        inputs = (InputSpec("x", shape, config.dtype), InputSpec("y", shape, config.dtype))
+        nodes = [Node("add", ("x", "y"), "n0"), Node("tanh", ("n0",), "out")]
+    elif motif == 1:
+        rows, columns = dim(), dim()
+        inputs = (
+            InputSpec("x", (rows, 1), config.dtype),
+            InputSpec("y", (1, columns), config.dtype),
+        )
+        nodes = [
+            Node("add", ("x", "y"), "n0"),
+            Node("mean", ("n0",), "out", {"axis": [0], "keepdims": False}),
+        ]
+    elif motif == 2:
+        rows, inner, columns = dim(), dim(), dim()
+        inputs = (
+            InputSpec("x", (rows, inner), config.dtype),
+            InputSpec("y", (inner, columns), config.dtype),
+        )
+        nodes = [
+            Node("matmul", ("x", "y"), "n0"),
+            Node("transpose", ("n0",), "n1", {"axes": [1, 0]}),
+            Node("sum", ("n1",), "out", {"axis": [0], "keepdims": False}),
+        ]
+    else:
+        first, second = dim(), dim()
+        inputs = (InputSpec("x", (first, second), config.dtype),)
+        nodes = [
+            Node("reshape", ("x",), "n0", {"shape": [first * second]}),
+            Node("sin", ("n0",), "n1"),
+            Node("reshape", ("n1",), "out", {"shape": [first, second]}),
+        ]
     workload = Workload(
         identifier=f"generated-{config.seed}",
         seed=config.seed,
-        inputs=inputs,
+        inputs=tuple(inputs),
         nodes=tuple(nodes),
-        outputs=(source,),
+        outputs=("out",),
         metadata={"generator": "bounded-v1"},
     )
     workload.validate()
