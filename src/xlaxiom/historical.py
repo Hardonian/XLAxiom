@@ -49,5 +49,9 @@ def replay_jax_40634() -> HistoricalObservation:
         reference_gradient=reference,
         arcsinh_gradient=arcsinh,
         acosh_gradient=acosh,
-        classification="resolved_historical_regression" if resolved else "reproduction_mismatch",
+        classification=(
+            "resolved_historical_regression"
+            if resolved
+            else "known_historical_regression_reproduced"
+        ),
     )

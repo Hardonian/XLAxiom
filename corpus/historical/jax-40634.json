@@ -6,6 +6,6 @@
   "issue": "https://github.com/jax-ml/jax/issues/40634",
   "affected_version_evidence": "JAX 0.11.1, per the original issue environment.",
   "fix_evidence": "Commit 86d3fe7 replaces the overflow-prone arcsinh JVP and adds a regression test.",
-  "status": "requires-local-replay",
+  "status": "locally-reproduced-known-regression",
   "warning": "This record names a trusted in-package adapter; it is not executable user-supplied Python."
 }

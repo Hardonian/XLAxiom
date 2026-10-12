@@ -78,9 +78,9 @@ def _apply(op: Node, values: dict[str, Any], api: Any) -> Any:
         axes = tuple(op.params.get("axes", tuple(reversed(range(args[0].ndim)))))
         return api.transpose(args[0], axes=axes)
     if op.op in {"sum", "mean"}:
-        return getattr(api, op.op)(
-            args[0], axis=op.params.get("axis"), keepdims=op.params.get("keepdims", False)
-        )
+        axis_value = op.params.get("axis")
+        axis = tuple(axis_value) if isinstance(axis_value, list) else axis_value
+        return getattr(api, op.op)(args[0], axis=axis, keepdims=op.params.get("keepdims", False))
     raise AssertionError(f"registry validation should have rejected {op.op}")
 
 
@@ -144,7 +144,7 @@ def execute_jax(
             return _evaluate(workload, dict(zip(keys, args, strict=True)), jnp)
 
         placed = tuple(jax.device_put(initial[key], device) for key in keys)
-        fn = jax.jit(program, device=device) if jit else program
+        fn = jax.jit(program) if jit else program
         with jax.default_device(device):
             values = fn(*placed)
         values = tuple(value.block_until_ready() for value in values)
@@ -197,7 +197,7 @@ def benchmark_jax(workload: Workload, measurements: int = 10) -> dict[str, float
         return _evaluate(workload, dict(zip(keys, args, strict=True)), jnp)
 
     placed = tuple(jax.device_put(initial[key], device) for key in keys)
-    lowered = jax.jit(program, device=device).lower(*placed)
+    lowered = jax.jit(program).lower(*placed)
     started = time.perf_counter()
     compiled = lowered.compile()
     compilation_ms = (time.perf_counter() - started) * 1000

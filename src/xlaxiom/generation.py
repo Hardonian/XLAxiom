@@ -26,6 +26,8 @@ def generate(config: GenerationConfig) -> Workload:
         return int(rng.integers(2, config.max_dim + 1))
 
     motif = config.seed % 4
+    inputs: tuple[InputSpec, ...]
+    nodes: list[Node]
     if motif == 0:
         shape = (dim(), dim())
         inputs = (InputSpec("x", shape, config.dtype), InputSpec("y", shape, config.dtype))
