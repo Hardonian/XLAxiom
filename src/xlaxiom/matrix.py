@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -31,18 +30,38 @@ def load_config(path: str | Path) -> tuple[MatrixEnvironment, ...]:
 
 def _run_environment(environment: MatrixEnvironment, case: Path) -> dict[str, Any]:
     command = [
-        "uv", "run", "--isolated", "--with-editable", ".", "--with", f"jax=={environment.jax}",
-        sys.executable, "-m", "xlaxiom.matrix", "_worker", str(case),
+        "uv",
+        "run",
+        "--isolated",
+        "--with-editable",
+        ".",
+        "--with",
+        f"jax=={environment.jax}",
+        "python",
+        "-m",
+        "xlaxiom.matrix",
+        "_worker",
+        str(case),
     ]
     started = time.perf_counter()
     try:
-        completed = subprocess.run(command, capture_output=True, text=True, timeout=environment.timeout_s)
+        completed = subprocess.run(
+            command, capture_output=True, text=True, timeout=environment.timeout_s
+        )
     except subprocess.TimeoutExpired as exc:
-        return {"environment": asdict(environment), "worker_status": "timeout", "stdout": exc.stdout, "stderr": exc.stderr}
+        return {
+            "environment": asdict(environment),
+            "worker_status": "timeout",
+            "stdout": exc.stdout,
+            "stderr": exc.stderr,
+        }
     record: dict[str, Any] = {
-        "environment": asdict(environment), "worker_status": "ok" if completed.returncode == 0 else "failed",
-        "exit_code": completed.returncode, "duration_s": time.perf_counter() - started,
-        "stdout": completed.stdout[-4000:], "stderr": completed.stderr[-4000:],
+        "environment": asdict(environment),
+        "worker_status": "ok" if completed.returncode == 0 else "failed",
+        "exit_code": completed.returncode,
+        "duration_s": time.perf_counter() - started,
+        "stdout": completed.stdout[-4000:],
+        "stderr": completed.stderr[-4000:],
     }
     try:
         record["comparison"] = json.loads(completed.stdout.splitlines()[-1])
@@ -51,14 +70,20 @@ def _run_environment(environment: MatrixEnvironment, case: Path) -> dict[str, An
     return record
 
 
-def run_matrix(config_path: str | Path, case_path: str | Path, output: str | Path) -> dict[str, Any]:
+def run_matrix(
+    config_path: str | Path, case_path: str | Path, output: str | Path
+) -> dict[str, Any]:
     case = Path(case_path).resolve()
     load_case(case)  # checksum and schema validation before creating environments
     results = [_run_environment(environment, case) for environment in load_config(config_path)]
     report = {"matrix_version": "1.0", "case": str(case.name), "results": results}
     if len(results) >= 2:
         report["pairwise"] = [
-            {"older": results[index]["environment"]["name"], "newer": results[index + 1]["environment"]["name"], **classify_versions(results[index], results[index + 1])}
+            {
+                "older": results[index]["environment"]["name"],
+                "newer": results[index + 1]["environment"]["name"],
+                **classify_versions(results[index], results[index + 1]),
+            }
             for index in range(len(results) - 1)
         ]
     save_json(output, report)
@@ -75,10 +100,12 @@ def _worker(case_path: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    if argv == ["_worker", *(rest := [])] or (argv and argv[0] == "_worker"):
+    if argv and len(argv) == 2 and argv[0] == "_worker":
         return _worker(argv[1])
     raise SystemExit("matrix module is invoked by xlaxiom matrix")
 
 
 if __name__ == "__main__":
+    import sys
+
     raise SystemExit(main(sys.argv[1:]))

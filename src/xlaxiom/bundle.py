@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import zipfile
 from pathlib import Path
@@ -17,7 +16,11 @@ def create_bundle(cases: list[str], output: str) -> dict[str, Any]:
         path = Path(item)
         artifact = load_case(path)
         entries.append({"path": f"cases/{path.name}", "sha256": artifact.to_dict()["sha256"]})
-    manifest = {"bundle_version": "1.0", "cases": entries, "instructions": "xlaxiom bundle run --bundle bundle.zip"}
+    manifest = {
+        "bundle_version": "1.0",
+        "cases": entries,
+        "instructions": "xlaxiom bundle run --bundle bundle.zip",
+    }
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("manifest.json", json.dumps(manifest, sort_keys=True))
         for item, entry in zip(cases, entries, strict=True):

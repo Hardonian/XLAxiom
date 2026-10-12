@@ -49,6 +49,21 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `benchmark` | Run a bounded warmup plus timing sample. |
 | `historical` | Replay trusted adapters for documented historical regressions. |
 | `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
+| `matrix run` | Execute one saved case in isolated pinned JAX environments. |
+| `bundle create` / `bundle validate` | Create and validate portable checksummed case bundles. |
+
+## Cross-version matrix
+
+Matrix definitions are JSON in v0.3 to avoid adding a YAML parser dependency. The checked-in CPU matrix runs JAX 0.11.1 and 0.11.2 in separate `uv`-resolved processes:
+
+```console
+uv run xlaxiom matrix run --config configs/matrix-cpu-0.11.json \
+  --case examples/synthetic-control-reduced.json --output results/matrix.json
+uv run xlaxiom bundle create --case examples/synthetic-control-reduced.json --output control.zip
+uv run xlaxiom bundle validate --bundle control.zip
+```
+
+The matrix report captures environment requests, stdout/stderr, exit status, timeout outcome, and a conservative version classification. On this Windows CPU host, both versions reproduced the explicitly synthetic control; that is a `STABLE_FAILURE`, not a compiler finding. CUDA discovery is capability-gated (`xlaxiom matrix doctor`) and reported unsupported locally.
 
 All commands expose `--help`. `reproduce` runs the workload again; it does not merely display saved output.
 
