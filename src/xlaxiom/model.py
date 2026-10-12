@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal, cast
 
@@ -22,20 +23,48 @@ class ValidationError(ValueError):
 
 
 @dataclass(frozen=True)
+class ResourceLimits:
+    """Conservative, pre-materialization limits for one declarative workload."""
+
+    max_rank: int = 6
+    max_elements_per_tensor: int = 100_000
+    max_tensor_bytes: int = 4_000_000
+    max_intermediate_bytes: int = 16_000_000
+    max_cumulative_bytes: int = 32_000_000
+
+
+DEFAULT_LIMITS = ResourceLimits()
+
+
+def _checked_product(shape: tuple[int, ...]) -> int:
+    result = 1
+    for dimension in shape:
+        if dimension < 1 or result > (2**63 - 1) // dimension:
+            raise ValidationError("shape element count overflows the supported bound")
+        result *= dimension
+    return result
+
+
+def _dtype_bytes(dtype: str) -> int:
+    return np.dtype(dtype).itemsize
+
+
+@dataclass(frozen=True)
 class InputSpec:
     name: str
     shape: tuple[int, ...]
     dtype: str = "float32"
     value_mode: Literal["random", "zeros", "ones"] = "random"
 
-    def validate(self, max_elements: int) -> None:
+    def validate(self, limits: ResourceLimits) -> None:
         if not self.name.isidentifier():
             raise ValidationError(f"invalid input name: {self.name!r}")
         if self.dtype not in DTYPES:
             raise ValidationError(f"unsupported dtype: {self.dtype}")
-        if any(not isinstance(d, int) or d < 1 for d in self.shape):
+        if len(self.shape) > limits.max_rank or any(not isinstance(d, int) or d < 1 for d in self.shape):
             raise ValidationError(f"input {self.name} has invalid shape {self.shape}")
-        if int(np.prod(self.shape, dtype=np.int64)) > max_elements:
+        elements = _checked_product(self.shape)
+        if elements > limits.max_elements_per_tensor or elements * _dtype_bytes(self.dtype) > limits.max_tensor_bytes:
             raise ValidationError(f"input {self.name} exceeds element budget")
 
 
@@ -64,6 +93,12 @@ class ComparisonPolicy:
     equal_nan: bool = True
     check_signed_zero: bool = True
 
+    def validate(self) -> None:
+        if not self.identifier or not math.isfinite(self.rtol) or not math.isfinite(self.atol):
+            raise ValidationError("comparison policy must have finite tolerances and an identifier")
+        if self.rtol < 0 or self.atol < 0:
+            raise ValidationError("comparison tolerances must be non-negative")
+
 
 @dataclass(frozen=True)
 class Workload:
@@ -76,24 +111,40 @@ class Workload:
     policy: ComparisonPolicy = field(default_factory=ComparisonPolicy)
     metadata: dict[str, str] = field(default_factory=dict)
 
-    def validate(self, max_elements: int = 100_000) -> None:
+    def validate(self, limits: ResourceLimits = DEFAULT_LIMITS) -> None:
         if self.schema_version != SCHEMA_VERSION:
             raise ValidationError(f"unsupported schema version {self.schema_version}")
         if not self.identifier or len(self.nodes) > 64 or len(self.inputs) > 16:
             raise ValidationError("identifier is missing or workload complexity exceeds limit")
-        known: dict[str, tuple[int, ...]] = {}
+        self.policy.validate()
+        known: dict[str, tuple[tuple[int, ...], int]] = {}
+        cumulative_bytes = 0
         for spec in self.inputs:
-            spec.validate(max_elements)
+            spec.validate(limits)
             if spec.name in known:
                 raise ValidationError(f"duplicate value name {spec.name}")
-            known[spec.name] = spec.shape
+            size = _checked_product(spec.shape) * _dtype_bytes(spec.dtype)
+            cumulative_bytes += size
+            known[spec.name] = (spec.shape, _dtype_bytes(spec.dtype))
         for node in self.nodes:
             node.validate_basic()
             if node.output in known or any(name not in known for name in node.inputs):
                 raise ValidationError(
                     f"node {node.output} has duplicate or forward input reference"
                 )
-            known[node.output] = infer_shape(node, known)
+            shape = infer_shape(node, {name: value[0] for name, value in known.items()})
+            if len(shape) > limits.max_rank:
+                raise ValidationError(f"intermediate {node.output} exceeds rank budget")
+            bytes_per_element = max(known[name][1] for name in node.inputs)
+            allocation = _checked_product(shape) * bytes_per_element
+            if _checked_product(shape) > limits.max_elements_per_tensor or allocation > limits.max_tensor_bytes:
+                raise ValidationError(f"intermediate {node.output} exceeds tensor allocation budget")
+            if allocation > limits.max_intermediate_bytes:
+                raise ValidationError(f"intermediate {node.output} exceeds intermediate allocation budget")
+            cumulative_bytes += allocation
+            if cumulative_bytes > limits.max_cumulative_bytes:
+                raise ValidationError("workload exceeds cumulative allocation budget")
+            known[node.output] = (shape, bytes_per_element)
         if not self.outputs or any(name not in known for name in self.outputs):
             raise ValidationError("workload must name at least one defined output")
 
@@ -152,9 +203,9 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
     shapes = [known[name] for name in node.inputs]
     try:
         if node.op in {"add", "sub", "mul", "div"}:
-            return tuple(np.broadcast_shapes(*shapes))
+            return _broadcast_shape(*shapes)
         if node.op == "matmul":
-            return tuple(np.matmul(np.empty(shapes[0]), np.empty(shapes[1])).shape)
+            return _matmul_shape(shapes[0], shapes[1])
         if node.op in UNARY_OPS:
             return shapes[0]
         if node.op == "reshape":
@@ -185,6 +236,37 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
     except (KeyError, TypeError, ValueError) as exc:
         raise ValidationError(f"invalid {node.op} parameters: {exc}") from exc
     raise ValidationError(f"shape inference unavailable for {node.op}")
+
+
+def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
+    result: tuple[int, ...] = ()
+    for shape in shapes:
+        reversed_result = list(reversed(result))
+        reversed_shape = list(reversed(shape))
+        output: list[int] = []
+        for index in range(max(len(reversed_result), len(reversed_shape))):
+            left = reversed_result[index] if index < len(reversed_result) else 1
+            right = reversed_shape[index] if index < len(reversed_shape) else 1
+            if left != right and left != 1 and right != 1:
+                raise ValidationError(f"incompatible broadcast shapes: {shapes}")
+            output.append(max(left, right))
+        result = tuple(reversed(output))
+    return result
+
+
+def _matmul_shape(left: tuple[int, ...], right: tuple[int, ...]) -> tuple[int, ...]:
+    if not left or not right:
+        raise ValidationError("matmul requires tensors with rank at least one")
+    left_contract = left[-1]
+    right_contract = right[0] if len(right) == 1 else right[-2]
+    if left_contract != right_contract:
+        raise ValidationError(f"matmul contracting dimensions differ: {left_contract} and {right_contract}")
+    left_batch = left[:-2] if len(left) > 1 else ()
+    right_batch = right[:-2] if len(right) > 1 else ()
+    batch = _broadcast_shape(left_batch, right_batch)
+    left_matrix = () if len(left) == 1 else (left[-2],)
+    right_matrix = () if len(right) == 1 else (right[-1],)
+    return batch + left_matrix + right_matrix
 
 
 def materialize_inputs(workload: Workload) -> dict[str, NDArray[np.generic]]:
