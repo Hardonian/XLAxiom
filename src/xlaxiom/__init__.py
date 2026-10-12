@@ -3,4 +3,4 @@
 from .model import SCHEMA_VERSION, Workload
 
 __all__ = ["SCHEMA_VERSION", "Workload"]
-__version__ = "0.3.0"
+__version__ = "0.4.0"
