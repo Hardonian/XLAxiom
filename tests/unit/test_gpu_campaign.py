@@ -171,9 +171,7 @@ class TestCpuVsGpu:
         assert result["timings"]["gpu_jit"]["median_ms"] == 1.5
         assert result["timings"]["cpu_jit"]["median_ms"] == 1.5
 
-    def test_cpu_vs_gpu_handles_missing_cpu_baseline(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_cpu_vs_gpu_handles_missing_cpu_baseline(self, monkeypatch: pytest.MonkeyPatch) -> None:
         device = make_device()
 
         mock_execution = ExecutionResult(
