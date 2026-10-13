@@ -7,9 +7,8 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from .storage import load_case
 from .pipeline import run_comparison
-from .storage import save_json
+from .storage import load_case, save_json
 
 
 def create_bundle(cases: list[str], output: str) -> dict[str, Any]:

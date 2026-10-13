@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import subprocess
 import time
-from pathlib import Path
 from typing import Any
 
 from .storage import save_json
@@ -41,7 +40,9 @@ def run_hyperbolic_matrix(versions: list[str], output: str) -> dict[str, Any]:
     report = {
         "report_version": "1.0",
         "results": results,
-        "fix_release_status": "PENDING: upstream commit 86d3fe7 is not verified in a released wheel.",
+        "fix_release_status": (
+            "PENDING: upstream commit 86d3fe7 is not verified in a released wheel."
+        ),
     }
     save_json(output, report)
     return report

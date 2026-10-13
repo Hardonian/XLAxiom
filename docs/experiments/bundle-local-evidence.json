@@ -1,0 +1,79 @@
+{
+  "bundle_manifest": {
+    "bundle_version": "1.0",
+    "cases": [
+      {
+        "path": "cases/synthetic-control-reduced.json",
+        "sha256": "e28229cd296667c764c619f1b59880996be4dfb7aa36efd5d97c263f237b569c"
+      }
+    ],
+    "instructions": "xlaxiom bundle run --bundle bundle.zip"
+  },
+  "evidence_version": "1.0",
+  "results": [
+    {
+      "case_sha256": "e28229cd296667c764c619f1b59880996be4dfb7aa36efd5d97c263f237b569c",
+      "comparison": {
+        "classification": "numerical_discrepancy",
+        "explanation": "outputs differ under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 1184.6591,
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                1,
+                1
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 1,
+            "max_absolute_error": 0.125,
+            "max_relative_error": 62500.00015779733,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              1,
+              1
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 26.119,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                1,
+                1
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      }
+    }
+  ]
+}

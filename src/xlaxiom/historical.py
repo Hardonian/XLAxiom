@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import math
 import platform
-import json
 import sys
 from dataclasses import asdict, dataclass
 
