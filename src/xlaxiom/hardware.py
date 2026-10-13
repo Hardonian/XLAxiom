@@ -14,12 +14,11 @@ both the CUDA ordinal and the physical device name so the two can be reconciled.
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import platform
 import shutil
 import subprocess
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from enum import StrEnum
 from typing import Any
 
@@ -415,23 +414,6 @@ def idle_assessment(device: PhysicalGpu) -> dict[str, Any]:
     }
 
 
-@dataclass
-class DeviceVerdict:
-    """The complete, honest verdict for one device under one CUDA variant."""
-
-    device: dict[str, Any]
-    variant: str | None
-    state: str
-    reason: str
-    jax_devices: list[str] = field(default_factory=list)
-    environment: dict[str, Any] = field(default_factory=dict)
-    checks: list[dict[str, Any]] = field(default_factory=list)
-    diagnostics: dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
-
-
 def library_path_risk() -> dict[str, Any]:
     """Detect a host ``LD_LIBRARY_PATH`` that can shadow the JAX CUDA wheels.
 
@@ -542,7 +524,3 @@ def hardware_report() -> dict[str, Any]:
             "ordinal and nvidia-smi index are both recorded for reconciliation."
         ),
     }
-
-
-def to_json(data: dict[str, Any]) -> str:
-    return json.dumps(data, indent=2, sort_keys=True, default=str)
