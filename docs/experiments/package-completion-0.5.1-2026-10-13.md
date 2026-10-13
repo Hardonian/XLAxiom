@@ -22,6 +22,11 @@ The wheel contains SPDX `License-Expression: Apache-2.0`, the license file, the
 `Typing :: Typed` classifier, the PEP 561 `py.typed` marker, the curated property
 corpus, and explicit Linux `cuda12` and `cuda13` extras.
 
+The first `v0.5.1` tag run exposed wall-clock gzip header variance on the Linux runner,
+despite repeat builds matching locally. Version 0.5.2 corrects the release workflow by
+setting `SOURCE_DATE_EPOCH` from the tagged commit. Two independent EPYC Linux builds
+then produced identical wheel and sdist bytes before the corrective tag was created.
+
 ## Publication boundary
 
 PyPI did not contain an `xlaxiom` project at audit time. The release workflow is ready

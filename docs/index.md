@@ -13,4 +13,4 @@
 - [Research notes](research/)
 - [Experiment evidence](experiments/)
 - [2026-10-13 milestone completion audit](experiments/milestone-completion-2026-10-13.md)
-- [0.5.1 package completion audit](experiments/package-completion-0.5.1-2026-10-13.md)
+- [0.5.1–0.5.2 package completion audit](experiments/package-completion-0.5.1-2026-10-13.md)

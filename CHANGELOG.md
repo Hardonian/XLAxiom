@@ -4,6 +4,11 @@
 
 No changes yet.
 
+## 0.5.2 - 2026-10-13
+
+- Normalized distribution timestamps to the tagged commit time so repeated Linux
+  wheel and source-distribution builds are byte-for-byte reproducible.
+
 ## 0.5.1 - 2026-10-13
 
 - Added PEP 561 typed-package metadata and modern SPDX license metadata.

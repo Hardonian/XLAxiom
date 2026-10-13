@@ -19,6 +19,10 @@ package data through the CLI, verifies repeat builds byte-for-byte,
 and retains both wheel and source distribution as workflow artifacts. It deliberately
 does not create a GitHub release.
 
+Both build passes receive `SOURCE_DATE_EPOCH` from the tagged commit timestamp. This
+normalizes archive headers across runner operating systems instead of relying on wall
+clock timing.
+
 Publishing a GitHub Release activates a separate, minimal PyPI job only after the
 verification job passes. That job downloads the verified distributions and uses OIDC
 Trusted Publishing from the protected `pypi` environment; it stores no long-lived PyPI
