@@ -92,7 +92,9 @@ def validate_bundle(path: str) -> dict[str, Any]:
                     raise ArtifactError(f"checksum mismatch for {member_path}")
                 # A valid bundle is executable evidence, not merely a ZIP with matching strings.
                 load_case_from_payload(payload)
-    except (OSError, zipfile.BadZipFile) as exc:
+            if set(names) != {"manifest.json", *member_paths}:
+                raise ArtifactError("bundle contains undeclared archive members")
+    except (OSError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
         raise ArtifactError(f"cannot read bundle: {exc}") from exc
     return manifest
 

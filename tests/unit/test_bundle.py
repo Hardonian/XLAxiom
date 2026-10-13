@@ -51,3 +51,13 @@ def test_bundle_validation_rejects_non_case_payload(tmp_path) -> None:
         archive.writestr("cases/not-a-case.json", json.dumps({**payload, "sha256": checksum}))
     with pytest.raises(ArtifactError, match="unsupported case version"):
         validate_bundle(str(bundle))
+
+
+def test_bundle_validation_rejects_undeclared_members(tmp_path) -> None:
+    case = save_case(tmp_path / "case.json", CaseArtifact(synthetic_control()))
+    bundle = tmp_path / "bundle.zip"
+    create_bundle([str(case)], str(bundle))
+    with zipfile.ZipFile(bundle, "a") as archive:
+        archive.writestr("notes.txt", "not an evidence artifact")
+    with pytest.raises(ArtifactError, match="undeclared archive members"):
+        validate_bundle(str(bundle))

@@ -482,17 +482,26 @@ def write_gpu_report(path: str, report: dict[str, Any]) -> Path:
 
 
 def command_bundle_create(args: argparse.Namespace) -> int:
-    _emit(create_bundle(args.case, args.output))
+    try:
+        _emit(create_bundle(args.case, args.output))
+    except ArtifactError as exc:
+        raise SystemExit(f"cannot create bundle: {exc}") from exc
     return 0
 
 
 def command_bundle_validate(args: argparse.Namespace) -> int:
-    _emit(validate_bundle(args.bundle))
+    try:
+        _emit(validate_bundle(args.bundle))
+    except ArtifactError as exc:
+        raise SystemExit(f"invalid bundle: {exc}") from exc
     return 0
 
 
 def command_bundle_run(args: argparse.Namespace) -> int:
-    _emit(run_bundle(args.bundle, args.output))
+    try:
+        _emit(run_bundle(args.bundle, args.output))
+    except ArtifactError as exc:
+        raise SystemExit(f"invalid bundle: {exc}") from exc
     return 0
 
 

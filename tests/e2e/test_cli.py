@@ -67,3 +67,15 @@ def test_fresh_process_reproduction(tmp_path) -> None:
         text=True,
     )
     assert reproduced.returncode == 0, reproduced.stdout
+
+
+def test_invalid_bundle_has_actionable_cli_error(tmp_path) -> None:
+    missing_bundle = tmp_path / "missing.zip"
+    result = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "bundle", "validate", "--bundle", str(missing_bundle)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "invalid bundle: cannot read bundle" in result.stderr
