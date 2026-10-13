@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLAxiom relational artifact v1",
+  "type": "object",
+  "required": ["relational_case_version", "identifier", "left", "right", "backend", "relation", "sha256"],
+  "properties": {
+    "relational_case_version": {"const": "1.0"},
+    "identifier": {"type": "string", "minLength": 1},
+    "left": {"type": "object"},
+    "right": {"type": "object"},
+    "expected_classification": {"type": ["string", "null"]},
+    "backend": {"enum": ["numpy", "jax-eager", "jax-jit"]},
+    "relation": {"const": "outputs_equal"},
+    "provenance": {"type": "string"},
+    "minimization": {"type": ["object", "null"]},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false
+}

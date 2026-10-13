@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLAxiom case artifact v1",
+  "type": "object",
+  "required": ["case_version", "workload", "comparison_mode", "provenance", "sha256"],
+  "properties": {
+    "case_version": {"const": "1.0"},
+    "workload": {"type": "object"},
+    "expected_classification": {"type": ["string", "null"]},
+    "comparison_mode": {"enum": ["jax-eager", "jax-jit", "jax-eager-vs-jit"]},
+    "fault": {"type": ["object", "null"]},
+    "provenance": {"type": "string"},
+    "minimization": {"type": ["object", "null"]},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false
+}

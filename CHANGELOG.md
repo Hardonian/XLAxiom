@@ -3,7 +3,13 @@
 ## 0.5.0 - Unreleased
 
 - Added a checked-in curated metamorphic-property corpus with safe closed-registry validation.
-- Added `xlaxiom property list` and `xlaxiom property run` evidence commands.
+- Added bounded property campaigns, coverage reporting, policy overrides, and CI shards.
+- Added checksummed relational artifacts with paired minimization, fresh-process replay,
+  reports, and bundle execution.
+- Added isolated-worker resident-memory limits, cleanup escalation, stability checks, and
+  conservative workload-identity performance baseline comparison.
+- Added issue-readiness assessment, versioned schema documents, release criteria, support
+  matrix, quickstart, and holistic delivery documentation.
 
 ## 0.4.0 - Unreleased
 
