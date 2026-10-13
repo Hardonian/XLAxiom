@@ -174,3 +174,49 @@ class TestRecommendedVariant:
         result = recommended_variant()
         assert result["variant"] is None
         assert result["reason"] == "no visible GPU meets the CUDA 12 minimum of SM 5.2"
+
+    def test_multi_gpu_cuda12_first_then_cuda13(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        gpu12 = _make_gpu(name="Tesla V100", capability="7.0", driver="525.60", ordinal=0)
+        gpu13 = _make_gpu(name="NVIDIA H100", capability="9.0", driver="580.30", ordinal=1)
+        monkeypatch.setattr("xlaxiom.cuda.enumerate_physical_gpus", lambda: [gpu12, gpu13])
+
+        select_calls = []
+
+        def fake_select(dev: PhysicalGpu) -> tuple[CudaVariant | None, str]:
+            select_calls.append(dev.name)
+            if dev.name == "NVIDIA H100":
+                return CudaVariant.CUDA13, "CUDA13 ok"
+            if dev.name == "Tesla V100":
+                return CudaVariant.CUDA12, "CUDA12 ok"
+            return None, "unsupported"
+
+        monkeypatch.setattr("xlaxiom.cuda.select_variant", fake_select)
+
+        result = recommended_variant()
+        assert result["variant"] == "cuda13"
+        assert result["device"] == "NVIDIA H100"
+        # Should stop searching once CUDA13 is found on second GPU
+        assert select_calls == ["Tesla V100", "NVIDIA H100"]
+
+    def test_multi_gpu_multiple_cuda12_returns_first_cuda12(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        gpu12_first = _make_gpu(name="Tesla V100", capability="7.0", driver="525.60", ordinal=0)
+        gpu12_second = _make_gpu(name="Tesla T4", capability="7.5", driver="525.60", ordinal=1)
+        monkeypatch.setattr(
+            "xlaxiom.cuda.enumerate_physical_gpus", lambda: [gpu12_first, gpu12_second]
+        )
+
+        select_calls = []
+
+        def fake_select(dev: PhysicalGpu) -> tuple[CudaVariant | None, str]:
+            select_calls.append(dev.name)
+            return CudaVariant.CUDA12, f"{dev.name} CUDA12 ok"
+
+        monkeypatch.setattr("xlaxiom.cuda.select_variant", fake_select)
+
+        result = recommended_variant()
+        assert result["variant"] == "cuda12"
+        assert result["device"] == "Tesla V100"
+        # Must check both in single pass and return first cuda12
+        assert select_calls == ["Tesla V100", "Tesla T4"]
