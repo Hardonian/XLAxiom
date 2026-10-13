@@ -88,9 +88,7 @@ def test_run_cpu_campaign_non_isolated_with_anomalies() -> None:
         assert result["candidate_anomalies"][0]["seed"] == config.seed
         assert result["numpy_vs_jit_counts"][Classification.PASS.value] == 2
         assert result["eager_vs_jit_counts"][Classification.PASS.value] == 1
-        assert (
-            result["eager_vs_jit_counts"][Classification.NUMERICAL_DISCREPANCY.value] == 1
-        )
+        assert result["eager_vs_jit_counts"][Classification.NUMERICAL_DISCREPANCY.value] == 1
 
 
 def test_run_cpu_campaign_duration_budget_exhausted() -> None:
