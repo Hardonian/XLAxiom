@@ -8,7 +8,6 @@ import subprocess
 import time
 from typing import Any
 
-from .matrix import validate_jax_version
 from .storage import save_json
 
 VERSION_PATTERN = re.compile(r"^[vV]?[0-9]+(?:\.[0-9]+)*(?:[a-zA-Z0-9._\-+]+)?$")
