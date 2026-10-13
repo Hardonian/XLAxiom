@@ -3,14 +3,25 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from .historical_matrix import validate_version
 from .regression import classify_versions
 from .storage import load_case, save_json
+
+_VERSION_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._\-+]*$")
+
+
+def validate_jax_version(version: str) -> str:
+    """Validate that a JAX version specifier is safe and free from argument injection."""
+    if not isinstance(version, str) or not version or not _VERSION_PATTERN.fullmatch(version):
+        raise ValueError(f"Invalid or unsafe JAX version specifier: {version!r}")
+    return version
 
 
 @dataclass(frozen=True)
@@ -19,16 +30,22 @@ class MatrixEnvironment:
     jax: str
     timeout_s: float = 90.0
 
+    def __post_init__(self) -> None:
+        validate_jax_version(self.jax)
+
 
 def load_config(path: str | Path) -> tuple[MatrixEnvironment, ...]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     environments = tuple(MatrixEnvironment(**item) for item in data["environments"])
     if not environments or len({env.name for env in environments}) != len(environments):
         raise ValueError("matrix requires uniquely named environments")
+    for env in environments:
+        validate_version(env.jax)
     return environments
 
 
 def _run_environment(environment: MatrixEnvironment, case: Path) -> dict[str, Any]:
+    validate_version(environment.jax)
     command = [
         "uv",
         "run",
