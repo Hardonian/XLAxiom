@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "xlaxiom"
-version = "0.5.0"
+version = "0.5.1"
 description = "Evidence-first differential testing and failure minimization for JAX and OpenXLA numerical workloads."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [{ name = "XLAxiom contributors" }]
 keywords = [
   "jax",
@@ -32,6 +33,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
   "Topic :: Software Development :: Testing",
   "Topic :: Scientific/Engineering",
 ]
@@ -46,6 +48,8 @@ Changelog = "https://github.com/Hardonian/XLAxiom/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "mypy>=1.13", "pytest>=8.3", "ruff>=0.8"]
+cuda12 = ["jax[cuda12]>=0.5; platform_system == 'Linux'"]
+cuda13 = ["jax[cuda13]>=0.5; platform_system == 'Linux'"]
 
 [project.scripts]
 xlaxiom = "xlaxiom.cli:main"

@@ -68,6 +68,8 @@ XLAxiom is **not** a general correctness oracle, performance benchmark suite, or
 | Create a portable evidence record | `xlaxiom report` or `xlaxiom bundle create` |
 
 Read the [artifact guide](docs/artifacts.md) for the recommended handoff package and how to validate or rerun it safely.
+For source, verified-wheel, and accelerator installation paths, see the
+[installation guide](docs/installation.md).
 
 ## Contents
 
@@ -75,6 +77,7 @@ Read the [artifact guide](docs/artifacts.md) for the recommended handoff package
 - [Commands](#commands)
 - [Cross-version matrix](#cross-version-matrix)
 - [Artifact lifecycle](docs/artifacts.md)
+- [Installation](docs/installation.md)
 - [Architecture](docs/architecture/overview.md)
 - [Reproducibility methodology](docs/architecture/reproducibility.md)
 - [Backends and precision](#backends-and-precision)

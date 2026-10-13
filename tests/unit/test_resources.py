@@ -1,6 +1,16 @@
+from importlib.metadata import metadata
+from importlib.resources import files
+
 import pytest
 
 from xlaxiom.model import InputSpec, Node, ValidationError, Workload
+
+
+def test_distribution_exposes_pep561_typing_marker() -> None:
+    marker = files("xlaxiom").joinpath("py.typed")
+
+    assert marker.is_file()
+    assert "Typing :: Typed" in metadata("xlaxiom").get_all("Classifier", failobj=[])
 
 
 def test_broadcasting_explosion_is_rejected_before_materialization() -> None:

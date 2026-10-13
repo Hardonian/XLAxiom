@@ -4,6 +4,14 @@
 
 No changes yet.
 
+## 0.5.1 - 2026-10-13
+
+- Added PEP 561 typed-package metadata and modern SPDX license metadata.
+- Added explicit Linux CUDA 12 and CUDA 13 installation extras.
+- Added three-version installed-wheel verification and Twine metadata checks.
+- Added grouped dependency maintenance and guarded PyPI Trusted Publishing automation.
+- Added source, wheel, and accelerator installation guidance.
+
 ## 0.5.0 - 2026-10-13
 
 - Added failure-preserving minimization to reproduced-finding corpus admission.

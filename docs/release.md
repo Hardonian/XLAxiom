@@ -11,11 +11,20 @@ verify an OpenSSL detached evidence signature with `xlaxiom attest sign` and
 `xlaxiom attest verify`; private-key handling remains external and no unsigned artifact
 is represented as publisher-signed.
 
-The `Release verification` workflow runs on `v*` tags and manual dispatch. It repeats
+The `Release verification` workflow runs on `v*` tags, GitHub Release publication,
+and manual dispatch. It repeats
 lint, format, typing, and test gates, verifies that a tag equals the packaged version,
-installs the wheel into a fresh environment, exercises package data through the CLI,
+validates package metadata, installs the wheel under Python 3.11–3.13, exercises
+package data through the CLI, verifies repeat builds byte-for-byte,
 and retains both wheel and source distribution as workflow artifacts. It deliberately
-does not publish to PyPI or create a GitHub release without maintainer credentials.
+does not create a GitHub release.
+
+Publishing a GitHub Release activates a separate, minimal PyPI job only after the
+verification job passes. That job downloads the verified distributions and uses OIDC
+Trusted Publishing from the protected `pypi` environment; it stores no long-lived PyPI
+token. Before the first publication, a maintainer must configure a PyPI pending
+publisher for `Hardonian/XLAxiom`, workflow `release.yml`, environment `pypi`, and must
+configure required reviewers on that GitHub environment.
 
 Version 0.5.0 met the source, wheel, CPU, Windows/Linux, and available CUDA hardware
 criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support

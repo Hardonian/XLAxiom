@@ -1,18 +1,18 @@
-# XLAxiom 0.5.0 product closure
+# XLAxiom 0.5.1 package hardening
 
 ## Scope
 
-- Completes all fifty software priorities in the holistic delivery plan.
-- Retains independent Windows HX370 and Linux EPYC evidence plus V100, P40, and RTX 3060 capability evidence.
-- Adds reviewed metamorphic properties, bounded campaigns, minimization, fresh-process replay, schemas, attestation, and fail-closed accelerator selection.
-- Closes release metadata and verifies the installed wheel, including packaged corpus data.
+- Preserves the completed fifty-priority product and its retained hardware evidence.
+- Marks the wheel as a PEP 561 typed distribution and modernizes license metadata.
+- Adds explicit CUDA 12/13 install extras and complete installation guidance.
+- Adds dependency maintenance and guarded, tokenless PyPI publication automation.
 
 ## Verification
 
 - Formatting, lint, typing, complete tests, lockfile consistency, and distribution builds pass.
-- The wheel is installed into a fresh environment and its version, property registry, and checked-in corpus are exercised through the installed CLI.
-- GitHub reports no open issues or pull requests; current `main` CI is green.
+- Twine validates both distributions; the runtime dependency audit reports no known vulnerabilities.
+- The wheel is installed and exercised under Python 3.11, 3.12, and 3.13.
 
 ## Evidence boundary
 
-Physical TPU execution and macOS execution were unavailable. Those paths are implemented and fail closed, but remain explicitly hardware/platform-unverified. No PyPI publication, GitHub release, or publisher signature is claimed without maintainer credentials.
+Physical TPU execution and macOS execution remain hardware/platform-unverified. PyPI publication still requires a maintainer to configure the protected GitHub environment and PyPI pending publisher, then deliberately publish a GitHub Release.
