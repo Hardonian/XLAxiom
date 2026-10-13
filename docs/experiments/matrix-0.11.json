@@ -1,0 +1,160 @@
+{
+  "case": "synthetic-control-reduced.json",
+  "matrix_version": "1.0",
+  "pairwise": [
+    {
+      "classification": "stable_failure",
+      "newer": "jax-0.11.2-cpu",
+      "older": "jax-0.11.1-cpu",
+      "reason": "same observation class"
+    }
+  ],
+  "results": [
+    {
+      "comparison": {
+        "classification": "numerical_discrepancy",
+        "explanation": "outputs differ under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 5352.5476,
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                1,
+                1
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 1,
+            "max_absolute_error": 0.125,
+            "max_relative_error": 62500.00015779733,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              1,
+              1
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 44.8707,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                1,
+                1
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "duration_s": 12.503170700000055,
+      "environment": {
+        "jax": "0.11.1",
+        "name": "jax-0.11.1-cpu",
+        "timeout_s": 90
+      },
+      "exit_code": 0,
+      "stderr": "Installed 7 packages in 878ms\nInstalled 7 packages in 743ms\n",
+      "stdout": "{\"classification\": \"numerical_discrepancy\", \"explanation\": \"outputs differ under the configured policy\", \"left\": {\"backend\": \"jax-cpu\", \"device\": \"cpu:0\", \"duration_ms\": 5352.5476, \"error\": null, \"mode\": \"jit\", \"outputs\": [{\"dtype\": \"float32\", \"finite\": 1, \"shape\": [1, 1]}], \"status\": \"ok\"}, \"metrics\": [{\"dtype\": \"float32\", \"finite_mismatches\": 1, \"max_absolute_error\": 0.125, \"max_relative_error\": 62500.00015779733, \"nonfinite_mismatches\": 0, \"shape\": [1, 1], \"signed_zero_mismatches\": 0}], \"policy\": {\"atol\": 2e-06, \"check_signed_zero\": true, \"equal_nan\": true, \"identifier\": \"dtype-aware-v1\", \"rtol\": 2e-05}, \"right\": {\"backend\": \"numpy\", \"device\": null, \"duration_ms\": 44.8707, \"error\": null, \"mode\": \"eager\", \"outputs\": [{\"dtype\": \"float32\", \"finite\": 1, \"shape\": [1, 1]}], \"status\": \"ok\"}}\n",
+      "worker_status": "ok"
+    },
+    {
+      "comparison": {
+        "classification": "numerical_discrepancy",
+        "explanation": "outputs differ under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 4089.2884,
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                1,
+                1
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 1,
+            "max_absolute_error": 0.125,
+            "max_relative_error": 62500.00015779733,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              1,
+              1
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 22.8507,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                1,
+                1
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "duration_s": 9.255874800000015,
+      "environment": {
+        "jax": "0.11.2",
+        "name": "jax-0.11.2-cpu",
+        "timeout_s": 90
+      },
+      "exit_code": 0,
+      "stderr": "Installed 7 packages in 601ms\n",
+      "stdout": "{\"classification\": \"numerical_discrepancy\", \"explanation\": \"outputs differ under the configured policy\", \"left\": {\"backend\": \"jax-cpu\", \"device\": \"cpu:0\", \"duration_ms\": 4089.2884, \"error\": null, \"mode\": \"jit\", \"outputs\": [{\"dtype\": \"float32\", \"finite\": 1, \"shape\": [1, 1]}], \"status\": \"ok\"}, \"metrics\": [{\"dtype\": \"float32\", \"finite_mismatches\": 1, \"max_absolute_error\": 0.125, \"max_relative_error\": 62500.00015779733, \"nonfinite_mismatches\": 0, \"shape\": [1, 1], \"signed_zero_mismatches\": 0}], \"policy\": {\"atol\": 2e-06, \"check_signed_zero\": true, \"equal_nan\": true, \"identifier\": \"dtype-aware-v1\", \"rtol\": 2e-05}, \"right\": {\"backend\": \"numpy\", \"device\": null, \"duration_ms\": 22.8507, \"error\": null, \"mode\": \"eager\", \"outputs\": [{\"dtype\": \"float32\", \"finite\": 1, \"shape\": [1, 1]}], \"status\": \"ok\"}}\n",
+      "worker_status": "ok"
+    }
+  ]
+}

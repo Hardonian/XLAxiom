@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 - Unreleased
+
+- Added isolated uv-backed JAX version matrix execution and conservative version classification.
+- Added checksummed portable ZIP case bundles and explicit CUDA capability discovery.
+
 ## 0.2.0 - Unreleased
 
 - Enforced JAX device placement and graph-wide symbolic allocation limits.

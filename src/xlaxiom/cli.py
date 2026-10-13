@@ -8,11 +8,14 @@ from statistics import median
 from time import perf_counter
 from typing import Any
 
+from .bundle import create_bundle, validate_bundle
 from .campaign import CampaignConfig, run_cpu_campaign
 from .comparison import Classification
+from .cuda import cuda_capability
 from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
 from .historical import replay_jax_40634
+from .matrix import run_matrix
 from .minimization import minimize
 from .pipeline import FaultInjection, run_backend, run_comparison
 from .reporting import write_report
@@ -194,6 +197,26 @@ def command_campaign(args: argparse.Namespace) -> int:
     return 0 if not record["candidate_anomalies"] else 1
 
 
+def command_matrix_run(args: argparse.Namespace) -> int:
+    _emit(run_matrix(args.config, args.case, args.output))
+    return 0
+
+
+def command_matrix_doctor(_: argparse.Namespace) -> int:
+    _emit({"cuda": cuda_capability(), "format": "JSON matrix config only in v0.3"})
+    return 0
+
+
+def command_bundle_create(args: argparse.Namespace) -> int:
+    _emit(create_bundle(args.case, args.output))
+    return 0
+
+
+def command_bundle_validate(args: argparse.Namespace) -> int:
+    _emit(validate_bundle(args.bundle))
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         prog="xlaxiom", description="Evidence-first numerical differential testing for JAX/OpenXLA."
@@ -264,6 +287,24 @@ def parser() -> argparse.ArgumentParser:
     campaign_parser.add_argument("--max-duration-s", type=float, default=180.0)
     campaign_parser.add_argument("--output")
     campaign_parser.set_defaults(func=command_campaign)
+    matrix_parser = commands.add_parser("matrix", help="run isolated JAX version matrices")
+    matrix_commands = matrix_parser.add_subparsers(dest="matrix_command", required=True)
+    matrix_run = matrix_commands.add_parser("run")
+    matrix_run.add_argument("--config", required=True)
+    matrix_run.add_argument("--case", required=True)
+    matrix_run.add_argument("--output", required=True)
+    matrix_run.set_defaults(func=command_matrix_run)
+    matrix_doctor = matrix_commands.add_parser("doctor")
+    matrix_doctor.set_defaults(func=command_matrix_doctor)
+    bundle_parser = commands.add_parser("bundle", help="create and validate portable case bundles")
+    bundle_commands = bundle_parser.add_subparsers(dest="bundle_command", required=True)
+    bundle_create = bundle_commands.add_parser("create")
+    bundle_create.add_argument("--case", action="append", required=True)
+    bundle_create.add_argument("--output", required=True)
+    bundle_create.set_defaults(func=command_bundle_create)
+    bundle_validate = bundle_commands.add_parser("validate")
+    bundle_validate.add_argument("--bundle", required=True)
+    bundle_validate.set_defaults(func=command_bundle_validate)
     return root
 
 

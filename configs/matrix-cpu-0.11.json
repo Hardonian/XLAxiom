@@ -1,0 +1,6 @@
+{
+  "environments": [
+    {"name": "jax-0.11.1-cpu", "jax": "0.11.1", "timeout_s": 90},
+    {"name": "jax-0.11.2-cpu", "jax": "0.11.2", "timeout_s": 90}
+  ]
+}
