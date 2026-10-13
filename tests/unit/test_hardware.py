@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from unittest.mock import MagicMock, patch
 
@@ -9,6 +10,8 @@ import pytest
 
 from xlaxiom.hardware import (
     CudaVariant,
+    DeviceState,
+    DeviceVerdict,
     PhysicalGpu,
     _cuda_runtime_names,
     _driver_cuda_version,
@@ -29,6 +32,7 @@ from xlaxiom.hardware import (
     redact_uuid,
     select_variant,
     sm_supported,
+    to_json,
 )
 
 
@@ -57,6 +61,11 @@ class TestUtilitiesAndDataclasses:
         assert _visible_gpu_name(["GPU-0", "GPU-1"]) is None
         assert _visible_gpu_name([]) is None
 
+    def test_to_json(self) -> None:
+        data = {"b": 2, "a": 1}
+        rendered = to_json(data)
+        assert json.loads(rendered) == {"a": 1, "b": 2}
+
     def test_physical_gpu_to_dict(self) -> None:
         gpu = PhysicalGpu(
             ordinal=0,
@@ -78,6 +87,21 @@ class TestUtilitiesAndDataclasses:
         assert data["name"] == "NVIDIA RTX 3090"
         assert data["active_processes"] == ("pid100:python",)
 
+    def test_device_verdict_to_dict(self) -> None:
+        verdict = DeviceVerdict(
+            device={"name": "GPU 0"},
+            variant="cuda12",
+            state=DeviceState.PASS.value,
+            reason="Supported SM and driver",
+            jax_devices=["gpu:0"],
+        )
+        data = verdict.to_dict()
+        assert data["variant"] == "cuda12"
+        assert data["state"] == "PASS"
+        assert data["jax_devices"] == ["gpu:0"]
+
+
+class TestNvidiaSmiWrappers:
     def test_nvidia_smi_csv_no_executable(self) -> None:
         with patch("shutil.which", return_value=None):
             assert _nvidia_smi_csv("name") == []
