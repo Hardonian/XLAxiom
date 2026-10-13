@@ -1,12 +1,18 @@
-# XLAxiom
+# XLAxiom — evidence-first testing for JAX and OpenXLA
 
-Finding the smallest proof of a compiler failure.
+[![CI](https://github.com/Hardonian/XLAxiom/actions/workflows/ci.yml/badge.svg)](https://github.com/Hardonian/XLAxiom/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%E2%80%933.13-blue.svg)](https://www.python.org/)
 
-XLAxiom is an open-source laboratory for discovering, minimizing, and reproducing numerical and compiler discrepancies in JAX/OpenXLA workloads. It pairs deterministic declarative workload generation with NumPy/JAX comparison, failure-preserving reduction, and portable evidence reports.
+**Find, reduce, and reproduce numerical and compiler discrepancies in JAX/OpenXLA workloads.** XLAxiom is an open-source differential-testing laboratory that turns an observation into a small, portable, evidence-backed case.
+
+It combines deterministic declarative workload generation, NumPy/JAX and eager/JIT comparison, failure-preserving minimization, and checksummed reports—so a potential issue is easier to validate, share, and investigate.
 
 It is independently developed and is not affiliated with, sponsored by, or endorsed by Google.
 
-## Quick start
+## Start here
+
+Install the development environment, confirm your JAX setup, then create and minimize a safe synthetic control:
 
 ```console
 uv sync --extra dev
@@ -18,6 +24,63 @@ uv run xlaxiom report --case results/reduced.json --output results/report
 ```
 
 `--synthetic` injects a clearly labelled output offset after JAX execution. It proves the testing pipeline; it is never evidence of a JAX, XLA, or hardware defect. Omit it for genuine NumPy-versus-JAX or JAX-eager-versus-JIT observations.
+
+## Why XLAxiom?
+
+- **Evidence first:** records versions, devices, policies, outputs, and a reproducible predicate instead of treating a mismatch as a diagnosis.
+- **Smallest useful case:** reduces a reproducible observation while preserving the failure signature.
+- **Portable by design:** workloads are deterministic JSON data, with checksummed bundles and fresh-process reproduction.
+- **Conservative claims:** distinguishes synthetic controls, observations, historical behavior, and independently reproduced findings.
+
+## Built for compiler and platform teams
+
+XLAxiom is useful when a numerical result changes across JAX modes, XLA versions, machines, or accelerators and the team needs an actionable handoff—not a screenshot or an unbounded fuzzer run. It provides a disciplined path from a suspicious result to an engineering-ready artifact:
+
+```text
+observe → classify → minimize → reproduce in a fresh process → bundle evidence → compare environments
+```
+
+Each handoff can include the minimized declarative case, numerical policy, environment and device details, execution outputs, and checksums. This makes results easier to review in CI, share across teams, attach to an upstream issue, and retest after a compiler or runtime update.
+
+### Responsible escalation
+
+Before filing an upstream JAX/OpenXLA issue, use a real (non-synthetic) case and verify it in a fresh process, record versions and device settings, minimize the predicate, and attach the generated report or validated bundle. A discrepancy is evidence to investigate, never an automatic root-cause or correctness claim.
+
+## When to use it
+
+| Situation | What XLAxiom adds |
+| --- | --- |
+| A model’s output differs between JAX eager and JIT | A structured comparison, explicit numerical policy, and a minimized predicate. |
+| A result changes after a JAX/XLA upgrade | Isolated version-matrix execution and conservative transition classification. |
+| A CI or production symptom needs escalation | Portable case, fresh-process verdict, human-readable report, and checksummed bundle. |
+| A GPU environment is uncertain or shared | Capability-first validation that reports unsupported or blocked devices instead of silently falling back. |
+
+XLAxiom is **not** a general correctness oracle, performance benchmark suite, or automatic root-cause analyzer. It is the evidence layer between a suspicious numerical result and a focused engineering investigation.
+
+## At a glance
+
+| Need | XLAxiom capability |
+| --- | --- |
+| Confirm your environment | `xlaxiom doctor` |
+| Generate a deterministic workload | `xlaxiom generate` |
+| Compare NumPy, JAX eager, and JIT | `xlaxiom compare` |
+| Shrink a repeatable mismatch | `xlaxiom minimize` |
+| Create a portable evidence record | `xlaxiom report` or `xlaxiom bundle create` |
+
+Read the [artifact guide](docs/artifacts.md) for the recommended handoff package and how to validate or rerun it safely.
+
+## Contents
+
+- [What it does](#what-it-does)
+- [Commands](#commands)
+- [Cross-version matrix](#cross-version-matrix)
+- [Artifact lifecycle](docs/artifacts.md)
+- [Architecture](docs/architecture/overview.md)
+- [Reproducibility methodology](docs/architecture/reproducibility.md)
+- [Backends and precision](#backends-and-precision)
+- [Limits and interpretation](#limits-and-interpretation)
+- [Development](#development)
+- [Roadmap](#roadmap)
 
 ## Verified local control
 
@@ -71,9 +134,12 @@ uv run xlaxiom matrix run --config configs/matrix-cpu-0.11.json \
   --case examples/synthetic-control-reduced.json --output results/matrix.json
 uv run xlaxiom bundle create --case examples/synthetic-control-reduced.json --output control.zip
 uv run xlaxiom bundle validate --bundle control.zip
+uv run xlaxiom bundle run --bundle control.zip --output results/bundle-evidence.json
 ```
 
 The matrix report captures environment requests, stdout/stderr, exit status, timeout outcome, and a conservative version classification. On this Windows CPU host, both versions reproduced the explicitly synthetic control; that is a `STABLE_FAILURE`, not a compiler finding. CUDA discovery is capability-gated (`xlaxiom matrix doctor`) and reported unsupported locally.
+
+The bundle workflow validates checksums before execution and runs cases directly from the archive without extraction. That gives reviewers a compact handoff they can validate before running, while keeping the original case identity intact.
 
 All commands expose `--help`. `reproduce` runs the workload again; it does not merely display saved output.
 

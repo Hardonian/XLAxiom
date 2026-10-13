@@ -1,6 +1,6 @@
 # Gradient Campaign 001
 
-**Status:** local CPU observation; not CUDA evidence  
+**Status:** cross-host CPU/CUDA comparison completed
 **Oracle:** analytic derivatives evaluated at the float32 value supplied to JAX  
 **Command:** `uv run xlaxiom gradient-campaign --cases 40 --seed 0 --output docs/experiments/gradient-campaign-local.json`
 
@@ -14,14 +14,17 @@ enumerated JAX devices. This makes an EPYC/CUDA run directly comparable to the
 local CPU record without inferring its backend from the filename.
 
 The candidates are all `float32 tanh(10)`: eager and JIT reverse-mode return
-zero while the analytic derivative is approximately `8.2446e-09`.  They are
+zero while the analytic derivative is approximately `8.2446e-09`. They are
 retained as candidates rather than silently tolerated because the current
-relative-only comparison has no absolute-error budget at this scale.  Re-run
-the same campaign on EPYC/CUDA and compare the artifact before assigning a
-backend-specific classification.
+relative-only comparison has no absolute-error budget at this scale.
 
-When the EPYC artifact is available, compare it without altering either source
-record:
+The same forty cases completed on the EPYC CUDA host with JAX/jaxlib 0.11.2
+and an active `cuda:0` device. The [cross-host comparison](../experiments/gradient-campaign-hx370-vs-epyc-cuda.json)
+has an identical configuration, counts, and only the shared
+`tanh:float32:10.0` candidate signature. This is evidence that the observation
+is not unique to the local Windows CPU backend; it is not a root-cause claim.
+
+To recreate the comparison without altering either source record:
 
 ```console
 uv run xlaxiom gradient-compare \

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,31 @@ CASE_VERSION = "1.0"
 
 class ArtifactError(ValueError):
     """Artifact is malformed or its checksum does not match."""
+
+
+def atomic_write_text(path: str | Path, contents: str) -> Path:
+    """Write complete UTF-8 text beside its destination, then atomically replace it."""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=target.parent,
+            prefix=f".{target.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            temporary.write(contents)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        os.replace(temporary_path, target)
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
+    return target
 
 
 @dataclass(frozen=True)
@@ -73,14 +99,7 @@ class CaseArtifact:
 
 
 def save_case(path: str | Path, artifact: CaseArtifact) -> Path:
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    temporary = target.with_suffix(target.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(artifact.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    os.replace(temporary, target)
-    return target
+    return atomic_write_text(path, json.dumps(artifact.to_dict(), indent=2, sort_keys=True) + "\n")
 
 
 def load_case(path: str | Path) -> CaseArtifact:
@@ -94,10 +113,7 @@ def load_case(path: str | Path) -> CaseArtifact:
 
 
 def save_json(path: str | Path, data: dict[str, Any]) -> Path:
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return target
+    return atomic_write_text(path, json.dumps(data, indent=2, sort_keys=True) + "\n")
 
 
 def observation_record(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[str, Any]:

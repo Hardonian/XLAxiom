@@ -6,19 +6,16 @@ CUDA runtime: 13.0
 ## ruff check
 All checks passed!
 
-## ruff format --check
-51 files already formatted
-
 ## mypy src
 Success: no issues found in 24 source files
 
-## pytest -q (Python 3.11)
-SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
-39 passed, 1 skipped in 6.75s
+## pytest (3.11)
+SKIPPED [1] tests/unit/test_gpu_cuda.py:219: no GPU in the primary environment
+42 passed, 2 skipped in 8.85s
 
-## pytest -q (Python 3.12)
-SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
-39 passed, 1 skipped in 6.43s
+## pytest (3.12)
+SKIPPED [1] tests/unit/test_gpu_cuda.py:219: no GPU in the primary environment
+42 passed, 2 skipped in 8.43s
 
 ## uv build
 Successfully built dist/xlaxiom-0.5.0.tar.gz

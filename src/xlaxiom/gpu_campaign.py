@@ -10,8 +10,12 @@ Known upstream behavior is never represented as a new defect.
 
 from __future__ import annotations
 
+import json
 import math
+import os
 import platform
+import subprocess
+import sys
 from dataclasses import dataclass
 from typing import Any
 
@@ -19,6 +23,7 @@ from .comparison import Classification
 from .generation import GenerationConfig, generate
 from .gpu_validation import DeviceState
 from .hardware import PhysicalGpu
+from .model import Workload
 from .pipeline import ExecutionTarget, run_comparison
 
 # Bounded campaign budget. Deliberately small: the goal is a real observation, not a
@@ -41,6 +46,68 @@ class CampaignBudget:
             raise ValueError("measurements must be between 1 and 20")
 
 
+def _safe_benchmark(workload: Workload, measurements: int, platform: str) -> dict[str, Any] | None:
+    """Benchmark one platform, returning ``None`` when that backend is unavailable.
+
+    An unavailable backend is a recorded absence, never a fabricated number.
+    """
+    from .execution import benchmark_jax
+
+    try:
+        return dict(benchmark_jax(workload, measurements, requested_platform=platform))
+    except RuntimeError:
+        return None
+
+
+def _cpu_baseline_subprocess(
+    measurements: int, workload_payload: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Measure the CPU baseline in a process where the CPU backend is visible.
+
+    The isolated CUDA runtime intentionally exposes only the GPU, so the CPU reference
+    must be taken with the CUDA device restriction lifted. Compilation is still timed
+    separately from steady-state synchronized calls. The workload travels as validated
+    JSON, so no executable payload crosses the process boundary.
+    """
+    script = (
+        "import json,sys\n"
+        "from xlaxiom.execution import benchmark_jax\n"
+        "from xlaxiom.model import Workload\n"
+        "workload = Workload.from_dict(json.loads(sys.argv[1]))\n"
+        f"print(json.dumps(benchmark_jax(workload, {measurements}, "
+        "requested_platform='cpu'), sort_keys=True))\n"
+    )
+    try:
+        completed = subprocess.run(
+            [sys.executable, "-c", script, json.dumps(workload_payload)],
+            capture_output=True,
+            text=True,
+            timeout=180,
+            env=_cpu_environment(),
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if completed.returncode != 0:
+        return None
+    for line in reversed(completed.stdout.strip().splitlines()):
+        if line.startswith("{"):
+            try:
+                return dict(json.loads(line))
+            except ValueError:
+                continue
+    return None
+
+
+def _cpu_environment() -> dict[str, str]:
+    """A child environment that exposes the CPU backend and drops CUDA restrictions."""
+    environment = os.environ.copy()
+    environment.pop("LD_LIBRARY_PATH", None)
+    environment.pop("CUDA_VISIBLE_DEVICES", None)
+    environment["JAX_PLATFORMS"] = "cpu"
+    return environment
+
+
 def cpu_vs_gpu(
     workload_seed: int,
     device: PhysicalGpu,
@@ -52,7 +119,7 @@ def cpu_vs_gpu(
     Compilation time is measured separately from steady-state synchronized calls so a
     one-off XLA compilation is never reported as execution performance.
     """
-    from .execution import benchmark_jax, execute_jax, execute_numpy
+    from .execution import execute_jax, execute_numpy
 
     workload = generate(GenerationConfig(seed=workload_seed))
     target = ExecutionTarget(platform="gpu", device_index=0)
@@ -62,11 +129,21 @@ def cpu_vs_gpu(
     comparison = run_comparison(workload, "jax-jit", target=target)
     eager_vs_jit = run_comparison(workload, "jax-eager-vs-jit", target=target)
     timings: dict[str, Any] = {}
-    try:
-        timings["cpu_jit"] = benchmark_jax(workload, measurements, requested_platform="cpu")
-        timings["gpu_jit"] = benchmark_jax(workload, measurements, requested_platform="gpu")
-    except RuntimeError as exc:
-        timings["error"] = str(exc)
+    # The CPU reference needs the CPU backend to be visible. Under an isolated CUDA
+    # runtime JAX exposes only the GPU, so the CPU baseline is measured in a separate
+    # short-lived process that keeps the CPU backend and drops the CUDA restriction.
+    # A missing CPU baseline is recorded, never silently omitted or faked.
+    timings["gpu_jit"] = _safe_benchmark(workload, measurements, "gpu")
+    cpu_baseline = _safe_benchmark(workload, measurements, "cpu")
+    if cpu_baseline is not None:
+        timings["cpu_jit"] = cpu_baseline
+    else:
+        timings["cpu_jit"] = _cpu_baseline_subprocess(measurements, workload.canonical_dict())
+    if timings["cpu_jit"] is None:
+        timings["cpu_note"] = (
+            "the isolated CUDA runtime exposes no CPU backend, so no CPU baseline was "
+            "recorded; the CPU-versus-GPU timing comparison is unavailable"
+        )
     return {
         "seed": workload_seed,
         "workload_identifier": workload.identifier,
