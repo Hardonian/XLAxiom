@@ -19,7 +19,7 @@ import os
 import platform
 import shutil
 import subprocess
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from enum import StrEnum
 from typing import Any
 
@@ -413,23 +413,6 @@ def idle_assessment(device: PhysicalGpu) -> dict[str, Any]:
         "active_processes": list(device.active_processes),
         "external_workload": bool(device.active_processes),
     }
-
-
-@dataclass
-class DeviceVerdict:
-    """The complete, honest verdict for one device under one CUDA variant."""
-
-    device: dict[str, Any]
-    variant: str | None
-    state: str
-    reason: str
-    jax_devices: list[str] = field(default_factory=list)
-    environment: dict[str, Any] = field(default_factory=dict)
-    checks: list[dict[str, Any]] = field(default_factory=list)
-    diagnostics: dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 def library_path_risk() -> dict[str, Any]:
