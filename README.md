@@ -124,6 +124,9 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
 | `matrix run` | Execute one saved case in isolated pinned JAX environments. |
 | `bundle create` / `bundle validate` | Create and validate portable checksummed case bundles. |
+| `campaign --isolate` | Run a bounded campaign with each case in a spawned child under a hard timeout. |
+| `corpus build` / `validate` | Build and validate the curated reproducible corpus. |
+| `corpus metamorphic` | Check every registered metamorphic property against an independent oracle. |
 
 ## Cross-version matrix
 
@@ -169,6 +172,16 @@ See [the architecture](docs/architecture/overview.md), [reproducibility methodol
 
 ## Roadmap
 
-1. Add isolated subprocess workers and timeout/memory enforcement.
-2. Validate CUDA/TPU adapters only on compatible hardware and capture device evidence.
-3. Build a curated corpus of independently reproduced, minimized findings and metamorphic properties.
+Completed:
+
+1. Isolated subprocess workers with per-case timeout enforcement — `xlaxiom campaign --isolate --case-timeout-s N`. A hung kernel or out-of-memory failure now contains one case instead of the whole campaign, and contained failures are recorded rather than silently dropped.
+2. CUDA adapter validation on compatible hardware with captured device evidence — `xlaxiom gpu doctor`, `gpu validate`, `gpu campaign`, `gpu historical`. Validated on an AMD EPYC host with a V100 (SM 7.0), an RTX 3060 (SM 8.6), and a P40 (SM 6.1). See [the multi-GPU campaign evidence](docs/experiments/epyc-multi-gpu-campaign.md). TPU remains unvalidated because no TPU hardware is available here; it is reported unsupported rather than assumed.
+3. A curated corpus of independently reproduced findings and metamorphic properties — `xlaxiom corpus build`, `corpus validate`, `corpus metamorphic`. A finding is admitted only after it reproduces in at least two fresh processes, and the admission bar rejects an entry whose reproduction evidence is missing or whose checksum no longer matches.
+
+Next:
+
+1. **Minimize admitted corpus findings automatically.** `corpus build` admits a reproduced finding with its reduced workload, but does not yet run the failure-preserving minimizer over the corpus end to end. Wiring `minimize` into the corpus pipeline would shrink admitted cases to their smallest reproducing form.
+2. **Cross-backend corpus comparison.** `gradient-compare` already compares two campaigns. Extending the same treatment to the corpus would let a CPU baseline and a CUDA run be diffed entry by entry, separating shared candidates from accelerator-specific ones automatically.
+3. **Metamorphic properties on CUDA.** The property suite currently runs in whatever environment invokes it. Running it under `jax[cuda12]` and `jax[cuda13]` would check whether the relations hold identically across SM 6.1, 7.0, and 8.6.
+4. **More metamorphic relations.** The suite holds four properties. Precision-sensitive relations, such as a reduction commuting with a dtype change, or `sin`/`cos` identities holding under argument reduction, would widen coverage.
+5. **Longer bounded corpus campaigns.** A wider seed sweep would raise the chance of admitting a genuinely new finding rather than confirming that known behavior still reproduces.

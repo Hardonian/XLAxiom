@@ -1,0 +1,184 @@
+{
+  "categories": {
+    "known-historical": 1,
+    "metamorphic-property": 4,
+    "reproduced-finding": 0
+  },
+  "corpus_version": "1.0",
+  "entries": [
+    {
+      "category": "known-historical",
+      "caveats": [
+        "Known upstream behavior; never represented as a new defect."
+      ],
+      "classification": null,
+      "corpus_version": "1.0",
+      "environment": {
+        "recorded_from": "corpus/historical/jax-40634.json"
+      },
+      "identifier": "jax-40634-large-float32-asinh-acosh-gradient",
+      "minimization": null,
+      "policy": null,
+      "property_check": null,
+      "references": [
+        "https://github.com/jax-ml/jax/issues/40634"
+      ],
+      "reproductions": 0,
+      "sha256": "c6a3ace7c614e6529e020b1dec0b57780555e75a9ac040175005849b7aebfc4f",
+      "summary": "Documented upstream behavior. Reproduced locally and explicitly not reported as a new XLAxiom finding.",
+      "title": "JAX issue #40634 large-float32 gradient",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+      },
+      "identifier": "metamorphic-reduction-commutes-with-transpose",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "sum(M) equals sum(M^T): a reduction must not depend on layout",
+        "eager": 0.0,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-commutes-with-transpose",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-transpose",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "4227d98976e9be8536ec27e217a6d52443f92a497a95264dbfa8d99fc3b3630c",
+      "summary": "sum(M) equals sum(M^T): a reduction must not depend on layout",
+      "title": "reduction-commutes-with-transpose",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+      },
+      "identifier": "metamorphic-matmul-associativity",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "(A@B)@C equals A@(B@C) within a bounded tolerance",
+        "eager": 0.0,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "matmul-associativity",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "matmul-assoc",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "bb2583d2eea4cad691458f93346e7e200e5f3636a3e75d0777049171dc4fd08e",
+      "summary": "(A@B)@C equals A@(B@C) within a bounded tolerance",
+      "title": "matmul-associativity",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+      },
+      "identifier": "metamorphic-broadcast-distributes-over-add",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "adding a row and a column broadcast equals adding them separately",
+        "eager": 0.0,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "broadcast-distributes-over-add",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "broadcast-distributive",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "d2aa0d3d374445e0d8eaf4335d949ac76b136a4a2bd56f0ad7c125f906e2d35b",
+      "summary": "adding a row and a column broadcast equals adding them separately",
+      "title": "broadcast-distributes-over-add",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+      },
+      "identifier": "metamorphic-reduction-splits-over-blocks",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "summing a matrix equals the sum of its row sums",
+        "eager": -2.384185791015625e-07,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-splits-over-blocks",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-split",
+        "oracle": -2.384185791015625e-07,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "955da5f6086b820b7613dc65bf748ee5ed78b36e8f68a3887da1401a540db759",
+      "summary": "summing a matrix equals the sum of its row sums",
+      "title": "reduction-splits-over-blocks",
+      "workload": null,
+      "workload_sha256": null
+    }
+  ],
+  "entry_count": 5,
+  "notes": [
+    "Every reproduced finding was observed in a fresh process, independently of the process that first flagged it.",
+    "A discrepancy is an observation, not a root-cause claim.",
+    "Known upstream behavior is filed as known-historical and never as a new finding."
+  ]
+}
