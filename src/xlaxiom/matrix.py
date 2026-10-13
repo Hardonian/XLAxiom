@@ -11,7 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from .regression import classify_versions
-from .storage import load_case, save_json
+from .relational import run_relational_comparison
+from .storage import load_case, load_relational_case, save_json
 
 _VERSION_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._\-+]*$")
 
@@ -104,6 +105,72 @@ def run_matrix(
     return report
 
 
+def run_relation_matrix(
+    config_path: str | Path, case_path: str | Path, output: str | Path
+) -> dict[str, Any]:
+    """Run a checksummed relational/metamorphic artifact across isolated JAX versions."""
+    case = Path(case_path).resolve()
+    load_relational_case(case)
+    results = [
+        _run_relation_environment(environment, case) for environment in load_config(config_path)
+    ]
+    report = {"matrix_version": "1.0", "kind": "relational", "case": case.name, "results": results}
+    if len(results) >= 2:
+        report["pairwise"] = [
+            {
+                "older": results[index]["environment"]["name"],
+                "newer": results[index + 1]["environment"]["name"],
+                **classify_versions(results[index], results[index + 1]),
+            }
+            for index in range(len(results) - 1)
+        ]
+    save_json(output, report)
+    return report
+
+
+def _run_relation_environment(environment: MatrixEnvironment, case: Path) -> dict[str, Any]:
+    validate_jax_version(environment.jax)
+    command = [
+        "uv",
+        "run",
+        "--isolated",
+        "--with-editable",
+        ".",
+        "--with",
+        f"jax=={environment.jax}",
+        "python",
+        "-m",
+        "xlaxiom.matrix",
+        "_relation_worker",
+        str(case),
+    ]
+    started = time.perf_counter()
+    try:
+        completed = subprocess.run(
+            command, capture_output=True, text=True, timeout=environment.timeout_s
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "environment": asdict(environment),
+            "worker_status": "timeout",
+            "stdout": exc.stdout,
+            "stderr": exc.stderr,
+        }
+    record: dict[str, Any] = {
+        "environment": asdict(environment),
+        "worker_status": "ok" if completed.returncode == 0 else "failed",
+        "exit_code": completed.returncode,
+        "duration_s": time.perf_counter() - started,
+        "stdout": completed.stdout[-4000:],
+        "stderr": completed.stderr[-4000:],
+    }
+    try:
+        record["comparison"] = json.loads(completed.stdout.splitlines()[-1])
+    except (IndexError, json.JSONDecodeError):
+        pass
+    return record
+
+
 def _worker(case_path: str) -> int:
     from .pipeline import run_comparison
 
@@ -113,9 +180,18 @@ def _worker(case_path: str) -> int:
     return 0
 
 
+def _relation_worker(case_path: str) -> int:
+    case = load_relational_case(case_path)
+    print(json.dumps(run_relational_comparison(case).to_dict(), sort_keys=True))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
-    if argv and len(argv) == 2 and argv[0] == "_worker":
-        return _worker(argv[1])
+    if argv and len(argv) == 2:
+        if argv[0] == "_worker":
+            return _worker(argv[1])
+        if argv[0] == "_relation_worker":
+            return _relation_worker(argv[1])
     raise SystemExit("matrix module is invoked by xlaxiom matrix")
 
 

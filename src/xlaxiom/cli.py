@@ -52,7 +52,7 @@ from .hardware import (
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .ledger import completed_shard, load_ledger, save_shard
-from .matrix import run_matrix
+from .matrix import run_matrix, run_relation_matrix
 from .metamorphic import (
     MetamorphicPropertyError,
     build_property_artifact,
@@ -645,6 +645,11 @@ def command_relation_report(args: argparse.Namespace) -> int:
 
 def command_matrix_run(args: argparse.Namespace) -> int:
     _emit(run_matrix(args.config, args.case, args.output))
+    return 0
+
+
+def command_matrix_relation(args: argparse.Namespace) -> int:
+    _emit(run_relation_matrix(args.config, args.case, args.output))
     return 0
 
 
@@ -1443,6 +1448,12 @@ def parser() -> argparse.ArgumentParser:
     matrix_run.add_argument("--case", required=True)
     matrix_run.add_argument("--output", required=True)
     matrix_run.set_defaults(func=command_matrix_run)
+
+    matrix_relation = matrix_commands.add_parser("relation")
+    matrix_relation.add_argument("--config", required=True)
+    matrix_relation.add_argument("--case", required=True)
+    matrix_relation.add_argument("--output", required=True)
+    matrix_relation.set_defaults(func=command_matrix_relation)
     matrix_doctor = matrix_commands.add_parser("doctor")
     matrix_doctor.set_defaults(func=command_matrix_doctor)
     bundle_parser = commands.add_parser("bundle", help="create and validate portable case bundles")

@@ -23,17 +23,17 @@ def capture_environment(label: str) -> dict[str, Any]:
     """Capture non-secret, portable runtime identity for an evidence attachment."""
     if not label.strip():
         raise ArtifactError("environment evidence label is required")
-    jax: dict[str, Any] = {"available": False, "devices": [], "x64_enabled": None}
+    jax_info: dict[str, Any] = {"available": False, "devices": [], "x64_enabled": None}
     try:
-        import jax
+        import jax as jax_module
         import jaxlib
 
-        jax = {
+        jax_info = {
             "available": True,
-            "version": jax.__version__,
+            "version": jax_module.__version__,
             "jaxlib": jaxlib.__version__,
-            "devices": [str(device) for device in jax.devices()],
-            "x64_enabled": bool(getattr(jax.config, "jax_enable_x64", False)),
+            "devices": [str(device) for device in jax_module.devices()],
+            "x64_enabled": bool(getattr(jax_module.config, "jax_enable_x64", False)),
         }
     except (ImportError, RuntimeError):
         pass
@@ -48,7 +48,7 @@ def capture_environment(label: str) -> dict[str, Any]:
             "implementation": platform.python_implementation(),
             "executable": Path(sys.executable).name,
         },
-        "jax": jax,
+        "jax": jax_info,
         "redaction": (
             "No host name, user name, paths, GPU UUIDs, or environment variables are stored."
         ),

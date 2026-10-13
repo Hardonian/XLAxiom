@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLAxiom resumable campaign ledger v1",
+  "type": "object",
+  "required": ["ledger_version", "run_identity", "shards", "sha256"],
+  "properties": {
+    "ledger_version": {"const": "1.0"},
+    "run_identity": {"type": "object"},
+    "shards": {"type": "object"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false
+}

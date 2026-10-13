@@ -1,0 +1,23 @@
+{
+  "environment_evidence_version": "1.0",
+  "host": {
+    "executable": "python.exe",
+    "implementation": "CPython",
+    "machine": "AMD64",
+    "python": "3.12.10",
+    "release": "11",
+    "system": "Windows"
+  },
+  "jax": {
+    "available": true,
+    "devices": [
+      "cpu:0"
+    ],
+    "jaxlib": "0.11.2",
+    "version": "0.11.2",
+    "x64_enabled": false
+  },
+  "label": "current-host",
+  "redaction": "No host name, user name, paths, GPU UUIDs, or environment variables are stored.",
+  "sha256": "2468b0bae241cead59389d8b58442aa24488c51204ca03716c60dff9bf9ef92a"
+}

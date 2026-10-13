@@ -640,6 +640,7 @@ def property_coverage(seed: int = 0) -> dict[str, Any]:
         "dtypes": sorted(dtypes),
         "ranks": sorted(ranks),
         "edge_value_strategy": (
-            "random inputs deterministically include signed zero and magnitude edges"
+            "reviewed properties explicitly select finite, extreme-finite, signed-zero, "
+            "and non-finite deterministic inputs"
         ),
     }

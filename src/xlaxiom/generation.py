@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 
@@ -16,7 +17,9 @@ class GenerationConfig:
     max_dim: int = 8
     max_nodes: int = 8
     dtype: str = "float32"
-    input_mode: str = "finite_edges"
+    input_mode: Literal[
+        "random", "zeros", "ones", "finite_edges", "extreme_finite", "signed_zero", "nonfinite"
+    ] = "finite_edges"
 
     def validate(self) -> None:
         if not 1 <= self.max_rank <= 6:

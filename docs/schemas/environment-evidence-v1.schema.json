@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLAxiom environment evidence v1",
+  "type": "object",
+  "required": ["environment_evidence_version", "label", "host", "jax", "redaction", "sha256"],
+  "properties": {
+    "environment_evidence_version": {"const": "1.0"},
+    "label": {"type": "string", "minLength": 1},
+    "host": {"type": "object"},
+    "jax": {"type": "object"},
+    "redaction": {"type": "string"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false
+}

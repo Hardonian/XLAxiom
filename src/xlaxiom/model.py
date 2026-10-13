@@ -329,16 +329,17 @@ def materialize_inputs(workload: Workload) -> dict[str, NDArray[np.generic]]:
                 value = rng.integers(-8, 9, size=spec.shape, dtype=dtype)
                 if spec.value_mode == "finite_edges":
                     flat = value.reshape(-1)
-                    if flat.size >= 4:
-                        flat[:4] = np.asarray([0, 1, -1, 8], dtype=dtype)
+                    edges = np.asarray([0, 1, -1, 8], dtype=dtype)
+                    flat[: min(flat.size, len(edges))] = edges[: flat.size]
             else:
                 value = rng.normal(0.0, 1.0, size=spec.shape).astype(dtype)
                 flat = value.reshape(-1)
-                if spec.value_mode == "finite_edges" and flat.size >= 6:
-                    flat[:6] = np.array([0.0, -0.0, 1e-20, 1e10, 1.0, -1.0], dtype=dtype)
-                elif spec.value_mode == "extreme_finite" and flat.size >= 6:
+                if spec.value_mode == "finite_edges":
+                    edges = np.array([0.0, -0.0, 1e-20, 1e10, 1.0, -1.0], dtype=dtype)
+                    flat[: min(flat.size, len(edges))] = edges[: flat.size]
+                elif spec.value_mode == "extreme_finite":
                     info = np.finfo(dtype)
-                    flat[:6] = np.array(
+                    edges = np.array(
                         [
                             info.max / 4,
                             -info.max / 4,
@@ -349,11 +350,12 @@ def materialize_inputs(workload: Workload) -> dict[str, NDArray[np.generic]]:
                         ],
                         dtype=dtype,
                     )
-                elif spec.value_mode == "signed_zero" and flat.size >= 6:
-                    flat[:6] = np.array([0.0, -0.0, 0.0, -0.0, 1.0, -1.0], dtype=dtype)
-                elif spec.value_mode == "nonfinite" and flat.size >= 6:
-                    flat[:6] = np.array(
-                        [np.nan, np.inf, -np.inf, 0.0, -0.0, 1.0], dtype=dtype
-                    )
+                    flat[: min(flat.size, len(edges))] = edges[: flat.size]
+                elif spec.value_mode == "signed_zero":
+                    edges = np.array([0.0, -0.0, 0.0, -0.0, 1.0, -1.0], dtype=dtype)
+                    flat[: min(flat.size, len(edges))] = edges[: flat.size]
+                elif spec.value_mode == "nonfinite":
+                    edges = np.array([np.nan, np.inf, -np.inf, 0.0, -0.0, 1.0], dtype=dtype)
+                    flat[: min(flat.size, len(edges))] = edges[: flat.size]
         values[spec.name] = value
     return values

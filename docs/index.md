@@ -7,6 +7,7 @@
 - [Quickstart](quickstart.md)
 - [Support matrix](support.md)
 - [Release and schema policy](release.md)
+- [Versioned JSON schemas](schemas/)
 - [Holistic delivery plan](roadmap.md)
 - [Research notes](research/)
 - [Experiment evidence](experiments/)

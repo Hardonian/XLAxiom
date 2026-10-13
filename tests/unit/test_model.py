@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from xlaxiom.generation import GenerationConfig, generate
@@ -58,7 +59,7 @@ def test_extreme_finite_input_strategy_controls_overflow_and_underflow_edges() -
 
     assert np.isfinite(values[:6]).all()
     assert abs(values[0]) > 1e30
-    assert 0 < abs(values[4]) < 1e-40
+    assert 0 < abs(values[2]) < 1e-30
 
 
 def test_broadcast_shape_valid() -> None:

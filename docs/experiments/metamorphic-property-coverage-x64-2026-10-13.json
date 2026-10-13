@@ -1,0 +1,23 @@
+{
+  "corpus_version": "1.0",
+  "dtypes": [
+    "float32",
+    "float64",
+    "int32"
+  ],
+  "edge_value_strategy": "reviewed properties explicitly select finite, extreme-finite, signed-zero, and non-finite deterministic inputs",
+  "kind": "metamorphic-property-coverage",
+  "operations": [
+    "abs",
+    "add",
+    "matmul",
+    "neg",
+    "reshape",
+    "sub",
+    "transpose"
+  ],
+  "property_count": 13,
+  "ranks": [
+    2
+  ]
+}
