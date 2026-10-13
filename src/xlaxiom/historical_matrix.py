@@ -19,6 +19,8 @@ def validate_version(version: str) -> None:
 
 
 def run_hyperbolic_matrix(versions: list[str], output: str) -> dict[str, Any]:
+    for version in versions:
+        validate_version(version)
     results: list[dict[str, Any]] = []
     for version in versions:
         validate_version(version)
