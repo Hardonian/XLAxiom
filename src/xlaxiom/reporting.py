@@ -10,7 +10,7 @@ from typing import Any
 import numpy as np
 
 from .comparison import ComparisonResult
-from .storage import CaseArtifact, observation_record, save_json
+from .storage import CaseArtifact, atomic_write_text, observation_record, save_json
 
 
 def build_report(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[str, Any]:
@@ -105,5 +105,5 @@ def write_report(
         ]
     )
     markdown_path = destination / "report.md"
-    markdown_path.write_text(markdown, encoding="utf-8")
+    atomic_write_text(markdown_path, markdown)
     return json_path, markdown_path

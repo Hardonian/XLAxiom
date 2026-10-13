@@ -28,6 +28,8 @@ uv run xlaxiom bundle run --bundle handoff.zip --output results/handoff-evidence
 
 Bundle validation rejects unsafe archive paths, duplicate or undeclared members, oversized uncompressed content, checksum mismatches, and malformed case schemas. Version 1 bundles contain only their manifest and declared case files. Bundle archives are deterministic for identical ordered inputs, which makes them suitable for content-addressed retention and review. Running a bundle produces a new evidence record; it does not mutate the archive.
 
+Generated case, JSON evidence, and Markdown report files are written atomically: a complete temporary file is flushed beside its destination and then replaced in one operation. An interrupted write therefore leaves the prior artifact intact rather than a misleading partial record.
+
 ## Interpretation rules
 
 1. **Start with provenance.** Confirm that the case is non-synthetic and identify the comparison mode and expected classification.
