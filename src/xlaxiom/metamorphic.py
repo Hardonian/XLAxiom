@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from importlib.resources import files
 from typing import Any
 
-from .comparison import Classification, compare
+from .comparison import Classification, ComparisonResult, compare
 from .execution import ExecutionResult, execute_jax, execute_numpy
 from .model import ComparisonPolicy, InputSpec, Node, Workload
 from .storage import RelationalArtifact
@@ -34,6 +34,7 @@ class MetamorphicProperty:
     title: str
     description: str
     relation: str
+    requires_x64: bool = False
 
 
 @dataclass(frozen=True)
@@ -61,10 +62,18 @@ def _workload(
     outputs: tuple[str, ...],
     side: str,
 ) -> Workload:
+    # Reviewed properties exercise the same deterministic finite-edge inputs unless
+    # the relation intentionally requests signed-zero or non-finite observations.
+    normalized_inputs = tuple(
+        spec
+        if spec.value_mode != "random"
+        else InputSpec(spec.name, spec.shape, spec.dtype, "finite_edges")
+        for spec in inputs
+    )
     workload = Workload(
         identifier=f"{identifier}-{side}-{seed}",
         seed=seed,
-        inputs=inputs,
+        inputs=normalized_inputs,
         nodes=nodes,
         outputs=outputs,
         metadata={
@@ -237,6 +246,99 @@ def _integer_add_commutativity(seed: int) -> PropertyWorkloads:
         InputSpec("x", (rows, columns), dtype="int32"),
         InputSpec("y", (rows, columns), dtype="int32"),
     )
+
+
+def _float64_add_commutativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (
+        InputSpec("x", (rows, columns), dtype="float64"),
+        InputSpec("y", (rows, columns), dtype="float64"),
+    )
+    return PropertyWorkloads(
+        _workload(
+            "float64-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "float64-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("y", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _mixed_dtype_add_commutativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (
+        InputSpec("integer_values", (rows, columns), dtype="int32"),
+        InputSpec("floating_values", (rows, columns), dtype="float32"),
+    )
+    return PropertyWorkloads(
+        _workload(
+            "mixed-dtype-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("integer_values", "floating_values"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "mixed-dtype-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("floating_values", "integer_values"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _signed_zero_negation_involution(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns), value_mode="signed_zero"),)
+    return PropertyWorkloads(
+        _workload(
+            "signed-zero-negation-involution-v1", seed, inputs, (), ("x",), "left"
+        ),
+        _workload(
+            "signed-zero-negation-involution-v1",
+            seed,
+            inputs,
+            (Node("neg", ("x",), "negated"), Node("neg", ("negated",), "out")),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _nonfinite_absolute_idempotence(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns), value_mode="nonfinite"),)
+    return PropertyWorkloads(
+        _workload(
+            "nonfinite-absolute-idempotence-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "nonfinite-absolute-idempotence-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "first"), Node("abs", ("first",), "out")),
+            ("out",),
+            "right",
+        ),
+    )
     return PropertyWorkloads(
         _workload(
             "integer-add-commutativity-v1",
@@ -266,6 +368,10 @@ _BUILDERS: dict[str, PropertyBuilder] = {
     "subtraction-as-addition-v1": _subtraction_as_addition,
     "absolute-idempotence-v1": _absolute_idempotence,
     "integer-add-commutativity-v1": _integer_add_commutativity,
+    "float64-add-commutativity-v1": _float64_add_commutativity,
+    "mixed-dtype-add-commutativity-v1": _mixed_dtype_add_commutativity,
+    "signed-zero-negation-involution-v1": _signed_zero_negation_involution,
+    "nonfinite-absolute-idempotence-v1": _nonfinite_absolute_idempotence,
 }
 
 
@@ -292,12 +398,14 @@ def curated_properties() -> tuple[MetamorphicProperty, ...]:
     for entry in entries:
         if not isinstance(entry, dict):
             raise MetamorphicPropertyError("curated corpus property must be an object")
+        requires_x64 = entry.get("requires_x64", False)
         try:
             property_definition = MetamorphicProperty(
                 identifier=str(entry["identifier"]),
                 title=str(entry["title"]),
                 description=str(entry["description"]),
                 relation=str(entry["relation"]),
+                requires_x64=requires_x64,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise MetamorphicPropertyError(f"malformed curated property: {exc}") from exc
@@ -306,6 +414,7 @@ def curated_properties() -> tuple[MetamorphicProperty, ...]:
             or not property_definition.title
             or not property_definition.description
             or property_definition.relation != RELATION_OUTPUTS_EQUAL
+            or not isinstance(property_definition.requires_x64, bool)
         ):
             raise MetamorphicPropertyError("curated property has unsupported fields")
         properties.append(property_definition)
@@ -359,6 +468,10 @@ def _triage(comparison: Any) -> str:
     return "execution_or_environment_failure"
 
 
+def _x64_enabled(result: ExecutionResult) -> bool:
+    return bool(result.environment and result.environment.get("jax_enable_x64") == "true")
+
+
 def run_property(
     identifier: str,
     seed: int = 0,
@@ -377,11 +490,21 @@ def run_property(
     if property_definition is None:
         raise MetamorphicPropertyError(f"unknown curated property {identifier!r}")
     workloads = build_property(identifier, seed)
-    observation = compare(
-        _execute(workloads.left, backend),
-        _execute(workloads.right, backend),
-        policy or workloads.left.policy,
-    )
+    selected_policy = policy or workloads.left.policy
+    left = _execute(workloads.left, backend)
+    right = _execute(workloads.right, backend)
+    if property_definition.requires_x64 and backend != "numpy" and not (
+        _x64_enabled(left) and _x64_enabled(right)
+    ):
+        observation = ComparisonResult(
+            Classification.ENVIRONMENT_FAILURE,
+            "the float64 relation requires JAX x64; rerun the property command with --x64",
+            selected_policy,
+            left=left.summary(),
+            right=right.summary(),
+        )
+    else:
+        observation = compare(left, right, selected_policy)
     return {
         "evidence_version": "1.0",
         "corpus_version": CORPUS_VERSION,
@@ -394,6 +517,7 @@ def run_property(
         },
         "seed": seed,
         "backend": backend,
+        "requires_x64": property_definition.requires_x64,
         "left_workload_sha256": workloads.left.digest(),
         "right_workload_sha256": workloads.right.digest(),
         "comparison": observation.to_dict(),

@@ -21,6 +21,10 @@ def test_curated_properties_exactly_match_the_reviewed_registry() -> None:
         "subtraction-as-addition-v1",
         "absolute-idempotence-v1",
         "integer-add-commutativity-v1",
+        "float64-add-commutativity-v1",
+        "mixed-dtype-add-commutativity-v1",
+        "signed-zero-negation-involution-v1",
+        "nonfinite-absolute-idempotence-v1",
     ]
 
 
@@ -43,7 +47,7 @@ def test_numpy_property_runner_records_passing_corpus_evidence() -> None:
     evidence = run_curated_properties(seed=12, backend="numpy")
 
     assert evidence["kind"] == "metamorphic-corpus-evidence"
-    assert evidence["counts"]["pass"] == 8
+    assert evidence["counts"]["pass"] == 12
     assert all(
         record["comparison"]["classification"] == "pass" for record in evidence["properties"]
     )
@@ -62,10 +66,10 @@ def test_property_campaign_and_coverage_are_bounded_and_explicit() -> None:
     campaign = run_property_campaign(cases=2, seed=20, backend="numpy")
     coverage = property_coverage(seed=20)
 
-    assert campaign["counts"]["pass"] == 16
+    assert campaign["counts"]["pass"] == 24
     assert campaign["candidate_observations"] == []
-    assert coverage["property_count"] == 8
+    assert coverage["property_count"] == 12
     assert {"add", "sub", "neg", "abs", "matmul", "reshape", "transpose"} <= set(
         coverage["operations"]
     )
-    assert coverage["dtypes"] == ["float32", "int32"]
+    assert coverage["dtypes"] == ["float32", "float64", "int32"]

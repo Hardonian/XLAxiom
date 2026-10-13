@@ -47,11 +47,15 @@ jobs:
           - subtraction-as-addition-v1
           - absolute-idempotence-v1
           - integer-add-commutativity-v1
+          - float64-add-commutativity-v1
+          - mixed-dtype-add-commutativity-v1
+          - signed-zero-negation-involution-v1
+          - nonfinite-absolute-idempotence-v1
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --extra dev
-      - run: uv run xlaxiom property run --property ${{ matrix.property }} --backend jax-jit
+      - run: uv run xlaxiom property run --property ${{ matrix.property }} --backend jax-jit --x64
   scheduled-corpus:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -59,4 +63,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --extra dev
-      - run: uv run xlaxiom property campaign --cases 25 --backend jax-jit
+      - run: uv run xlaxiom property campaign --cases 25 --backend jax-jit --x64

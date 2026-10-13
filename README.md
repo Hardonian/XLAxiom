@@ -96,7 +96,11 @@ observations from four unclassified `float32 tanh(10)` candidates; it does not
 claim CUDA behavior. See [Gradient Campaign 001](docs/research/gradient-campaign-001.md)
 and its [machine-readable record](docs/experiments/gradient-campaign-local.json).
 
-The curated metamorphic corpus passed all eight reviewed properties on JAX 0.11.2
+The curated metamorphic corpus includes twelve reviewed properties, including explicit
+float64/x64, mixed-dtype, signed-zero, and non-finite relations. A complete JAX run
+must use the `--x64` property option for the float64 relation.
+
+The initial eight-property CPU JIT evidence was recorded on JAX 0.11.2
 CPU JIT with seed 42 on 2026-10-13. The checked-in
 [evidence record](docs/experiments/metamorphic-corpus-local-2026-10-13.json) includes
 both workload identities, execution details, and the numerical policy; it does not

@@ -60,6 +60,31 @@
       "title": "Integer elementwise addition commutes",
       "description": "int32 x + y and y + x produce equivalent elementwise outputs.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "float64-add-commutativity-v1",
+      "title": "Float64 elementwise addition commutes",
+      "description": "float64 x + y and y + x produce equivalent outputs in an explicit JAX x64 process.",
+      "relation": "outputs_equal",
+      "requires_x64": true
+    },
+    {
+      "identifier": "mixed-dtype-add-commutativity-v1",
+      "title": "Mixed int32/float32 addition commutes",
+      "description": "int32 x + float32 y and float32 y + int32 x use same-operation promotion semantics consistently.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "signed-zero-negation-involution-v1",
+      "title": "Double negation preserves signed zero",
+      "description": "Negating signed-zero inputs twice preserves both values and zero signs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "nonfinite-absolute-idempotence-v1",
+      "title": "Absolute value is idempotent for non-finite inputs",
+      "description": "abs(x) and abs(abs(x)) agree for NaN, infinities, and signed zero under the explicit policy.",
+      "relation": "outputs_equal"
     }
   ]
 }

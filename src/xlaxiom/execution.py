@@ -225,6 +225,7 @@ def execute_jax(
             "requested_platform": requested_platform,
             "actual_devices": ",".join(actual_devices),
             "device_index": "" if device_index is None else str(device_index),
+            "jax_enable_x64": str(bool(getattr(jax.config, "jax_enable_x64", False))).lower(),
         }
         return ExecutionResult(
             f"jax-{requested_platform}",

@@ -6,7 +6,7 @@
 uv sync --extra dev
 uv run xlaxiom doctor
 uv run xlaxiom property coverage
-uv run xlaxiom property campaign --cases 20 --backend jax-jit
+uv run xlaxiom property campaign --cases 20 --backend jax-jit --x64
 uv run xlaxiom campaign --profile smoke --output results/campaign.json
 ```
 

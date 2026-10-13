@@ -55,13 +55,28 @@ class InputSpec:
     name: str
     shape: tuple[int, ...]
     dtype: str = "float32"
-    value_mode: Literal["random", "zeros", "ones"] = "random"
+    value_mode: Literal[
+        "random", "zeros", "ones", "finite_edges", "signed_zero", "nonfinite"
+    ] = "random"
 
     def validate(self, limits: ResourceLimits) -> None:
         if not self.name.isidentifier():
             raise ValidationError(f"invalid input name: {self.name!r}")
         if self.dtype not in DTYPES:
             raise ValidationError(f"unsupported dtype: {self.dtype}")
+        if self.value_mode not in {
+            "random",
+            "zeros",
+            "ones",
+            "finite_edges",
+            "signed_zero",
+            "nonfinite",
+        }:
+            raise ValidationError(f"unsupported input value mode: {self.value_mode}")
+        if self.value_mode == "nonfinite" and not self.dtype.startswith("float"):
+            raise ValidationError("nonfinite input mode requires a floating-point dtype")
+        if self.value_mode == "signed_zero" and not self.dtype.startswith("float"):
+            raise ValidationError("signed_zero input mode requires a floating-point dtype")
         if len(self.shape) > limits.max_rank or any(
             not isinstance(d, int) or d < 1 for d in self.shape
         ):
@@ -187,7 +202,15 @@ class Workload:
                         shape=tuple(int(v) for v in item["shape"]),
                         dtype=str(item.get("dtype", "float32")),
                         value_mode=cast(
-                            Literal["random", "zeros", "ones"], item.get("value_mode", "random")
+                            Literal[
+                                "random",
+                                "zeros",
+                                "ones",
+                                "finite_edges",
+                                "signed_zero",
+                                "nonfinite",
+                            ],
+                            item.get("value_mode", "random"),
                         ),
                     )
                     for item in data["inputs"]
@@ -302,11 +325,20 @@ def materialize_inputs(workload: Workload) -> dict[str, NDArray[np.generic]]:
             rng = np.random.default_rng(child_seed)
             if np.issubdtype(dtype, np.integer):
                 value = rng.integers(-8, 9, size=spec.shape, dtype=dtype)
+                if spec.value_mode == "finite_edges":
+                    flat = value.reshape(-1)
+                    if flat.size >= 4:
+                        flat[:4] = np.asarray([0, 1, -1, 8], dtype=dtype)
             else:
                 value = rng.normal(0.0, 1.0, size=spec.shape).astype(dtype)
-                # Reproducible edge values, without forcing invalid values into every operation.
                 flat = value.reshape(-1)
-                if flat.size >= 6:
+                if spec.value_mode == "finite_edges" and flat.size >= 6:
                     flat[:6] = np.array([0.0, -0.0, 1e-20, 1e10, 1.0, -1.0], dtype=dtype)
+                elif spec.value_mode == "signed_zero" and flat.size >= 6:
+                    flat[:6] = np.array([0.0, -0.0, 0.0, -0.0, 1.0, -1.0], dtype=dtype)
+                elif spec.value_mode == "nonfinite" and flat.size >= 6:
+                    flat[:6] = np.array(
+                        [np.nan, np.inf, -np.inf, 0.0, -0.0, 1.0], dtype=dtype
+                    )
         values[spec.name] = value
     return values

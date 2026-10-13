@@ -14,10 +14,17 @@ from time import perf_counter
 from typing import Any
 
 from .bundle import create_bundle, run_bundle, validate_bundle
+from .attestation import (
+    load_attestation,
+    save_attestation,
+    sign_attestation,
+    verify_subject_attestation,
+)
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .comparison import Classification
 from .cuda import cuda_capability, driver_capability, recommended_variant
 from .execution import benchmark_jax, doctor
+from .environment import capture_environment, compare_environments, load_environment, save_environment
 from .generation import GenerationConfig, generate, synthetic_control
 from .gpu_campaign import (
     CampaignBudget,
@@ -39,6 +46,7 @@ from .hardware import (
 )
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
+from .ledger import completed_shard, load_ledger, save_shard
 from .matrix import run_matrix
 from .metamorphic import (
     MetamorphicPropertyError,
@@ -50,9 +58,11 @@ from .metamorphic import (
 )
 from .minimization import minimize
 from .model import ComparisonPolicy
-from .performance import PerformanceArtifactError, compare_benchmarks
+from .outcomes import compare_outcomes
+from .performance import PerformanceArtifactError, compare_benchmarks, compare_compilation_cache
 from .pipeline import FaultInjection, run_backend, run_comparison
 from .readiness import assess_upstream_readiness
+from .runtime import RUNTIME_PROFILES, runtime_profile
 from .relational import (
     minimize_relational,
     reproduce_relational_isolated,
@@ -106,6 +116,7 @@ def command_generate(args: argparse.Namespace) -> int:
                 max_rank=args.max_rank,
                 max_nodes=args.max_nodes,
                 dtype=args.dtype,
+                input_mode=args.input_mode,
             )
         )
     )
@@ -141,6 +152,19 @@ def command_compare(args: argparse.Namespace) -> int:
         save_json(args.output, record)
     _emit(record)
     return 0 if comparison.classification == Classification.PASS else 1
+
+
+def command_outcomes(args: argparse.Namespace) -> int:
+    """Compare execution terminal states without conflating them with output equality."""
+    artifact = _load(args.case)
+    left = run_backend(artifact.workload, args.left_backend)
+    right = run_backend(artifact.workload, args.right_backend)
+    result = compare_outcomes(left, right, artifact.workload.policy)
+    record = result.to_dict()
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
+    return 0 if result.classification == Classification.PASS else 1
 
 
 def command_minimize(args: argparse.Namespace) -> int:
@@ -253,6 +277,22 @@ def command_benchmark(args: argparse.Namespace) -> int:
         )
     _emit(record)
     return 0
+
+
+def command_cache(args: argparse.Namespace) -> int:
+    """Compare bounded cold/warm compilation records without overclaiming cache internals."""
+    try:
+        cold = json.loads(Path(args.cold).read_text(encoding="utf-8"))
+        warm = json.loads(Path(args.warm).read_text(encoding="utf-8"))
+        if not isinstance(cold, dict) or not isinstance(warm, dict):
+            raise PerformanceArtifactError("cache records must be JSON objects")
+        result = compare_compilation_cache(cold, warm, args.max_relative_warm_compile)
+    except (OSError, json.JSONDecodeError, PerformanceArtifactError) as exc:
+        raise SystemExit(f"invalid cache evidence: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0 if result["classification"] == Classification.PASS.value else 1
 
 
 def command_stability(args: argparse.Namespace) -> int:
@@ -422,6 +462,105 @@ def command_property_coverage(args: argparse.Namespace) -> int:
         save_json(args.output, result)
     _emit(result)
     return 0
+
+
+def command_attest_sign(args: argparse.Namespace) -> int:
+    try:
+        record = sign_attestation(args.subject, args.private_key)
+        path = save_attestation(args.output, record)
+    except ArtifactError as exc:
+        raise SystemExit(f"cannot sign attestation: {exc}") from exc
+    _emit({"attestation": str(path), "subject_sha256": record["subject_sha256"]})
+    return 0
+
+
+def command_attest_verify(args: argparse.Namespace) -> int:
+    try:
+        valid = verify_subject_attestation(
+            load_attestation(args.attestation), args.subject, args.public_key
+        )
+    except ArtifactError as exc:
+        raise SystemExit(f"cannot verify attestation: {exc}") from exc
+    _emit({"attestation": args.attestation, "verified": valid})
+    return 0 if valid else 1
+
+
+def command_environment_capture(args: argparse.Namespace) -> int:
+    evidence = capture_environment(args.label)
+    path = save_environment(args.output, evidence)
+    _emit({"environment": str(path), "sha256": evidence["sha256"]})
+    return 0
+
+
+def command_environment_compare(args: argparse.Namespace) -> int:
+    try:
+        result = compare_environments(load_environment(args.primary), load_environment(args.secondary))
+    except ArtifactError as exc:
+        raise SystemExit(f"invalid environment evidence: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0 if result["independent"] else 1
+
+
+def command_runtime_list(_: argparse.Namespace) -> int:
+    _emit(
+        {
+            "profiles": [
+                {
+                    "identifier": profile.identifier,
+                    "environment": profile.environment,
+                    "description": profile.description,
+                }
+                for profile in RUNTIME_PROFILES.values()
+            ],
+            "note": "Profiles are applied only to a fresh child process and never modify this shell.",
+        }
+    )
+    return 0
+
+
+def command_runtime_compare(args: argparse.Namespace) -> int:
+    """Run a comparison in a clean process under an explicit, non-persistent profile."""
+    try:
+        profile = runtime_profile(args.profile)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    environment = os.environ.copy()
+    environment.update(profile.environment)
+    command = [sys.executable, "-m", "xlaxiom", "compare", "--case", args.case]
+    if args.mode:
+        command.extend(("--mode", args.mode))
+    completed = subprocess.run(command, capture_output=True, text=True, env=environment, check=False)
+    try:
+        child = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        child = {"raw_stdout": completed.stdout[-2000:], "raw_stderr": completed.stderr[-2000:]}
+    record = {
+        "runtime_profile_version": "1.0",
+        "profile": profile.identifier,
+        "environment": profile.environment,
+        "child_exit_code": completed.returncode,
+        "child": child,
+    }
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
+    return completed.returncode
+
+
+def _reexec_x64_if_requested(args: argparse.Namespace, argv: list[str] | None) -> int | None:
+    """Start a clean interpreter with JAX x64 enabled before it imports JAX."""
+    if not getattr(args, "x64", False) or os.environ.get("XLAXIOM_X64_REEXEC") == "1":
+        return None
+    environment = os.environ.copy()
+    environment["JAX_ENABLE_X64"] = "1"
+    environment["XLAXIOM_X64_REEXEC"] = "1"
+    command_args = sys.argv[1:] if argv is None else argv
+    completed = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", *command_args], env=environment, check=False
+    )
+    return completed.returncode
 
 
 def command_relation_create(args: argparse.Namespace) -> int:
@@ -615,6 +754,10 @@ def _ensure_gpu_runtime() -> None:
 
 def command_gpu_campaign(args: argparse.Namespace) -> int:
     """Run the bounded real-GPU campaign only for devices that passed every probe."""
+    if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
+        raise SystemExit("shard index must be non-negative and less than shard count")
+    if args.resume and not args.ledger:
+        raise SystemExit("--resume requires --ledger")
     _ensure_gpu_runtime()
     devices = enumerate_physical_gpus()
     report = validate_all(devices, allow_busy=args.allow_busy)
@@ -662,9 +805,37 @@ def command_gpu_campaign(args: argparse.Namespace) -> int:
     # Record which device this run actually targeted. Under CUDA_VISIBLE_DEVICES the
     # runtime remaps the selected GPU to ordinal 0, so the campaign must state the
     # device it was asked to validate rather than inferring it from the visible set.
-    campaign = run_gpu_campaign(
-        device, variant or "cuda12", CampaignBudget(args.cases, args.seed, args.measurements)
-    )
+    shard_seed = args.seed + args.shard_index * args.cases
+    shard = {
+        "index": args.shard_index,
+        "count": args.shard_count,
+        "seed": shard_seed,
+        "cases": args.cases,
+    }
+    run_identity = {
+        "device_uuid_redacted": device.uuid_redacted,
+        "variant": variant,
+        "measurements": args.measurements,
+    }
+    campaign: dict[str, Any] | None = None
+    if args.resume and args.ledger:
+        try:
+            campaign = completed_shard(load_ledger(args.ledger), run_identity, shard)
+        except ArtifactError as exc:
+            raise SystemExit(f"invalid campaign ledger: {exc}") from exc
+    if campaign is None:
+        campaign = run_gpu_campaign(
+            device, variant or "cuda12", CampaignBudget(args.cases, shard_seed, args.measurements)
+        )
+        if args.ledger:
+            try:
+                save_shard(args.ledger, run_identity, shard, campaign)
+            except ArtifactError as exc:
+                raise SystemExit(f"cannot update campaign ledger: {exc}") from exc
+        campaign["resumed"] = False
+    else:
+        campaign = {**campaign, "resumed": True}
+    campaign["shard"] = shard
     campaign["requested_device"] = {
         "name": device.name,
         "ordinal": device.ordinal,
@@ -930,6 +1101,49 @@ def parser() -> argparse.ArgumentParser:
     commands = root.add_subparsers(dest="command", required=True)
     doctor_parser = commands.add_parser("doctor", help="inspect JAX/backend capabilities")
     doctor_parser.set_defaults(func=command_doctor)
+    attest_parser = commands.add_parser(
+        "attest", help="create detached signatures with a maintainer-supplied private key"
+    )
+    attest_commands = attest_parser.add_subparsers(dest="attest_command", required=True)
+    attest_sign = attest_commands.add_parser("sign", help="sign a release evidence file")
+    attest_sign.add_argument("--subject", required=True)
+    attest_sign.add_argument("--private-key", required=True)
+    attest_sign.add_argument("--output", required=True)
+    attest_sign.set_defaults(func=command_attest_sign)
+    attest_verify = attest_commands.add_parser("verify", help="verify a detached release signature")
+    attest_verify.add_argument("--attestation", required=True)
+    attest_verify.add_argument("--subject", required=True)
+    attest_verify.add_argument("--public-key", required=True)
+    attest_verify.set_defaults(func=command_attest_verify)
+    environment_parser = commands.add_parser(
+        "environment", help="capture or compare redacted independent-host evidence"
+    )
+    environment_commands = environment_parser.add_subparsers(dest="environment_command", required=True)
+    environment_capture = environment_commands.add_parser("capture", help="capture this host")
+    environment_capture.add_argument("--label", required=True, help="operator-supplied non-secret label")
+    environment_capture.add_argument("--output", required=True)
+    environment_capture.set_defaults(func=command_environment_capture)
+    environment_compare = environment_commands.add_parser(
+        "compare", help="assess whether two records establish independent hosts"
+    )
+    environment_compare.add_argument("--primary", required=True)
+    environment_compare.add_argument("--secondary", required=True)
+    environment_compare.add_argument("--output")
+    environment_compare.set_defaults(func=command_environment_compare)
+    runtime_parser = commands.add_parser(
+        "runtime", help="run isolated CPU thread/runtime profile comparisons"
+    )
+    runtime_commands = runtime_parser.add_subparsers(dest="runtime_command", required=True)
+    runtime_list = runtime_commands.add_parser("list", help="list reviewed runtime profiles")
+    runtime_list.set_defaults(func=command_runtime_list)
+    runtime_compare = runtime_commands.add_parser(
+        "compare", help="run a fresh child comparison under one profile"
+    )
+    runtime_compare.add_argument("--case", required=True)
+    runtime_compare.add_argument("--profile", choices=tuple(RUNTIME_PROFILES), required=True)
+    runtime_compare.add_argument("--mode", choices=("jax-eager", "jax-jit", "jax-eager-vs-jit"))
+    runtime_compare.add_argument("--output")
+    runtime_compare.set_defaults(func=command_runtime_compare)
     generate_parser = commands.add_parser(
         "generate", help="create a deterministic declarative case"
     )
@@ -938,6 +1152,12 @@ def parser() -> argparse.ArgumentParser:
     generate_parser.add_argument("--max-nodes", type=int, default=8)
     generate_parser.add_argument(
         "--dtype", choices=("float32", "float64", "int32", "int64"), default="float32"
+    )
+    generate_parser.add_argument(
+        "--input-mode",
+        choices=("random", "zeros", "ones", "finite_edges", "signed_zero", "nonfinite"),
+        default="finite_edges",
+        help="deterministic input-value strategy for generated workloads",
     )
     generate_parser.add_argument(
         "--synthetic",
@@ -964,6 +1184,18 @@ def parser() -> argparse.ArgumentParser:
     )
     compare_parser.add_argument("--output")
     compare_parser.set_defaults(func=command_compare)
+    outcomes_parser = commands.add_parser(
+        "outcomes", help="compare terminal execution outcomes without comparing values"
+    )
+    outcomes_parser.add_argument("--case", required=True)
+    outcomes_parser.add_argument(
+        "--left-backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-eager"
+    )
+    outcomes_parser.add_argument(
+        "--right-backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
+    )
+    outcomes_parser.add_argument("--output")
+    outcomes_parser.set_defaults(func=command_outcomes)
     minimize_parser = commands.add_parser("minimize", help="failure-preserving workload reduction")
     minimize_parser.add_argument("--case", required=True)
     minimize_parser.add_argument("--output", required=True)
@@ -995,6 +1227,15 @@ def parser() -> argparse.ArgumentParser:
         help="maximum median slowdown fraction before reporting a regression",
     )
     benchmark_parser.set_defaults(func=command_benchmark)
+    cache_parser = commands.add_parser(
+        "cache", help="assess bounded cold/warm compilation evidence conservatively"
+    )
+    cache_parser.add_argument("--cold", required=True, help="first compilation JSON record")
+    cache_parser.add_argument("--warm", required=True, help="second compilation JSON record")
+    cache_parser.add_argument("--max-relative-warm-compile", type=float, default=0.1)
+    cache_parser.add_argument("--output")
+    cache_parser.set_defaults(func=command_cache)
+
     stability_parser = commands.add_parser(
         "stability", help="repeat one backend and detect output nondeterminism"
     )
@@ -1092,6 +1333,7 @@ def parser() -> argparse.ArgumentParser:
     )
     property_run.add_argument("--rtol", type=float, help="explicit property relative tolerance")
     property_run.add_argument("--atol", type=float, help="explicit property absolute tolerance")
+    property_run.add_argument("--x64", action="store_true", help="run in a clean JAX x64 process")
     property_run.add_argument("--output", help="JSON evidence path")
     property_run.set_defaults(func=command_property_run)
     property_campaign = property_commands.add_parser(
@@ -1107,6 +1349,7 @@ def parser() -> argparse.ArgumentParser:
         ),
         help="property identifier; repeat to select more than one (default: all)",
     )
+    property_campaign.add_argument("--x64", action="store_true", help="run in a clean JAX x64 process")
     property_campaign.add_argument(
         "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
     )
@@ -1241,6 +1484,10 @@ def parser() -> argparse.ArgumentParser:
     )
     gpu_campaign_parser.add_argument("--output", help="JSON evidence path")
     gpu_campaign_parser.add_argument("--allow-busy", action="store_true")
+    gpu_campaign_parser.add_argument("--shard-index", type=int, default=0)
+    gpu_campaign_parser.add_argument("--shard-count", type=int, default=1)
+    gpu_campaign_parser.add_argument("--ledger", help="checksummed resumable GPU shard ledger")
+    gpu_campaign_parser.add_argument("--resume", action="store_true", help="reuse an exact completed ledger shard")
     gpu_campaign_parser.set_defaults(func=command_gpu_campaign)
     gpu_historical_parser = gpu_commands.add_parser(
         "historical", help="replay JAX #40634 large-float32 gradients on the GPU"
@@ -1253,6 +1500,9 @@ def parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
+    x64_exit_code = _reexec_x64_if_requested(args, argv)
+    if x64_exit_code is not None:
+        return x64_exit_code
     return int(args.func(args))
 
 

@@ -34,6 +34,24 @@ def test_generator_covers_rank_three_and_integer_safe_motifs() -> None:
         generate(GenerationConfig(dtype="float16"))
 
 
+def test_materialization_supports_explicit_float_edge_strategies() -> None:
+    signed_zero = generate(GenerationConfig(seed=7, input_mode="signed_zero"))
+    nonfinite = generate(GenerationConfig(seed=8, input_mode="nonfinite"))
+
+    signed_values = materialize_inputs(signed_zero)["x"].reshape(-1)
+    nonfinite_values = materialize_inputs(nonfinite)["x"].reshape(-1)
+
+    assert signed_values[0] == 0 and signed_values[1] == 0
+    assert signed_values[0].view("u4") != signed_values[1].view("u4")
+    assert pytest.approx(float("inf")) == float(nonfinite_values[1])
+    assert nonfinite_values[0] != nonfinite_values[0]
+
+
+def test_generator_rejects_nonfinite_integer_inputs() -> None:
+    with pytest.raises(ValueError, match="requires a floating-point dtype"):
+        generate(GenerationConfig(dtype="int32", input_mode="nonfinite"))
+
+
 def test_broadcast_shape_valid() -> None:
     assert _broadcast_shape() == ()
     assert _broadcast_shape((2, 3)) == (2, 3)

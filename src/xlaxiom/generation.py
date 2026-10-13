@@ -16,6 +16,7 @@ class GenerationConfig:
     max_dim: int = 8
     max_nodes: int = 8
     dtype: str = "float32"
+    input_mode: str = "finite_edges"
 
     def validate(self) -> None:
         if not 1 <= self.max_rank <= 6:
@@ -26,6 +27,17 @@ class GenerationConfig:
             raise ValueError("max_nodes must be between 1 and 64")
         if self.dtype not in DTYPES:
             raise ValueError(f"unsupported generation dtype {self.dtype!r}")
+        if self.input_mode not in {
+            "random",
+            "zeros",
+            "ones",
+            "finite_edges",
+            "signed_zero",
+            "nonfinite",
+        }:
+            raise ValueError(f"unsupported generation input mode {self.input_mode!r}")
+        if self.dtype.startswith("int") and self.input_mode in {"signed_zero", "nonfinite"}:
+            raise ValueError(f"input mode {self.input_mode!r} requires a floating-point dtype")
 
 
 def generate(config: GenerationConfig) -> Workload:
@@ -36,6 +48,9 @@ def generate(config: GenerationConfig) -> Workload:
     def dim() -> int:
         return int(rng.integers(2, config.max_dim + 1))
 
+    def input_spec(name: str, shape: tuple[int, ...]) -> InputSpec:
+        return InputSpec(name, shape, config.dtype, config.input_mode)
+
     if config.dtype.startswith("int"):
         motif = config.seed % 2
     else:
@@ -44,21 +59,21 @@ def generate(config: GenerationConfig) -> Workload:
     nodes: list[Node]
     if motif == 0:
         shape = (dim(), dim())
-        inputs = (InputSpec("x", shape, config.dtype), InputSpec("y", shape, config.dtype))
+        inputs = (input_spec("x", shape), input_spec("y", shape))
         tail = "abs" if config.dtype.startswith("int") else "tanh"
         nodes = [Node("add", ("x", "y"), "n0"), Node(tail, ("n0",), "out")]
     elif motif == 1 and config.dtype.startswith("int"):
         rows, inner, columns = dim(), dim(), dim()
         inputs = (
-            InputSpec("x", (rows, inner), config.dtype),
-            InputSpec("y", (inner, columns), config.dtype),
+            input_spec("x", (rows, inner)),
+            input_spec("y", (inner, columns)),
         )
         nodes = [Node("matmul", ("x", "y"), "out")]
     elif motif == 1:
         rows, columns = dim(), dim()
         inputs = (
-            InputSpec("x", (rows, 1), config.dtype),
-            InputSpec("y", (1, columns), config.dtype),
+            input_spec("x", (rows, 1)),
+            input_spec("y", (1, columns)),
         )
         nodes = [
             Node("add", ("x", "y"), "n0"),
@@ -67,8 +82,8 @@ def generate(config: GenerationConfig) -> Workload:
     elif motif == 2:
         rows, inner, columns = dim(), dim(), dim()
         inputs = (
-            InputSpec("x", (rows, inner), config.dtype),
-            InputSpec("y", (inner, columns), config.dtype),
+            input_spec("x", (rows, inner)),
+            input_spec("y", (inner, columns)),
         )
         nodes = [
             Node("matmul", ("x", "y"), "n0"),
@@ -77,7 +92,7 @@ def generate(config: GenerationConfig) -> Workload:
         ]
     elif motif == 3:
         first, second = dim(), dim()
-        inputs = (InputSpec("x", (first, second), config.dtype),)
+        inputs = (input_spec("x", (first, second)),)
         nodes = [
             Node("reshape", ("x",), "n0", {"shape": [first * second]}),
             Node("sin", ("n0",), "n1"),
@@ -86,8 +101,8 @@ def generate(config: GenerationConfig) -> Workload:
     elif motif == 4:
         batch, rows, columns = dim(), dim(), dim()
         inputs = (
-            InputSpec("x", (batch, rows, 1), config.dtype),
-            InputSpec("y", (1, rows, columns), config.dtype),
+            input_spec("x", (batch, rows, 1)),
+            input_spec("y", (1, rows, columns)),
         )
         nodes = [
             Node("add", ("x", "y"), "n0"),
@@ -96,8 +111,8 @@ def generate(config: GenerationConfig) -> Workload:
     else:
         batch, rows, inner, columns = dim(), dim(), dim(), dim()
         inputs = (
-            InputSpec("x", (batch, rows, inner), config.dtype),
-            InputSpec("y", (1, inner, columns), config.dtype),
+            input_spec("x", (batch, rows, inner)),
+            input_spec("y", (1, inner, columns)),
         )
         nodes = [
             Node("matmul", ("x", "y"), "n0"),
