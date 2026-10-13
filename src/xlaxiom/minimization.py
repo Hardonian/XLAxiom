@@ -21,6 +21,7 @@ class MinimizationStats:
     duration_ms: float
     budget_exhausted: bool
     preserved_classification: str
+    preserved_signature: str
 
 
 @dataclass(frozen=True)
@@ -95,8 +96,8 @@ def _value_simplifications(workload: Workload) -> Iterable[Workload]:
 
 def minimize(
     workload: Workload,
-    predicate: Callable[[Workload], Classification],
-    expected: Classification,
+    predicate: Callable[[Workload], object],
+    expected: object,
     max_evaluations: int = 64,
 ) -> MinimizationResult:
     """Greedily accept only valid candidates that preserve the exact observation class."""
@@ -141,6 +142,7 @@ def minimize(
         accepted,
         (perf_counter() - started) * 1000,
         exhausted,
-        expected.value,
+        expected.value if isinstance(expected, Classification) else str(expected),
+        str(expected),
     )
     return MinimizationResult(current, stats)

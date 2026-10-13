@@ -23,6 +23,8 @@ uv run xlaxiom report --case results/reduced.json --output results/report
 
 On 2026-10-12, the repository's test environment ran JAX 0.11.2/jaxlib 0.11.2 on Windows CPU (`cpu:0`). A synthetic control starting at 5 operation nodes and 192 input elements was reduced to 1 node and 1 input element in 5 evaluated candidates, then reproduced by a new CLI process. The measured 0.125 output offset is an injected control, not a compiler finding. A portable reduced example is included at [`examples/synthetic-control-reduced.json`](examples/synthetic-control-reduced.json).
 
+XLAxiom 0.2 additionally completed a bounded 500-case CPU campaign (seeds 1000–1499) in 39.73 seconds: all 500 NumPy-vs-JIT comparisons and all 500 eager-vs-JIT comparisons passed under the recorded dtype-aware policy. The exact machine-readable record is [available here](docs/experiments/cpu-campaign-2026-10-12.json). It found no new candidate anomalies in that bounded corpus. The [historical replay](docs/research/jax-40634.md) did reproduce known JAX issue #40634 behavior on the locally installed 0.11.2 package; it is explicitly not represented as a new discovery.
+
 ## What it does
 
 ```text
@@ -45,6 +47,8 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `reproduce` | Reexecute and verify the saved predicate. |
 | `report` | Produce evidence JSON and readable Markdown. |
 | `benchmark` | Run a bounded warmup plus timing sample. |
+| `historical` | Replay trusted adapters for documented historical regressions. |
+| `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
 
 All commands expose `--help`. `reproduce` runs the workload again; it does not merely display saved output.
 

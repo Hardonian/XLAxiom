@@ -1,0 +1,45 @@
+{
+  "campaign_version": "1.0",
+  "candidate_anomalies": [],
+  "completed_cases": 500,
+  "configuration": {
+    "cases": 500,
+    "max_duration_s": 300.0,
+    "seed": 1000
+  },
+  "duration_s": 39.733507299999474,
+  "eager_vs_jit_counts": {
+    "compilation_failure": 0,
+    "dtype_mismatch": 0,
+    "environment_failure": 0,
+    "execution_failure": 0,
+    "inconclusive": 0,
+    "invalid_workload": 0,
+    "nondeterminism": 0,
+    "numerical_discrepancy": 0,
+    "pass": 500,
+    "performance_regression": 0,
+    "shape_mismatch": 0,
+    "timeout": 0,
+    "unsupported_backend": 0
+  },
+  "numpy_vs_jit_counts": {
+    "compilation_failure": 0,
+    "dtype_mismatch": 0,
+    "environment_failure": 0,
+    "execution_failure": 0,
+    "inconclusive": 0,
+    "invalid_workload": 0,
+    "nondeterminism": 0,
+    "numerical_discrepancy": 0,
+    "pass": 500,
+    "performance_regression": 0,
+    "shape_mismatch": 0,
+    "timeout": 0,
+    "unsupported_backend": 0
+  },
+  "platform": "Windows-11-10.0.29683-SP0",
+  "requested_cases": 500,
+  "stop_reason": "completed",
+  "warning": "Generated workloads are trusted bounded graphs; persisted untrusted cases use workers."
+}

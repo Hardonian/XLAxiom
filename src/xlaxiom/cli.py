@@ -8,9 +8,11 @@ from statistics import median
 from time import perf_counter
 from typing import Any
 
+from .campaign import CampaignConfig, run_cpu_campaign
 from .comparison import Classification
-from .execution import doctor
+from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
+from .historical import replay_jax_40634
 from .minimization import minimize
 from .pipeline import FaultInjection, run_backend, run_comparison
 from .reporting import write_report
@@ -92,10 +94,10 @@ def command_minimize(args: argparse.Namespace) -> int:
 
     outcome = minimize(
         artifact.workload,
-        lambda candidate: (
-            run_comparison(candidate, artifact.comparison_mode, artifact.fault).classification
-        ),
-        expected,
+        lambda candidate: run_comparison(
+            candidate, artifact.comparison_mode, artifact.fault
+        ).failure_signature(),
+        baseline.failure_signature(),
         args.max_evaluations,
     )
     minimized = CaseArtifact(
@@ -142,6 +144,9 @@ def command_report(args: argparse.Namespace) -> int:
 
 def command_benchmark(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
+    if args.backend == "jax-jit":
+        _emit(benchmark_jax(artifact.workload, args.measurements))
+        return 0
     warmup = run_backend(artifact.workload, args.backend)
     if warmup.status.value != "ok":
         _emit(warmup.summary())
@@ -165,6 +170,28 @@ def command_benchmark(args: argparse.Namespace) -> int:
         }
     )
     return 0
+
+
+def command_historical(_: argparse.Namespace) -> int:
+    observation = replay_jax_40634()
+    _emit(observation.to_dict())
+    return (
+        0
+        if observation.classification
+        in {"resolved_historical_regression", "known_historical_regression_reproduced"}
+        else 1
+    )
+
+
+def command_campaign(args: argparse.Namespace) -> int:
+    try:
+        record = run_cpu_campaign(CampaignConfig(args.cases, args.seed, args.max_duration_s))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
+    return 0 if not record["candidate_anomalies"] else 1
 
 
 def parser() -> argparse.ArgumentParser:
@@ -225,6 +252,18 @@ def parser() -> argparse.ArgumentParser:
     )
     benchmark_parser.add_argument("--measurements", type=int, default=5, choices=range(1, 51))
     benchmark_parser.set_defaults(func=command_benchmark)
+    historical_parser = commands.add_parser(
+        "historical", help="replay trusted adapters for documented historical regressions"
+    )
+    historical_parser.set_defaults(func=command_historical)
+    campaign_parser = commands.add_parser(
+        "campaign", help="run a bounded trusted CPU NumPy/JAX differential campaign"
+    )
+    campaign_parser.add_argument("--cases", type=int, default=20)
+    campaign_parser.add_argument("--seed", type=int, default=0)
+    campaign_parser.add_argument("--max-duration-s", type=float, default=180.0)
+    campaign_parser.add_argument("--output")
+    campaign_parser.set_defaults(func=command_campaign)
     return root
 
 

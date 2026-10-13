@@ -53,6 +53,22 @@ class ComparisonResult:
         result["classification"] = self.classification.value
         return result
 
+    def failure_signature(self) -> str:
+        """A stable predicate stronger than a broad classification alone."""
+        kinds = tuple(
+            (
+                index,
+                metric.finite_mismatches > 0,
+                metric.nonfinite_mismatches > 0,
+                metric.signed_zero_mismatches > 0,
+            )
+            for index, metric in enumerate(self.metrics)
+            if metric.finite_mismatches
+            or metric.nonfinite_mismatches
+            or metric.signed_zero_mismatches
+        )
+        return repr((self.classification.value, kinds))
+
 
 def _status_classification(result: ExecutionResult) -> Classification:
     return {
@@ -60,6 +76,7 @@ def _status_classification(result: ExecutionResult) -> Classification:
         ExecutionStatus.UNSUPPORTED_BACKEND: Classification.UNSUPPORTED_BACKEND,
         ExecutionStatus.COMPILATION_FAILURE: Classification.COMPILATION_FAILURE,
         ExecutionStatus.EXECUTION_FAILURE: Classification.EXECUTION_FAILURE,
+        ExecutionStatus.DEVICE_MISMATCH: Classification.ENVIRONMENT_FAILURE,
     }.get(result.status, Classification.INCONCLUSIVE)
 
 
