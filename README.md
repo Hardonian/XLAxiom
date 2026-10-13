@@ -1,12 +1,18 @@
-# XLAxiom
+# XLAxiom — evidence-first testing for JAX and OpenXLA
 
-Finding the smallest proof of a compiler failure.
+[![CI](https://github.com/Hardonian/XLAxiom/actions/workflows/ci.yml/badge.svg)](https://github.com/Hardonian/XLAxiom/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%E2%80%933.13-blue.svg)](https://www.python.org/)
 
-XLAxiom is an open-source laboratory for discovering, minimizing, and reproducing numerical and compiler discrepancies in JAX/OpenXLA workloads. It pairs deterministic declarative workload generation with NumPy/JAX comparison, failure-preserving reduction, and portable evidence reports.
+**Find, reduce, and reproduce numerical and compiler discrepancies in JAX/OpenXLA workloads.** XLAxiom is an open-source differential-testing laboratory that turns an observation into a small, portable, evidence-backed case.
+
+It combines deterministic declarative workload generation, NumPy/JAX and eager/JIT comparison, failure-preserving minimization, and checksummed reports—so a potential issue is easier to validate, share, and investigate.
 
 It is independently developed and is not affiliated with, sponsored by, or endorsed by Google.
 
-## Quick start
+## Start here
+
+Install the development environment, confirm your JAX setup, then create and minimize a safe synthetic control:
 
 ```console
 uv sync --extra dev
@@ -18,6 +24,33 @@ uv run xlaxiom report --case results/reduced.json --output results/report
 ```
 
 `--synthetic` injects a clearly labelled output offset after JAX execution. It proves the testing pipeline; it is never evidence of a JAX, XLA, or hardware defect. Omit it for genuine NumPy-versus-JAX or JAX-eager-versus-JIT observations.
+
+## Why XLAxiom?
+
+- **Evidence first:** records versions, devices, policies, outputs, and a reproducible predicate instead of treating a mismatch as a diagnosis.
+- **Smallest useful case:** reduces a reproducible observation while preserving the failure signature.
+- **Portable by design:** workloads are deterministic JSON data, with checksummed bundles and fresh-process reproduction.
+- **Conservative claims:** distinguishes synthetic controls, observations, historical behavior, and independently reproduced findings.
+
+## At a glance
+
+| Need | XLAxiom capability |
+| --- | --- |
+| Confirm your environment | `xlaxiom doctor` |
+| Generate a deterministic workload | `xlaxiom generate` |
+| Compare NumPy, JAX eager, and JIT | `xlaxiom compare` |
+| Shrink a repeatable mismatch | `xlaxiom minimize` |
+| Create a portable evidence record | `xlaxiom report` or `xlaxiom bundle create` |
+
+## Contents
+
+- [What it does](#what-it-does)
+- [Commands](#commands)
+- [Cross-version matrix](#cross-version-matrix)
+- [Backends and precision](#backends-and-precision)
+- [Limits and interpretation](#limits-and-interpretation)
+- [Development](#development)
+- [Roadmap](#roadmap)
 
 ## Verified local control
 

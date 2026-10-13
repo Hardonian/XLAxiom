@@ -5,21 +5,44 @@ build-backend = "hatchling.build"
 [project]
 name = "xlaxiom"
 version = "0.5.0"
-description = "Differential testing, failure minimization, and reproducible evidence for JAX/OpenXLA workloads."
+description = "Evidence-first differential testing and failure minimization for JAX and OpenXLA numerical workloads."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = { text = "Apache-2.0" }
 authors = [{ name = "XLAxiom contributors" }]
-keywords = ["jax", "openxla", "compiler", "differential-testing", "numerical-testing"]
+keywords = [
+  "jax",
+  "openxla",
+  "xla",
+  "compiler-testing",
+  "differential-testing",
+  "numerical-testing",
+  "property-based-testing",
+  "reproducibility",
+  "failure-minimization",
+]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
   "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Scientific/Engineering",
 ]
 dependencies = ["numpy>=2.0", "jax>=0.5"]
+
+[project.urls]
+Homepage = "https://github.com/Hardonian/XLAxiom"
+Documentation = "https://github.com/Hardonian/XLAxiom#readme"
+Repository = "https://github.com/Hardonian/XLAxiom"
+Issues = "https://github.com/Hardonian/XLAxiom/issues"
+Changelog = "https://github.com/Hardonian/XLAxiom/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "mypy>=1.13", "pytest>=8.3", "ruff>=0.8"]

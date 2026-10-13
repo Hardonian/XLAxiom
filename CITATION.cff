@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use XLAxiom in academic work, please cite it using this metadata."
+title: "XLAxiom"
+abstract: "Evidence-first differential testing, failure minimization, and reproducible reports for JAX and OpenXLA numerical workloads."
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/Hardonian/XLAxiom"
+url: "https://github.com/Hardonian/XLAxiom"
+version: 0.5.0
+authors:
+  - name: "XLAxiom contributors"
