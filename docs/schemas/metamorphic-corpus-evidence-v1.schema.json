@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLAxiom metamorphic corpus evidence v1",
+  "type": "object",
+  "required": [
+    "evidence_version",
+    "corpus_version",
+    "kind",
+    "seed",
+    "backend",
+    "execution",
+    "requested_properties",
+    "counts",
+    "properties"
+  ],
+  "properties": {
+    "evidence_version": {"const": "1.0"},
+    "corpus_version": {"const": "1.0"},
+    "kind": {"const": "metamorphic-corpus-evidence"},
+    "seed": {"type": "integer", "minimum": 0},
+    "backend": {
+      "enum": [
+        "numpy",
+        "jax-eager",
+        "jax-jit",
+        "jax-gpu-eager",
+        "jax-gpu-jit",
+        "jax-tpu-eager",
+        "jax-tpu-jit"
+      ]
+    },
+    "execution": {"type": "object"},
+    "requested_properties": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "counts": {"type": "object"},
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "property",
+          "seed",
+          "backend",
+          "left_workload_sha256",
+          "right_workload_sha256",
+          "comparison"
+        ],
+        "properties": {
+          "property": {"type": "object"},
+          "seed": {"type": "integer"},
+          "backend": {"type": "string"},
+          "left_workload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "right_workload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "comparison": {"type": "object"}
+        }
+      }
+    },
+    "warning": {"type": "string"}
+  },
+  "additionalProperties": false
+}

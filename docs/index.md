@@ -11,3 +11,4 @@
 - [Holistic delivery plan](roadmap.md)
 - [Research notes](research/)
 - [Experiment evidence](experiments/)
+- [2026-10-13 milestone completion audit](experiments/milestone-completion-2026-10-13.md)

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLAxiom metamorphic cross-backend comparison v1",
+  "type": "object",
+  "required": [
+    "comparison_version",
+    "corpus_version",
+    "seed",
+    "baseline",
+    "comparison",
+    "properties",
+    "summary",
+    "interpretation"
+  ],
+  "properties": {
+    "comparison_version": {"const": "metamorphic-cross-backend-v1"},
+    "corpus_version": {"const": "1.0"},
+    "seed": {"type": "integer", "minimum": 0},
+    "baseline": {"type": "object"},
+    "comparison": {"type": "object"},
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "identifier",
+          "left_workload_sha256",
+          "right_workload_sha256",
+          "baseline_classification",
+          "comparison_classification",
+          "classification_match"
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "property_count",
+        "classification_matches",
+        "classification_changes",
+        "changed_properties",
+        "equivalent"
+      ]
+    },
+    "interpretation": {"type": "string"}
+  },
+  "additionalProperties": false
+}

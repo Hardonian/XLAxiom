@@ -4,4 +4,7 @@
 
 The abstraction intentionally distinguishes an execution observation from a compiler root-cause assertion. Synthetic controls are carried in `fault` and `provenance`, preserving that distinction in the case and report.
 
-The backend boundary is deliberately narrow. A future CUDA/TPU implementation must verify a genuine initialized device and real numerical operation before returning support; it must otherwise return an unsupported-backend result.
+The backend boundary is deliberately narrow. CPU, CUDA, and TPU requests must verify a
+genuine initialized device and real numerical operation before returning support; they
+otherwise return an unsupported-backend result without CPU fallback. Physical TPU
+execution remains unverified even though the fail-closed backend path is implemented.

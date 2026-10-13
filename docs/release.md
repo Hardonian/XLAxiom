@@ -13,7 +13,8 @@ is represented as publisher-signed.
 
 ## Schema compatibility
 
-Case, relational-case, bundle, corpus, and report formats carry explicit versions.
+Case, relational-case, bundle, corpus, metamorphic evidence/comparison, environment,
+and report formats carry explicit versions.
 Readers reject unknown versions instead of treating a changed artifact as an older one.
 Compatible additions retain the current version; incompatible changes introduce a new
 schema and a tested one-way migration command before the writer default changes. The
