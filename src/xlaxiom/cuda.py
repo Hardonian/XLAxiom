@@ -70,7 +70,8 @@ def recommended_variant() -> dict[str, Any]:
     devices = enumerate_physical_gpus()
     if not devices:
         return {"variant": None, "reason": "no NVIDIA GPU is visible to the driver"}
-    first_cuda12_match: dict[str, Any] | None = None
+
+    cuda12_result: dict[str, Any] | None = None
     for device in devices:
         variant, reason = select_variant(device)
         if variant is CudaVariant.CUDA13:
@@ -79,14 +80,16 @@ def recommended_variant() -> dict[str, Any]:
                 "device": device.name,
                 "reason": reason,
             }
-        if variant is CudaVariant.CUDA12 and first_cuda12_match is None:
-            first_cuda12_match = {
+        if variant is CudaVariant.CUDA12 and cuda12_result is None:
+            cuda12_result = {
                 "variant": CudaVariant.CUDA12.value,
                 "device": device.name,
                 "reason": reason,
             }
-    if first_cuda12_match is not None:
-        return first_cuda12_match
+
+    if cuda12_result is not None:
+        return cuda12_result
+
     return {
         "variant": None,
         "reason": "no visible GPU meets the CUDA 12 minimum of SM 5.2",
