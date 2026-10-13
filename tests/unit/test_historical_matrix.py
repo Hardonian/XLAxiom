@@ -12,7 +12,7 @@ def test_run_hyperbolic_matrix_success(tmp_path) -> None:
     mock_completed_process = MagicMock(spec=subprocess.CompletedProcess)
     mock_completed_process.returncode = 0
     mock_completed_process.stderr = "some logs"
-    mock_completed_process.stdout = "unrelated log line\n{\"jax\": \"0.4.25\", \"status\": \"ok\"}"
+    mock_completed_process.stdout = 'unrelated log line\n{"jax": "0.4.25", "status": "ok"}'
 
     with patch("subprocess.run", return_value=mock_completed_process) as mock_run:
         report = run_hyperbolic_matrix(versions, output_path)
