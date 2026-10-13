@@ -70,6 +70,32 @@ def hyperbolic_gradient_study() -> dict[str, object]:
     }
 
 
+def expected_hyperbolic_status(jax_version: str) -> dict[tuple[str, float], str] | None:
+    """Released-version expectations from independently executed historical evidence.
+
+    Returning ``None`` intentionally fails the compatibility test for an uncharacterized
+    version instead of silently treating changed numerical behavior as a pass.
+    """
+    known = {
+        "0.10.2": {
+            ("arcsinh", 1e22): "analytic_discrepancy",
+            ("arcsinh", -1e22): "analytic_discrepancy",
+            ("acosh", 1e22): "analytic_discrepancy",
+        },
+        "0.11.1": {
+            ("arcsinh", 1e22): "analytic_discrepancy",
+            ("arcsinh", -1e22): "analytic_discrepancy",
+            ("acosh", 1e22): "analytic_discrepancy",
+        },
+        "0.11.2": {
+            ("arcsinh", 1e22): "analytic_discrepancy",
+            ("arcsinh", -1e22): "analytic_discrepancy",
+            ("acosh", 1e22): "pass",
+        },
+    }
+    return known.get(jax_version)
+
+
 def main(argv: list[str] | None = None) -> int:
     if argv == ["_study"]:
         print(json.dumps(hyperbolic_gradient_study(), sort_keys=True))
