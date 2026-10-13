@@ -1,0 +1,966 @@
+{
+  "anomalies": [
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.1283,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 2,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 37.02547900002173,
+          "device": "cpu:0",
+          "mean_ms": 0.018225999974674778,
+          "measurements": 5,
+          "median_ms": 0.014516999954139465,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006497963460030535
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-2"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.1095,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 1,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 24.663920000193684,
+          "device": "cpu:0",
+          "mean_ms": 0.015482599974347977,
+          "measurements": 5,
+          "median_ms": 0.012703000038527534,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005428852188692819
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-1"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.0845,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 14,
+              "shape": [
+                7,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 3,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 28.100312000105987,
+          "device": "cpu:0",
+          "mean_ms": 0.014534799947796273,
+          "measurements": 5,
+          "median_ms": 0.011160999974890728,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.00580952281499003
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-3"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.0885,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 42,
+              "shape": [
+                7,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 0,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 41.59081200009496,
+          "device": "cpu:0",
+          "mean_ms": 0.01453900008527853,
+          "measurements": 5,
+          "median_ms": 0.011822000033134827,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005135752372064316
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-0"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 2,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 1,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 3,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 0,
+      "variant": "cuda12"
+    }
+  ],
+  "budget": {
+    "cases": 4,
+    "measurements": 5
+  },
+  "campaign": "XLAxiom bounded EPYC GPU campaign",
+  "classifications": {
+    "gpu_eager_vs_jit": [
+      "unsupported_backend",
+      "unsupported_backend",
+      "unsupported_backend",
+      "unsupported_backend"
+    ],
+    "numpy_vs_gpu_jit": [
+      "unsupported_backend",
+      "unsupported_backend",
+      "unsupported_backend",
+      "unsupported_backend"
+    ]
+  },
+  "cpu_vs_gpu_cases": [
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.1283,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 2,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 37.02547900002173,
+          "device": "cpu:0",
+          "mean_ms": 0.018225999974674778,
+          "measurements": 5,
+          "median_ms": 0.014516999954139465,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006497963460030535
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-2"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.1095,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 1,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 24.663920000193684,
+          "device": "cpu:0",
+          "mean_ms": 0.015482599974347977,
+          "measurements": 5,
+          "median_ms": 0.012703000038527534,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005428852188692819
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-1"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.0845,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 14,
+              "shape": [
+                7,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 3,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 28.100312000105987,
+          "device": "cpu:0",
+          "mean_ms": 0.014534799947796273,
+          "measurements": 5,
+          "median_ms": 0.011160999974890728,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.00580952281499003
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-3"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "eager",
+          "outputs": [],
+          "status": "unsupported_backend"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "unsupported_backend",
+        "explanation": "jax-gpu/jit did not complete: unsupported_backend",
+        "left": {
+          "backend": "jax-gpu",
+          "device": null,
+          "duration_ms": 0.0,
+          "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed.",
+          "mode": "jit",
+          "outputs": [],
+          "status": "unsupported_backend"
+        },
+        "metrics": [],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.0885,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 42,
+              "shape": [
+                7,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 0,
+      "statuses": {
+        "gpu_eager": "unsupported_backend",
+        "gpu_eager_device": null,
+        "gpu_jit": "unsupported_backend",
+        "gpu_jit_device": null,
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 41.59081200009496,
+          "device": "cpu:0",
+          "mean_ms": 0.01453900008527853,
+          "measurements": 5,
+          "median_ms": 0.011822000033134827,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005135752372064316
+        },
+        "error": "no gpu device is available; observed ['cpu:0']. A CPU fallback was not performed."
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-0"
+    }
+  ],
+  "device": {
+    "compute_capability": "7.0",
+    "name": "Tesla V100-SXM2-16GB",
+    "ordinal": 0,
+    "smi_index": 0,
+    "uuid_redacted": "dev-7562ed358f6c"
+  },
+  "duration_s": 0.17314490600006138,
+  "gpu_eager_vs_jit_cases": [
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 2,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 1,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 3,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": null,
+        "right": null
+      },
+      "classification": "unsupported_backend",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": null,
+      "ordinal": 0,
+      "right_device": null,
+      "seed": 0,
+      "variant": "cuda12"
+    }
+  ],
+  "notes": [
+    "Compilation is timed separately from steady-state synchronized execution.",
+    "NumPy is not an independent oracle for every JAX semantic; a discrepancy is an observation, not a root-cause claim.",
+    "No CPU fallback was performed: every GPU case records its actual device."
+  ],
+  "pass_count": 0,
+  "variant": "cuda12"
+}
