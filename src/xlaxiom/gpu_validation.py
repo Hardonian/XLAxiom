@@ -16,7 +16,6 @@ import os
 import platform
 import subprocess
 import sys
-import traceback
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -419,8 +418,3 @@ def failure_summary(validation: DeviceValidation) -> str:
         tail = " ".join(diagnostics["stderr"].split())[:400]
         parts.append(f"  - stderr: {tail}")
     return "\n".join(parts)
-
-
-def last_error() -> str:
-    """Format the most recent traceback for structured failure diagnostics."""
-    return traceback.format_exc()
