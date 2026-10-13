@@ -86,6 +86,29 @@ Read the [artifact guide](docs/artifacts.md) for the recommended handoff package
 
 On 2026-10-12, the repository's test environment ran JAX 0.11.2/jaxlib 0.11.2 on Windows CPU (`cpu:0`). A synthetic control starting at 5 operation nodes and 192 input elements was reduced to 1 node and 1 input element in 5 evaluated candidates, then reproduced by a new CLI process. The measured 0.125 output offset is an injected control, not a compiler finding. A portable reduced example is included at [`examples/synthetic-control-reduced.json`](examples/synthetic-control-reduced.json).
 
+### 2026-10-13 EPYC CUDA execution round
+
+The host is an AMD EPYC 7452 (1 socket, 32 cores, 64 threads, 168 GiB, Ubuntu 26.04, kernel 7.0.0-38-generic) with three NVIDIA GPUs under driver 580.178.04 / CUDA 13.0. The primary environment is CPU-only; GPU work runs in the isolated `~/.cache/xlaxiom-gpu/` interpreters with `LD_LIBRARY_PATH` removed per process.
+
+| CUDA ordinal | nvidia-smi | GPU | SM | Variant | Validation | Campaign |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 0 | Tesla V100-SXM2-16GB | 7.0 | `jax[cuda12]` | PASS (4/4) | 8 cases, 16/16 pass |
+| 1 | 2 | NVIDIA GeForce RTX 3060 | 8.6 | `jax[cuda13]` | PASS (4/4) | not run — display adapter |
+| 2 | 1 | Tesla P40 | 6.1 | `jax[cuda12]` | PASS (4/4) | 8 cases, 16/16 pass |
+
+**Idleness override, recorded.** All three GPUs hold the host's own background workloads (ollama `llama-server`, ComfyUI, VoiceStudio, gnome-shell). The strict idleness gate therefore blocks them by default. Validation was re-run with `--allow-busy`, an explicit operator override that still requires at most 5% utilization and ample free VRAM. The override is justified here because every process on every GPU is the operator's own, utilization was 0-8%, and free VRAM was 7.3-18.6 GiB. The RTX 3060 was not campaigned on: it is the display adapter and its override would have been declined under the rule (8% utilization, four external processes).
+
+**Findings.**
+- Bounded GPU campaigns (8 cases, 5 measurements) on the V100 and P40: all 16 NumPy-vs-GPU-JIT and all 16 GPU-eager-vs-GPU-JIT comparisons passed, with placement verified as `cuda:0` on every case. No anomalies.
+- JAX #40634 historical study on the V100: `arcsinh(±1e22)` gradients are 0.0 against an analytic reference of 1e-22 (eager and JIT), reproducing known upstream behavior; `acosh(1e22)` passes. Explicitly not a new finding.
+- Cross-device consistency (4 checksummed workloads, V100 vs P40): all 4 values identical, placement verified on both devices.
+- Metamorphic property corpus on GPU: all 4 properties hold on both GPUs, matching the CPU x64 control within the recorded 2e-06 tolerance.
+- CUDA 13 remains unsupported for SM 6.1 and 7.0: the CUDA 13 wheel's `ptxas` has no kernels for those architectures, so `jax[cuda13]` fails with "ptxas too old". This is recorded honestly, not worked around.
+
+**Known issue.** `xlaxiom gpu campaign` must be invoked from inside the isolated interpreter (`<cuda12-probe>/bin/python -m xlaxiom gpu campaign ...`), not via `uv run xlaxiom gpu campaign` with `XLAXIOM_GPU_REEXEC=1` pre-set. Pre-setting the re-exec flag makes `_ensure_gpu_runtime` return early without re-executing into the CUDA environment, so every case reports `unsupported_backend` while the device itself is healthy. Evidence: [`epyc-gpu-campaign-v100-2026-10-13.json`](docs/experiments/epyc-gpu-campaign-v100-2026-10-13.json).
+
+Full machine-readable evidence: [`docs/experiments/`](docs/experiments/).
+
 XLAxiom 0.2 additionally completed a bounded 500-case CPU campaign (seeds 1000–1499) in 39.73 seconds: all 500 NumPy-vs-JIT comparisons and all 500 eager-vs-JIT comparisons passed under the recorded dtype-aware policy. The exact machine-readable record is [available here](docs/experiments/cpu-campaign-2026-10-12.json). It found no new candidate anomalies in that bounded corpus. The [historical replay](docs/research/jax-40634.md) did reproduce known JAX issue #40634 behavior on the locally installed 0.11.2 package; it is explicitly not represented as a new discovery.
 
 Version 0.4 provides a real per-operation historical transition: isolated JAX 0.11.1→0.11.2 testing confirms that `acosh(float32(1e22))` gradient changed from an analytic discrepancy to an oracle pass, while `arcsinh` remains discrepant in both released wheels. See [Historical Regression Study 001](docs/research/historical-regression-study-001.md).
@@ -198,3 +221,19 @@ The corpus deliberately contains no newly discovered compiler finding unless it 
 non-synthetic minimized artifact, fresh-process reproduction, and independently
 configured environment evidence. XLAxiom reports unavailable TPU/CUDA hardware as
 unsupported; it never converts that absence into a CPU or accelerator success claim.
+
+## Roadmap
+
+Completed:
+
+1. Isolated subprocess workers with per-case timeout enforcement — `xlaxiom campaign --isolate --case-timeout-s N`. A hung kernel or out-of-memory failure now contains one case instead of the whole campaign, and contained failures are recorded rather than silently dropped.
+2. CUDA adapter validation on compatible hardware with captured device evidence — `xlaxiom gpu doctor`, `gpu validate`, `gpu campaign`, `gpu historical`. Validated on an AMD EPYC host with a V100 (SM 7.0), an RTX 3060 (SM 8.6), and a P40 (SM 6.1). See [the multi-GPU campaign evidence](docs/experiments/epyc-multi-gpu-campaign.md). TPU remains unvalidated because no TPU hardware is available here; it is reported unsupported rather than assumed.
+3. A curated corpus of independently reproduced findings and metamorphic properties — `xlaxiom corpus build`, `corpus validate`, `corpus metamorphic`. A finding is admitted only after it reproduces in at least two fresh processes, and the admission bar rejects an entry whose reproduction evidence is missing or whose checksum no longer matches.
+4. Metamorphic properties on CUDA. The property suite now runs on explicitly selected CUDA GPUs. On 2026-10-13 all four properties held identically on a Tesla V100 (SM 7.0, `jax[cuda12]`) and a Tesla P40 (SM 6.1, `jax[cuda12]`), and matched a CPU x64 control within the recorded 2e-06 tolerance. Evidence: [`epyc-metamorphic-crossbackend-2026-10-13.json`](docs/experiments/epyc-metamorphic-crossbackend-2026-10-13.json). The RTX 3060 (SM 8.6, `jax[cuda13]`) is excluded from the comparison because it is the host display adapter with an external workload and a materially different configuration; comparing it would be inconclusive by design.
+
+Next:
+
+1. **Minimize admitted corpus findings automatically.** `corpus build` admits a reproduced finding with its reduced workload, but does not yet run the failure-preserving minimizer over the corpus end to end. Wiring `minimize` into the corpus pipeline would shrink admitted cases to their smallest reproducing form.
+2. **Cross-backend corpus comparison.** `gradient-compare` already compares two campaigns. Extending the same treatment to the corpus would let a CPU baseline and a CUDA run be diffed entry by entry, separating shared candidates from accelerator-specific ones automatically.
+3. **More metamorphic relations.** The suite holds four properties. Precision-sensitive relations, such as a reduction commuting with a dtype change, or `sin`/`cos` identities holding under argument reduction, would widen coverage.
+4. **Longer bounded corpus campaigns.** A wider seed sweep would raise the chance of admitting a genuinely new finding rather than confirming that known behavior still reproduces.

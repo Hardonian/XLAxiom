@@ -1,0 +1,42 @@
+{
+  "devices": [
+    "cuda:0"
+  ],
+  "interpretation": "Any reproduced discrepancy here is documented upstream behavior from JAX issue #40634. It is explicitly not reported as a new XLAxiom finding.",
+  "observations": [
+    {
+      "analytic_reference": 1e-22,
+      "classification": "analytic_discrepancy",
+      "device": "cuda:0",
+      "eager_gradient": 0.0,
+      "input": 1e+22,
+      "jit_gradient": 0.0,
+      "operation": "arcsinh",
+      "rtol": 2e-05
+    },
+    {
+      "analytic_reference": 1e-22,
+      "classification": "analytic_discrepancy",
+      "device": "cuda:0",
+      "eager_gradient": 0.0,
+      "input": -1e+22,
+      "jit_gradient": 0.0,
+      "operation": "arcsinh",
+      "rtol": 2e-05
+    },
+    {
+      "analytic_reference": 1e-22,
+      "classification": "pass",
+      "device": "cuda:0",
+      "eager_gradient": 9.999999682655225e-23,
+      "input": 1e+22,
+      "jit_gradient": 9.999999682655225e-23,
+      "operation": "acosh",
+      "rtol": 2e-05
+    }
+  ],
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+  "source": "https://github.com/jax-ml/jax/issues/40634",
+  "study": "JAX #40634 large-float32 gradient replay on GPU",
+  "x64_enabled": false
+}
