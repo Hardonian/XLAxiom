@@ -1,4 +1,4 @@
-# XLAxiom 0.5.2 package hardening
+# XLAxiom 0.5.3 package hardening
 
 ## Scope
 

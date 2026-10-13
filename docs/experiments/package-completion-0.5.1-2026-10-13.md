@@ -26,6 +26,10 @@ The first `v0.5.1` tag run exposed wall-clock gzip header variance on the Linux 
 despite repeat builds matching locally. Version 0.5.2 corrects the release workflow by
 setting `SOURCE_DATE_EPOCH` from the tagged commit. Two independent EPYC Linux builds
 then produced identical wheel and sdist bytes before the corrective tag was created.
+The `v0.5.2` run then showed that an in-checkout repeat output directory itself alters
+sdist selection on Linux. Version 0.5.3 moves that output to `RUNNER_TEMP`, matching the
+already-successful independent EPYC procedure and keeping both build destinations
+outside one another's source context.
 
 ## Publication boundary
 

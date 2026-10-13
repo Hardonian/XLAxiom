@@ -20,7 +20,7 @@ install it into a fresh environment:
 
 ```console
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python xlaxiom-0.5.2-py3-none-any.whl
+uv pip install --python .venv/bin/python xlaxiom-0.5.3-py3-none-any.whl
 .venv/bin/xlaxiom --version
 ```
 

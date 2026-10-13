@@ -4,6 +4,11 @@
 
 No changes yet.
 
+## 0.5.3 - 2026-10-13
+
+- Moved the repeat distribution build outside the source checkout so the verification
+  output directory cannot affect source-distribution file selection.
+
 ## 0.5.2 - 2026-10-13
 
 - Normalized distribution timestamps to the tagged commit time so repeated Linux

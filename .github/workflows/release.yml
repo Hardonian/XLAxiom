@@ -30,9 +30,10 @@ jobs:
       - name: Verify reproducible distributions
         shell: bash
         run: |
-          uv build --out-dir dist-repeat
+          repeat_dir="${RUNNER_TEMP}/xlaxiom-dist-repeat"
+          uv build --out-dir "${repeat_dir}"
           for artifact in dist/*; do
-            cmp "${artifact}" "dist-repeat/$(basename "${artifact}")"
+            cmp "${artifact}" "${repeat_dir}/$(basename "${artifact}")"
           done
       - run: uvx twine check dist/*
       - name: Verify tag matches package version
