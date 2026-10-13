@@ -32,6 +32,20 @@ uv run xlaxiom report --case results/reduced.json --output results/report
 - **Portable by design:** workloads are deterministic JSON data, with checksummed bundles and fresh-process reproduction.
 - **Conservative claims:** distinguishes synthetic controls, observations, historical behavior, and independently reproduced findings.
 
+## Built for compiler and platform teams
+
+XLAxiom is useful when a numerical result changes across JAX modes, XLA versions, machines, or accelerators and the team needs an actionable handoff—not a screenshot or an unbounded fuzzer run. It provides a disciplined path from a suspicious result to an engineering-ready artifact:
+
+```text
+observe → classify → minimize → reproduce in a fresh process → bundle evidence → compare environments
+```
+
+Each handoff can include the minimized declarative case, numerical policy, environment and device details, execution outputs, and checksums. This makes results easier to review in CI, share across teams, attach to an upstream issue, and retest after a compiler or runtime update.
+
+### Responsible escalation
+
+Before filing an upstream JAX/OpenXLA issue, use a real (non-synthetic) case and verify it in a fresh process, record versions and device settings, minimize the predicate, and attach the generated report or validated bundle. A discrepancy is evidence to investigate, never an automatic root-cause or correctness claim.
+
 ## At a glance
 
 | Need | XLAxiom capability |

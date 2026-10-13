@@ -1,0 +1,49 @@
+name: Reproducible numerical or compiler observation
+description: Report a minimized, evidence-backed XLAxiom observation.
+title: "observation: "
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not report a synthetic control as a JAX, XLA, or hardware issue. For sensitive reports, follow SECURITY.md instead.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Observed behavior
+      description: State what differed, between which execution modes or environments, and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Fresh-process reproduction
+      description: Include the exact command and the result of `xlaxiom reproduce`.
+      placeholder: "uv run xlaxiom reproduce --case path/to/case.json"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include XLAxiom, JAX/jaxlib, Python, OS, backend/device, and relevant XLA/JAX settings. Attach `xlaxiom doctor` output when appropriate.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence artifact
+      description: Link or attach the minimized JSON case, generated report, or validated bundle. Remove private machine details first.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verification checklist
+      options:
+        - label: This is not a synthetic control.
+          required: true
+        - label: I reproduced the observation in a fresh process.
+          required: true
+        - label: I minimized the case or explained why minimization is not yet possible.
+          required: true
