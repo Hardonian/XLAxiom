@@ -1,0 +1,18 @@
+## ruff check
+All checks passed!
+
+## ruff format --check
+50 files already formatted
+
+## mypy src
+Success: no issues found in 24 source files
+
+## pytest -q
+=========================== short test summary info ============================
+SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
+39 passed, 1 skipped in 5.22s
+
+## uv build
+Building wheel from source distribution...
+Successfully built dist/xlaxiom-0.5.0.tar.gz
+Successfully built dist/xlaxiom-0.5.0-py3-none-any.whl

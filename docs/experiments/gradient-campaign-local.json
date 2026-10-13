@@ -1,0 +1,129 @@
+{
+  "campaign_version": "gradient-v1",
+  "candidate_anomalies": [
+    {
+      "case": {
+        "dtype": "float32",
+        "identifier": "gradient-tanh-12",
+        "operation": "tanh",
+        "seed": 12,
+        "value": 10.0
+      },
+      "classification": "gradient_discrepancy",
+      "eager": 0.0,
+      "jit": 0.0,
+      "oracle": "analytic-v1",
+      "reference": 8.244614455767398e-09,
+      "reference_input": 10.0,
+      "rtol": 2e-05
+    },
+    {
+      "case": {
+        "dtype": "float32",
+        "identifier": "gradient-tanh-16",
+        "operation": "tanh",
+        "seed": 16,
+        "value": 10.0
+      },
+      "classification": "gradient_discrepancy",
+      "eager": 0.0,
+      "jit": 0.0,
+      "oracle": "analytic-v1",
+      "reference": 8.244614455767398e-09,
+      "reference_input": 10.0,
+      "rtol": 2e-05
+    },
+    {
+      "case": {
+        "dtype": "float32",
+        "identifier": "gradient-tanh-32",
+        "operation": "tanh",
+        "seed": 32,
+        "value": 10.0
+      },
+      "classification": "gradient_discrepancy",
+      "eager": 0.0,
+      "jit": 0.0,
+      "oracle": "analytic-v1",
+      "reference": 8.244614455767398e-09,
+      "reference_input": 10.0,
+      "rtol": 2e-05
+    },
+    {
+      "case": {
+        "dtype": "float32",
+        "identifier": "gradient-tanh-36",
+        "operation": "tanh",
+        "seed": 36,
+        "value": 10.0
+      },
+      "classification": "gradient_discrepancy",
+      "eager": 0.0,
+      "jit": 0.0,
+      "oracle": "analytic-v1",
+      "reference": 8.244614455767398e-09,
+      "reference_input": 10.0,
+      "rtol": 2e-05
+    }
+  ],
+  "configuration": {
+    "cases": 40,
+    "oracle": "analytic-v1",
+    "seed": 0
+  },
+  "counts": {
+    "candidate_discrepancy": 4,
+    "known_historical_discrepancy": 2,
+    "pass": 34
+  },
+  "environment": {
+    "cpu_probe": "ok",
+    "devices": [
+      "cpu:0"
+    ],
+    "jax": "0.11.2",
+    "jaxlib": "0.11.2",
+    "platform": "Windows-11-10.0.29683-SP0",
+    "python": "3.12.10"
+  },
+  "known_historical_observations": [
+    {
+      "case": {
+        "dtype": "float32",
+        "identifier": "gradient-arcsinh-18",
+        "operation": "arcsinh",
+        "seed": 18,
+        "value": 1e+22
+      },
+      "classification": "gradient_discrepancy",
+      "eager": 0.0,
+      "jit": 0.0,
+      "oracle": "analytic-v1",
+      "reference": 1.0000000221803697e-22,
+      "reference_input": 9.999999778196308e+21,
+      "rtol": 2e-05
+    },
+    {
+      "case": {
+        "dtype": "float32",
+        "identifier": "gradient-arcsinh-38",
+        "operation": "arcsinh",
+        "seed": 38,
+        "value": 1e+22
+      },
+      "classification": "gradient_discrepancy",
+      "eager": 0.0,
+      "jit": 0.0,
+      "oracle": "analytic-v1",
+      "reference": 1.0000000221803697e-22,
+      "reference_input": 9.999999778196308e+21,
+      "rtol": 2e-05
+    }
+  ],
+  "operation_coverage": {
+    "acosh": 10,
+    "arcsinh": 10,
+    "exp": 10,
+    "tanh": 10
+  }
+}

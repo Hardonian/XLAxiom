@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 from statistics import median
 from time import perf_counter
 from typing import Any
@@ -11,10 +15,22 @@ from typing import Any
 from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CampaignConfig, run_cpu_campaign
 from .comparison import Classification
-from .cuda import cuda_capability
+from .cuda import cuda_capability, driver_capability, recommended_variant
 from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
-from .gradients import generate_gradient_case, run_gradient_case
+from .gpu_campaign import (
+    CampaignBudget,
+    replay_jax_40634_on_gpu,
+    run_gpu_campaign,
+)
+from .gpu_validation import VARIANT_PYTHON, DeviceState, validate_all
+from .gradient_artifacts import (
+    GradientArtifactError,
+    compare_gradient_campaigns,
+    load_gradient_campaign,
+)
+from .gradients import generate_gradient_case, run_gradient_campaign, run_gradient_case
+from .hardware import enumerate_physical_gpus, select_variant
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .matrix import run_matrix
@@ -207,6 +223,30 @@ def command_gradient(args: argparse.Namespace) -> int:
     return 0 if result["classification"] == "pass" else 1
 
 
+def command_gradient_campaign(args: argparse.Namespace) -> int:
+    try:
+        result = run_gradient_campaign(args.cases, args.seed)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0 if not result["candidate_anomalies"] else 1
+
+
+def command_gradient_compare(args: argparse.Namespace) -> int:
+    try:
+        result = compare_gradient_campaigns(
+            load_gradient_campaign(args.baseline), load_gradient_campaign(args.comparison)
+        )
+    except GradientArtifactError as exc:
+        raise SystemExit(f"invalid gradient campaign artifact: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0
+
+
 def command_campaign(args: argparse.Namespace) -> int:
     try:
         record = run_cpu_campaign(CampaignConfig(args.cases, args.seed, args.max_duration_s))
@@ -226,6 +266,218 @@ def command_matrix_run(args: argparse.Namespace) -> int:
 def command_matrix_doctor(_: argparse.Namespace) -> int:
     _emit({"cuda": cuda_capability(), "format": "JSON matrix config only in v0.3"})
     return 0
+
+
+def command_gpu_doctor(_: argparse.Namespace) -> int:
+    """Report real hardware capability without executing anything on a GPU."""
+    _emit(
+        {
+            "driver": driver_capability(),
+            "runtime": cuda_capability(),
+            "recommended_variant": recommended_variant(),
+        }
+    )
+    return 0
+
+
+def command_gpu_validate(args: argparse.Namespace) -> int:
+    """Validate every visible GPU: capability gate, idleness gate, then bounded probe."""
+    devices = enumerate_physical_gpus()
+    report = validate_all(devices, allow_busy=args.allow_busy)
+    if args.output:
+        save_json(args.output, report)
+    _emit(report)
+    if args.report:
+        path = write_gpu_report(args.report, report)
+        _emit({"markdown": str(path)})
+    return 0 if report["summary"]["unsupported"] == 0 else 2
+
+
+def _gpu_interpreter() -> tuple[str, int] | None:
+    """Find the isolated interpreter that owns a CUDA-enabled jaxlib for a visible GPU.
+
+    Returns the interpreter path and the CUDA ordinal to expose to it, or ``None`` when
+    no usable isolated environment exists.
+    """
+    try:
+        devices = enumerate_physical_gpus()
+    except Exception:
+        return None
+    if not devices:
+        return None
+    for device in devices:
+        variant, _ = select_variant(device)
+        if variant is None:
+            continue
+        interpreter = VARIANT_PYTHON[variant]
+        if not os.path.isfile(interpreter):
+            continue
+        if _interpreter_has_gpu(interpreter):
+            return interpreter, device.ordinal
+    return None
+
+
+def _interpreter_has_gpu(interpreter: str) -> bool:
+    """True when that interpreter can really initialize a JAX GPU device."""
+    environment = os.environ.copy()
+    environment.pop("LD_LIBRARY_PATH", None)
+    try:
+        completed = subprocess.run(
+            [
+                interpreter,
+                "-c",
+                "import sys,jax;sys.exit(0 if jax.devices('gpu') else 1)",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env=environment,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return completed.returncode == 0
+
+
+def _ensure_gpu_runtime() -> None:
+    """Re-execute a GPU command inside the isolated interpreter owning the CUDA jaxlib.
+
+    The repository's primary environment is deliberately CPU-only, so a GPU campaign or
+    historical study would otherwise honestly report ``unsupported_backend``. When an
+    isolated CUDA environment exists, the command re-executes itself there with the
+    shadowing host library path removed for that process only. The host driver, system
+    CUDA, and every other service are never touched.
+    """
+    if os.environ.get("XLAXIOM_GPU_REEXEC") == "1":
+        return
+    try:
+        import jax
+
+        if jax.devices("gpu"):
+            return
+    except Exception:
+        pass
+    target = _gpu_interpreter()
+    if target is None:
+        return
+    interpreter, ordinal = target
+    environment = os.environ.copy()
+    environment.pop("LD_LIBRARY_PATH", None)
+    environment["XLAXIOM_GPU_REEXEC"] = "1"
+    environment["CUDA_VISIBLE_DEVICES"] = str(ordinal)
+    result = subprocess.run(
+        [interpreter, "-m", "xlaxiom.cli", *sys.argv[1:]],
+        env=environment,
+        check=False,
+    )
+    raise SystemExit(result.returncode)
+
+
+def command_gpu_campaign(args: argparse.Namespace) -> int:
+    """Run the bounded real-GPU campaign only for devices that passed every probe."""
+    _ensure_gpu_runtime()
+    devices = enumerate_physical_gpus()
+    report = validate_all(devices, allow_busy=args.allow_busy)
+    passed = [
+        device
+        for device, result in zip(devices, report["results"], strict=True)
+        if result["state"] == DeviceState.PASS.value
+    ]
+    if not passed:
+        _emit(
+            {
+                "campaign": "skipped",
+                "reason": "no GPU passed every bounded probe; no campaign was run",
+                "validation_summary": report["summary"],
+            }
+        )
+        return 2
+    device = passed[args.device] if args.device is not None else passed[0]
+    variant = report["results"][devices.index(device)]["variant"]
+    campaign = run_gpu_campaign(
+        device, variant or "cuda12", CampaignBudget(args.cases, args.seed, args.measurements)
+    )
+    if args.output:
+        save_json(args.output, campaign)
+    _emit(campaign)
+    return 0
+
+
+def command_gpu_historical(args: argparse.Namespace) -> int:
+    """Replay the documented JAX #40634 large-float32 gradient study on the GPU."""
+    _ensure_gpu_runtime()
+    report = validate_all(enumerate_physical_gpus(), allow_busy=args.allow_busy)
+    if report["summary"]["pass"] == 0:
+        _emit(
+            {
+                "study": "skipped",
+                "reason": "no GPU passed every bounded probe; the study was not run",
+                "validation_summary": report["summary"],
+            }
+        )
+        return 2
+    study = replay_jax_40634_on_gpu()
+    if args.output:
+        save_json(args.output, study)
+    _emit(study)
+    return 0
+
+
+def write_gpu_report(path: str, report: dict[str, Any]) -> Path:
+    """Write the portable Markdown hardware validation report."""
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# XLAxiom CUDA hardware validation report",
+        "",
+        f"- Platform: `{report['host']['platform']}`",
+        f"- Python: `{report['host']['python']}`",
+        f"- Driver: `{report['environment'].get('nvidia_driver')}`",
+        f"- CUDA: `{report['environment'].get('cuda_version')}`",
+        "",
+        "## Summary",
+        "",
+        f"- PASS: {report['summary']['pass']}",
+        f"- UNSUPPORTED: {report['summary']['unsupported']}",
+        f"- BLOCKED: {report['summary']['blocked']}",
+        f"- INCONCLUSIVE: {report['summary']['inconclusive']}",
+        "",
+        "## Devices",
+        "",
+        "| CUDA ordinal | nvidia-smi index | Device | SM | Variant | State | Reason |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for result in report["results"]:
+        device = result["device"]
+        lines.append(
+            f"| {device['ordinal']} | {device['smi_index']} | {device['name']} | "
+            f"{device['compute_capability']} | {result['variant']} | {result['state']} | "
+            f"{result['reason']} |"
+        )
+    lines.extend(["", "## Reproduction (Linux)", "", "```console", "uv sync --extra dev"])
+    for result in report["results"]:
+        if result["state"] != DeviceState.PASS.value:
+            continue
+        environment = result.get("environment", {})
+        lines.append(
+            f"env -u LD_LIBRARY_PATH "
+            f"CUDA_VISIBLE_DEVICES={environment.get('ordinal')} "
+            f"uv run xlaxiom gpu validate"
+        )
+    lines.extend(
+        [
+            "```",
+            "",
+            "## Notes",
+            "",
+            *[f"- {note}" for note in report["notes"]],
+            "",
+            "No secrets, absolute personal paths, SSH keys, or raw GPU UUIDs are recorded.",
+            "",
+        ]
+    )
+    destination.write_text("\n".join(lines), encoding="utf-8")
+    return destination
 
 
 def command_bundle_create(args: argparse.Namespace) -> int:
@@ -321,6 +573,20 @@ def parser() -> argparse.ArgumentParser:
     )
     gradient_parser.add_argument("--seed", type=int, default=0)
     gradient_parser.set_defaults(func=command_gradient)
+    gradient_campaign = commands.add_parser(
+        "gradient-campaign", help="run bounded analytic-gradient research cases"
+    )
+    gradient_campaign.add_argument("--cases", type=int, default=20)
+    gradient_campaign.add_argument("--seed", type=int, default=0)
+    gradient_campaign.add_argument("--output")
+    gradient_campaign.set_defaults(func=command_gradient_campaign)
+    gradient_compare = commands.add_parser(
+        "gradient-compare", help="compare two gradient-campaign evidence artifacts"
+    )
+    gradient_compare.add_argument("--baseline", required=True)
+    gradient_compare.add_argument("--comparison", required=True)
+    gradient_compare.add_argument("--output")
+    gradient_compare.set_defaults(func=command_gradient_compare)
     campaign_parser = commands.add_parser(
         "campaign", help="run a bounded trusted CPU NumPy/JAX differential campaign"
     )
@@ -351,6 +617,46 @@ def parser() -> argparse.ArgumentParser:
     bundle_run.add_argument("--bundle", required=True)
     bundle_run.add_argument("--output", required=True)
     bundle_run.set_defaults(func=command_bundle_run)
+    gpu_parser = commands.add_parser(
+        "gpu", help="real CUDA hardware validation and bounded GPU campaigns"
+    )
+    gpu_commands = gpu_parser.add_subparsers(dest="gpu_command", required=True)
+    gpu_doctor_parser = gpu_commands.add_parser(
+        "doctor", help="report driver and runtime CUDA capability"
+    )
+    gpu_doctor_parser.set_defaults(func=command_gpu_doctor)
+    gpu_validate_parser = gpu_commands.add_parser(
+        "validate", help="run bounded probes on every visible GPU"
+    )
+    gpu_validate_parser.add_argument("--output", help="JSON evidence path")
+    gpu_validate_parser.add_argument("--report", help="Markdown report path")
+    gpu_validate_parser.add_argument(
+        "--allow-busy",
+        action="store_true",
+        help=(
+            "explicit operator override: probe a device that holds an external "
+            "workload, only when ample free VRAM and idle utilization are present"
+        ),
+    )
+    gpu_validate_parser.set_defaults(func=command_gpu_validate)
+    gpu_campaign_parser = gpu_commands.add_parser(
+        "campaign", help="run a small bounded CPU-versus-GPU campaign"
+    )
+    gpu_campaign_parser.add_argument("--cases", type=int, default=4)
+    gpu_campaign_parser.add_argument("--seed", type=int, default=0)
+    gpu_campaign_parser.add_argument("--measurements", type=int, default=5)
+    gpu_campaign_parser.add_argument(
+        "--device", type=int, default=None, help="index into the devices that passed"
+    )
+    gpu_campaign_parser.add_argument("--output", help="JSON evidence path")
+    gpu_campaign_parser.add_argument("--allow-busy", action="store_true")
+    gpu_campaign_parser.set_defaults(func=command_gpu_campaign)
+    gpu_historical_parser = gpu_commands.add_parser(
+        "historical", help="replay JAX #40634 large-float32 gradients on the GPU"
+    )
+    gpu_historical_parser.add_argument("--output", help="JSON evidence path")
+    gpu_historical_parser.add_argument("--allow-busy", action="store_true")
+    gpu_historical_parser.set_defaults(func=command_gpu_historical)
     return root
 
 
