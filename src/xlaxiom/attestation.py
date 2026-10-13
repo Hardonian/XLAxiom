@@ -17,7 +17,9 @@ ATTESTATION_VERSION = "1.0"
 
 
 def _canonical(payload: dict[str, Any]) -> bytes:
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode(
+        "utf-8"
+    )
 
 
 def attestation_payload(subject: str | Path) -> dict[str, Any]:
@@ -49,7 +51,8 @@ def sign_attestation(subject: str | Path, private_key: str | Path) -> dict[str, 
     except OSError as exc:
         raise ArtifactError("OpenSSL is required for signing and was not found") from exc
     if completed.returncode != 0 or not completed.stdout:
-        raise ArtifactError(f"OpenSSL signing failed: {completed.stderr.decode('utf-8', 'replace')[-500:]}")
+        detail = completed.stderr.decode("utf-8", "replace")[-500:]
+        raise ArtifactError(f"OpenSSL signing failed: {detail}")
     return {**payload, "signature_base64": base64.b64encode(completed.stdout).decode("ascii")}
 
 
@@ -57,7 +60,9 @@ def verify_attestation(attestation: dict[str, Any], public_key: str | Path) -> b
     """Verify a detached signature and reject missing/future schema fields."""
     signature_text = attestation.get("signature_base64")
     payload = {key: value for key, value in attestation.items() if key != "signature_base64"}
-    if payload.get("attestation_version") != ATTESTATION_VERSION or not isinstance(signature_text, str):
+    if payload.get("attestation_version") != ATTESTATION_VERSION or not isinstance(
+        signature_text, str
+    ):
         raise ArtifactError("malformed attestation")
     try:
         signature = base64.b64decode(signature_text, validate=True)

@@ -6,9 +6,10 @@ A release requires clean formatting, linting, typing, tests, an sdist/wheel buil
 the CPU capability/property checks in CI. Any stated CUDA or TPU support additionally
 requires target-hardware evidence; a successful CPU run is never substitute evidence.
 
-Release publishing, signing, and registry attestation require maintainer credentials.
-Until those are supplied, artifacts are integrity-checked with SHA-256 but are not
-represented as publisher-signed releases.
+Release publishing requires maintainer credentials. The repository can produce and
+verify an OpenSSL detached evidence signature with `xlaxiom attest sign` and
+`xlaxiom attest verify`; private-key handling remains external and no unsigned artifact
+is represented as publisher-signed.
 
 ## Schema compatibility
 

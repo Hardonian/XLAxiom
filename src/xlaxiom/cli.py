@@ -13,18 +13,23 @@ from statistics import median
 from time import perf_counter
 from typing import Any
 
-from .bundle import create_bundle, run_bundle, validate_bundle
 from .attestation import (
     load_attestation,
     save_attestation,
     sign_attestation,
     verify_subject_attestation,
 )
+from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .comparison import Classification
 from .cuda import cuda_capability, driver_capability, recommended_variant
+from .environment import (
+    capture_environment,
+    compare_environments,
+    load_environment,
+    save_environment,
+)
 from .execution import benchmark_jax, doctor
-from .environment import capture_environment, compare_environments, load_environment, save_environment
 from .generation import GenerationConfig, generate, synthetic_control
 from .gpu_campaign import (
     CampaignBudget,
@@ -62,7 +67,6 @@ from .outcomes import compare_outcomes
 from .performance import PerformanceArtifactError, compare_benchmarks, compare_compilation_cache
 from .pipeline import FaultInjection, run_backend, run_comparison
 from .readiness import assess_upstream_readiness
-from .runtime import RUNTIME_PROFILES, runtime_profile
 from .relational import (
     minimize_relational,
     reproduce_relational_isolated,
@@ -70,6 +74,7 @@ from .relational import (
     write_relational_report,
 )
 from .reporting import write_report
+from .runtime import RUNTIME_PROFILES, runtime_profile
 from .stability import check_stability
 from .storage import (
     ArtifactError,
@@ -494,7 +499,9 @@ def command_environment_capture(args: argparse.Namespace) -> int:
 
 def command_environment_compare(args: argparse.Namespace) -> int:
     try:
-        result = compare_environments(load_environment(args.primary), load_environment(args.secondary))
+        result = compare_environments(
+            load_environment(args.primary), load_environment(args.secondary)
+        )
     except ArtifactError as exc:
         raise SystemExit(f"invalid environment evidence: {exc}") from exc
     if args.output:
@@ -514,7 +521,9 @@ def command_runtime_list(_: argparse.Namespace) -> int:
                 }
                 for profile in RUNTIME_PROFILES.values()
             ],
-            "note": "Profiles are applied only to a fresh child process and never modify this shell.",
+            "note": (
+                "Profiles are applied only to a fresh child process and never modify this shell."
+            ),
         }
     )
     return 0
@@ -531,7 +540,9 @@ def command_runtime_compare(args: argparse.Namespace) -> int:
     command = [sys.executable, "-m", "xlaxiom", "compare", "--case", args.case]
     if args.mode:
         command.extend(("--mode", args.mode))
-    completed = subprocess.run(command, capture_output=True, text=True, env=environment, check=False)
+    completed = subprocess.run(
+        command, capture_output=True, text=True, env=environment, check=False
+    )
     try:
         child = json.loads(completed.stdout)
     except json.JSONDecodeError:
@@ -1118,9 +1129,13 @@ def parser() -> argparse.ArgumentParser:
     environment_parser = commands.add_parser(
         "environment", help="capture or compare redacted independent-host evidence"
     )
-    environment_commands = environment_parser.add_subparsers(dest="environment_command", required=True)
+    environment_commands = environment_parser.add_subparsers(
+        dest="environment_command", required=True
+    )
     environment_capture = environment_commands.add_parser("capture", help="capture this host")
-    environment_capture.add_argument("--label", required=True, help="operator-supplied non-secret label")
+    environment_capture.add_argument(
+        "--label", required=True, help="operator-supplied non-secret label"
+    )
     environment_capture.add_argument("--output", required=True)
     environment_capture.set_defaults(func=command_environment_capture)
     environment_compare = environment_commands.add_parser(
@@ -1155,7 +1170,15 @@ def parser() -> argparse.ArgumentParser:
     )
     generate_parser.add_argument(
         "--input-mode",
-        choices=("random", "zeros", "ones", "finite_edges", "signed_zero", "nonfinite"),
+        choices=(
+            "random",
+            "zeros",
+            "ones",
+            "finite_edges",
+            "extreme_finite",
+            "signed_zero",
+            "nonfinite",
+        ),
         default="finite_edges",
         help="deterministic input-value strategy for generated workloads",
     )
@@ -1349,7 +1372,9 @@ def parser() -> argparse.ArgumentParser:
         ),
         help="property identifier; repeat to select more than one (default: all)",
     )
-    property_campaign.add_argument("--x64", action="store_true", help="run in a clean JAX x64 process")
+    property_campaign.add_argument(
+        "--x64", action="store_true", help="run in a clean JAX x64 process"
+    )
     property_campaign.add_argument(
         "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
     )
@@ -1487,7 +1512,9 @@ def parser() -> argparse.ArgumentParser:
     gpu_campaign_parser.add_argument("--shard-index", type=int, default=0)
     gpu_campaign_parser.add_argument("--shard-count", type=int, default=1)
     gpu_campaign_parser.add_argument("--ledger", help="checksummed resumable GPU shard ledger")
-    gpu_campaign_parser.add_argument("--resume", action="store_true", help="reuse an exact completed ledger shard")
+    gpu_campaign_parser.add_argument(
+        "--resume", action="store_true", help="reuse an exact completed ledger shard"
+    )
     gpu_campaign_parser.set_defaults(func=command_gpu_campaign)
     gpu_historical_parser = gpu_commands.add_parser(
         "historical", help="replay JAX #40634 large-float32 gradients on the GPU"

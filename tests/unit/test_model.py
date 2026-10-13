@@ -52,6 +52,15 @@ def test_generator_rejects_nonfinite_integer_inputs() -> None:
         generate(GenerationConfig(dtype="int32", input_mode="nonfinite"))
 
 
+def test_extreme_finite_input_strategy_controls_overflow_and_underflow_edges() -> None:
+    workload = generate(GenerationConfig(seed=9, input_mode="extreme_finite"))
+    values = materialize_inputs(workload)["x"].reshape(-1)
+
+    assert np.isfinite(values[:6]).all()
+    assert abs(values[0]) > 1e30
+    assert 0 < abs(values[4]) < 1e-40
+
+
 def test_broadcast_shape_valid() -> None:
     assert _broadcast_shape() == ()
     assert _broadcast_shape((2, 3)) == (2, 3)

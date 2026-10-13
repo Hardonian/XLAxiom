@@ -49,7 +49,9 @@ def capture_environment(label: str) -> dict[str, Any]:
             "executable": Path(sys.executable).name,
         },
         "jax": jax,
-        "redaction": "No host name, user name, paths, GPU UUIDs, or environment variables are stored.",
+        "redaction": (
+            "No host name, user name, paths, GPU UUIDs, or environment variables are stored."
+        ),
     }
     return {**payload, "sha256": _digest(payload)}
 
@@ -105,6 +107,9 @@ def compare_environments(primary: dict[str, Any], secondary: dict[str, Any]) -> 
         "reason": (
             "records have distinct labels and independently varying host identity"
             if independent
-            else "records do not establish an independently varying host; attach a second host record"
+            else (
+                "records do not establish an independently varying host; "
+                "attach a second host record"
+            )
         ),
     }

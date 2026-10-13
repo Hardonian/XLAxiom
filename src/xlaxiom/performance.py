@@ -41,7 +41,9 @@ def compare_compilation_cache(
     ratio = warm_ms / cold_ms if cold_ms else 1.0
     observed = warm_ms <= cold_ms * (1 + max_relative_warm_compile)
     return {
-        "classification": Classification.PASS.value if observed else Classification.INCONCLUSIVE.value,
+        "classification": Classification.PASS.value
+        if observed
+        else Classification.INCONCLUSIVE.value,
         "comparable": True,
         "cold_compilation_ms": cold_ms,
         "warm_compilation_ms": warm_ms,

@@ -56,7 +56,7 @@ class InputSpec:
     shape: tuple[int, ...]
     dtype: str = "float32"
     value_mode: Literal[
-        "random", "zeros", "ones", "finite_edges", "signed_zero", "nonfinite"
+        "random", "zeros", "ones", "finite_edges", "extreme_finite", "signed_zero", "nonfinite"
     ] = "random"
 
     def validate(self, limits: ResourceLimits) -> None:
@@ -69,6 +69,7 @@ class InputSpec:
             "zeros",
             "ones",
             "finite_edges",
+            "extreme_finite",
             "signed_zero",
             "nonfinite",
         }:
@@ -207,6 +208,7 @@ class Workload:
                                 "zeros",
                                 "ones",
                                 "finite_edges",
+                                "extreme_finite",
                                 "signed_zero",
                                 "nonfinite",
                             ],
@@ -334,6 +336,19 @@ def materialize_inputs(workload: Workload) -> dict[str, NDArray[np.generic]]:
                 flat = value.reshape(-1)
                 if spec.value_mode == "finite_edges" and flat.size >= 6:
                     flat[:6] = np.array([0.0, -0.0, 1e-20, 1e10, 1.0, -1.0], dtype=dtype)
+                elif spec.value_mode == "extreme_finite" and flat.size >= 6:
+                    info = np.finfo(dtype)
+                    flat[:6] = np.array(
+                        [
+                            info.max / 4,
+                            -info.max / 4,
+                            info.tiny,
+                            -info.tiny,
+                            info.smallest_subnormal,
+                            -info.smallest_subnormal,
+                        ],
+                        dtype=dtype,
+                    )
                 elif spec.value_mode == "signed_zero" and flat.size >= 6:
                     flat[:6] = np.array([0.0, -0.0, 0.0, -0.0, 1.0, -1.0], dtype=dtype)
                 elif spec.value_mode == "nonfinite" and flat.size >= 6:

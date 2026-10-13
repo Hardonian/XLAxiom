@@ -40,7 +40,7 @@ def test_property_pairs_share_deterministic_inputs_and_are_valid(identifier: str
     right_inputs = materialize_inputs(pair.right)
     assert left_inputs.keys() == right_inputs.keys()
     for name in left_inputs:
-        assert np.array_equal(left_inputs[name], right_inputs[name])
+        assert np.array_equal(left_inputs[name], right_inputs[name], equal_nan=True)
 
 
 def test_numpy_property_runner_records_passing_corpus_evidence() -> None:

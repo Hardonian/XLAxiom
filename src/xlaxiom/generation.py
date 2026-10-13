@@ -32,6 +32,7 @@ class GenerationConfig:
             "zeros",
             "ones",
             "finite_edges",
+            "extreme_finite",
             "signed_zero",
             "nonfinite",
         }:

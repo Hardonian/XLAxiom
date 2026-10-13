@@ -10,8 +10,8 @@ property is run.
 
 ```console
 uv run xlaxiom property list
-uv run xlaxiom property run --seed 42 --backend jax-jit --output results/properties.json
-uv run xlaxiom property campaign --cases 20 --backend jax-jit
+uv run xlaxiom property run --seed 42 --backend jax-jit --x64 --output results/properties.json
+uv run xlaxiom property campaign --cases 20 --backend jax-jit --x64
 uv run xlaxiom property coverage
 uv run xlaxiom property run --property matmul-transpose-v1 --backend numpy
 uv run xlaxiom relation create --property matmul-transpose-v1 --output relation.json
@@ -35,6 +35,10 @@ review, minimize, and reproduce; it does not diagnose a compiler defect.
 | `subtraction-as-addition-v1` | `x - y` equals `x + (-y)`. |
 | `absolute-idempotence-v1` | `abs(x)` equals `abs(abs(x))`. |
 | `integer-add-commutativity-v1` | `int32 x + y` equals `y + x`. |
+| `float64-add-commutativity-v1` | `float64 x + y` equals `y + x` in an explicit x64 process. |
+| `mixed-dtype-add-commutativity-v1` | `int32 x + float32 y` equals the reversed operands. |
+| `signed-zero-negation-involution-v1` | Double negation preserves both zero signs. |
+| `nonfinite-absolute-idempotence-v1` | `abs(x)` equals `abs(abs(x))` for NaN and infinities. |
 
 The corpus manifest is [`src/xlaxiom/corpus/curated-v1.json`](../src/xlaxiom/corpus/curated-v1.json).
 It carries no executable payload and has no general `builder` or import field.

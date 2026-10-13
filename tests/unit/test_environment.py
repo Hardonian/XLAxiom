@@ -1,4 +1,8 @@
-from xlaxiom.environment import capture_environment, compare_environments, validate_environment_evidence
+from xlaxiom.environment import (
+    capture_environment,
+    compare_environments,
+    validate_environment_evidence,
+)
 
 
 def test_environment_evidence_is_checksummed_and_fail_closed_for_same_host() -> None:

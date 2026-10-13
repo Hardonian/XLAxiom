@@ -246,6 +246,24 @@ def _integer_add_commutativity(seed: int) -> PropertyWorkloads:
         InputSpec("x", (rows, columns), dtype="int32"),
         InputSpec("y", (rows, columns), dtype="int32"),
     )
+    return PropertyWorkloads(
+        _workload(
+            "integer-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "integer-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("y", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
 
 
 def _float64_add_commutativity(seed: int) -> PropertyWorkloads:
@@ -304,9 +322,7 @@ def _signed_zero_negation_involution(seed: int) -> PropertyWorkloads:
     rows, columns, _ = _dimensions(seed)
     inputs = (InputSpec("x", (rows, columns), value_mode="signed_zero"),)
     return PropertyWorkloads(
-        _workload(
-            "signed-zero-negation-involution-v1", seed, inputs, (), ("x",), "left"
-        ),
+        _workload("signed-zero-negation-involution-v1", seed, inputs, (), ("x",), "left"),
         _workload(
             "signed-zero-negation-involution-v1",
             seed,
@@ -335,24 +351,6 @@ def _nonfinite_absolute_idempotence(seed: int) -> PropertyWorkloads:
             seed,
             inputs,
             (Node("abs", ("x",), "first"), Node("abs", ("first",), "out")),
-            ("out",),
-            "right",
-        ),
-    )
-    return PropertyWorkloads(
-        _workload(
-            "integer-add-commutativity-v1",
-            seed,
-            inputs,
-            (Node("add", ("x", "y"), "out"),),
-            ("out",),
-            "left",
-        ),
-        _workload(
-            "integer-add-commutativity-v1",
-            seed,
-            inputs,
-            (Node("add", ("y", "x"), "out"),),
             ("out",),
             "right",
         ),
@@ -493,8 +491,10 @@ def run_property(
     selected_policy = policy or workloads.left.policy
     left = _execute(workloads.left, backend)
     right = _execute(workloads.right, backend)
-    if property_definition.requires_x64 and backend != "numpy" and not (
-        _x64_enabled(left) and _x64_enabled(right)
+    if (
+        property_definition.requires_x64
+        and backend != "numpy"
+        and not (_x64_enabled(left) and _x64_enabled(right))
     ):
         observation = ComparisonResult(
             Classification.ENVIRONMENT_FAILURE,
