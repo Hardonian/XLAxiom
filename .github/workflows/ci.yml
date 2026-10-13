@@ -22,8 +22,8 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --python ${{ matrix.python-version }} --extra dev
       - run: uv run ruff check .
@@ -53,15 +53,15 @@ jobs:
           - nonfinite-absolute-idempotence-v1
           - extreme-finite-absolute-idempotence-v1
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       - run: uv sync --extra dev
       - run: uv run xlaxiom property run --property ${{ matrix.property }} --backend jax-jit --x64
   scheduled-corpus:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       - run: uv sync --extra dev
       - run: uv run xlaxiom property campaign --cases 25 --backend jax-jit --x64
