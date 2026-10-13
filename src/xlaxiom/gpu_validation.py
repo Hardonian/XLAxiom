@@ -33,6 +33,9 @@ from .hardware import (
 # shadows the cuSPARSE/cuBLAS shipped inside the JAX CUDA wheels and makes the plugin
 # fail with "Unable to load cuSPARSE". The fix is per-process and never touches the host.
 SHADOWING_LIBRARY_PATH = "LD_LIBRARY_PATH"
+# JAX preallocates most device memory by default. Validation and bounded campaigns must
+# coexist with the host's own workloads, so every XLAxiom CUDA child opts out.
+JAX_GPU_PREALLOCATE = "XLA_PYTHON_CLIENT_PREALLOCATE"
 
 PROBE_SHAPE = (32, 32)
 PROBE_ELEMENTS = PROBE_SHAPE[0] * PROBE_SHAPE[1]
@@ -88,13 +91,14 @@ class DeviceValidation:
 
 
 def clean_environment(extra: dict[str, str] | None = None) -> dict[str, str]:
-    """Build a child environment that cannot be misled by a shadowing library path."""
+    """Build a CUDA child environment isolated from host library and memory defaults."""
     env = dict(os.environ)
     if SHADOWING_LIBRARY_PATH in env:
         # Recorded, not silenced: the reason is captured in the validation report.
         env.pop(SHADOWING_LIBRARY_PATH, None)
     if extra:
         env.update(extra)
+    env[JAX_GPU_PREALLOCATE] = "false"
     return env
 
 

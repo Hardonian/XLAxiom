@@ -36,7 +36,7 @@ from .gpu_campaign import (
     replay_jax_40634_on_gpu,
     run_gpu_campaign,
 )
-from .gpu_validation import VARIANT_PYTHON, DeviceState, validate_all
+from .gpu_validation import JAX_GPU_PREALLOCATE, VARIANT_PYTHON, DeviceState, validate_all
 from .gradient_artifacts import (
     GradientArtifactError,
     compare_gradient_campaigns,
@@ -716,6 +716,7 @@ def _interpreter_has_gpu(interpreter: str) -> bool:
     """True when that interpreter can really initialize a JAX GPU device."""
     environment = os.environ.copy()
     environment.pop("LD_LIBRARY_PATH", None)
+    environment[JAX_GPU_PREALLOCATE] = "false"
     try:
         completed = subprocess.run(
             [
@@ -734,6 +735,19 @@ def _interpreter_has_gpu(interpreter: str) -> bool:
     return completed.returncode == 0
 
 
+def _active_jax_gpu_runtime() -> bool:
+    """True only when this interpreter can initialize a JAX GPU device."""
+    # This command may be invoked directly from the isolated interpreter. Set the
+    # bounded-memory policy before its first JAX import, not only for re-exec children.
+    os.environ[JAX_GPU_PREALLOCATE] = "false"
+    try:
+        import jax
+
+        return bool(jax.devices("gpu"))
+    except Exception:
+        return False
+
+
 def _ensure_gpu_runtime() -> None:
     """Re-execute a GPU command inside the isolated interpreter owning the CUDA jaxlib.
 
@@ -743,22 +757,24 @@ def _ensure_gpu_runtime() -> None:
     shadowing host library path removed for that process only. The host driver, system
     CUDA, and every other service are never touched.
     """
-    if os.environ.get("XLAXIOM_GPU_REEXEC") == "1":
+    if _active_jax_gpu_runtime():
         return
-    try:
-        import jax
-
-        if jax.devices("gpu"):
-            return
-    except Exception:
-        pass
     target = _gpu_interpreter()
     if target is None:
         return
     interpreter, ordinal = target
+    interpreter_path = os.path.abspath(interpreter)
+    if os.environ.get("XLAXIOM_GPU_REEXEC") == interpreter_path:
+        raise SystemExit(
+            "the isolated CUDA interpreter did not initialize a GPU device; "
+            "stopping to avoid a re-execution loop"
+        )
     environment = os.environ.copy()
     environment.pop("LD_LIBRARY_PATH", None)
-    environment["XLAXIOM_GPU_REEXEC"] = "1"
+    environment[JAX_GPU_PREALLOCATE] = "false"
+    # The marker is an exact interpreter path, not a generic boolean. A manually
+    # inherited legacy value such as ``1`` must never suppress a required re-exec.
+    environment["XLAXIOM_GPU_REEXEC"] = interpreter_path
     environment["CUDA_VISIBLE_DEVICES"] = str(ordinal)
     result = subprocess.run(
         [interpreter, "-m", "xlaxiom", *sys.argv[1:]],

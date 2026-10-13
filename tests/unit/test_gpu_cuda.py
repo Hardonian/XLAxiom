@@ -7,13 +7,16 @@ which on a CPU-only host must report UNSUPPORTED rather than silently using CPU.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
+from xlaxiom import cli
 from xlaxiom.cuda import cuda_capability, recommended_variant
 from xlaxiom.execution import ExecutionStatus, execute_jax
 from xlaxiom.generation import GenerationConfig, generate
 from xlaxiom.gpu_campaign import _cpu_baseline_subprocess, _cpu_environment, _safe_benchmark
-from xlaxiom.gpu_validation import DeviceState
+from xlaxiom.gpu_validation import JAX_GPU_PREALLOCATE, DeviceState, clean_environment
 from xlaxiom.hardware import (
     CUDA12_MIN_DRIVER,
     CUDA12_MIN_SM,
@@ -260,6 +263,63 @@ class TestEnvironmentTraps:
         monkeypatch.delenv("LD_LIBRARY_PATH", raising=False)
         risk = library_path_risk()
         assert risk["shadowing_risk"] is False
+
+    def test_cuda_child_environment_disables_jax_memory_preallocation(self) -> None:
+        environment = clean_environment()
+        assert environment[JAX_GPU_PREALLOCATE] == "false"
+
+
+class TestGpuRuntimeReexecution:
+    """GPU launch guards must not mistake an inherited marker for a CUDA runtime."""
+
+    def test_active_runtime_probe_disables_jax_memory_preallocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv(JAX_GPU_PREALLOCATE, "true")
+
+        cli._active_jax_gpu_runtime()
+
+        assert cli.os.environ[JAX_GPU_PREALLOCATE] == "false"
+
+    def test_stale_boolean_marker_reexecutes_into_the_isolated_interpreter(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        target = "/isolated/cuda/bin/python"
+        target_path = cli.os.path.abspath(target)
+        calls: list[tuple[list[str], dict[str, str]]] = []
+
+        monkeypatch.setenv("XLAXIOM_GPU_REEXEC", "1")
+        monkeypatch.setattr(cli, "_active_jax_gpu_runtime", lambda: False)
+        monkeypatch.setattr(cli, "_gpu_interpreter", lambda: (target, 2))
+        monkeypatch.setattr(cli.sys, "argv", ["xlaxiom", "gpu", "campaign"])
+
+        def fake_run(command, *, env, check):
+            calls.append((command, env))
+            return SimpleNamespace(returncode=0)
+
+        monkeypatch.setattr(cli.subprocess, "run", fake_run)
+
+        with pytest.raises(SystemExit) as exit_info:
+            cli._ensure_gpu_runtime()
+
+        assert exit_info.value.code == 0
+        assert len(calls) == 1
+        command, environment = calls[0]
+        assert command == [target, "-m", "xlaxiom", "gpu", "campaign"]
+        assert environment["XLAXIOM_GPU_REEXEC"] == target_path
+        assert environment["CUDA_VISIBLE_DEVICES"] == "2"
+        assert environment[JAX_GPU_PREALLOCATE] == "false"
+
+    def test_matching_interpreter_marker_stops_a_reexecution_loop(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        target = "/isolated/cuda/bin/python"
+        monkeypatch.setenv("XLAXIOM_GPU_REEXEC", cli.os.path.abspath(target))
+        monkeypatch.setattr(cli, "_active_jax_gpu_runtime", lambda: False)
+        monkeypatch.setattr(cli, "_gpu_interpreter", lambda: (target, 0))
+
+        with pytest.raises(SystemExit, match="stopping to avoid a re-execution loop"):
+            cli._ensure_gpu_runtime()
 
     def test_ordinal_ordering_risk_detects_mismatch(self) -> None:
         devices = [

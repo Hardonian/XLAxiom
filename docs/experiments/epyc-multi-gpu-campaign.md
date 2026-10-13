@@ -40,7 +40,8 @@ Fix, per-process only — **do not** change the host driver, the system CUDA ins
 or any running service:
 
 ```console
-env -u LD_LIBRARY_PATH CUDA_VISIBLE_DEVICES=<ordinal> <interpreter> -m xlaxiom ...
+env -u LD_LIBRARY_PATH XLA_PYTHON_CLIENT_PREALLOCATE=false \
+  CUDA_VISIBLE_DEVICES=<ordinal> <interpreter> -m xlaxiom ...
 ```
 
 `xlaxiom gpu doctor` reports this risk too.
@@ -99,11 +100,11 @@ uv sync --extra dev
 uv run xlaxiom gpu doctor
 
 # per-device bounded probes
-env -u LD_LIBRARY_PATH CUDA_VISIBLE_DEVICES=0 \
+env -u LD_LIBRARY_PATH XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=0 \
   <cuda12-interpreter> -m xlaxiom gpu validate --allow-busy
 
 # 24-case campaign on the V100
-env -u LD_LIBRARY_PATH XLAXIOM_GPU_REEXEC=1 CUDA_VISIBLE_DEVICES=0 \
+env -u LD_LIBRARY_PATH XLA_PYTHON_CLIENT_PREALLOCATE=false CUDA_VISIBLE_DEVICES=0 \
   <cuda12-interpreter> -m xlaxiom gpu campaign --allow-busy \
   --cases 24 --measurements 5 --output results/gpu-campaign-ord0.json
 

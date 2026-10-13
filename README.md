@@ -105,7 +105,13 @@ The host is an AMD EPYC 7452 (1 socket, 32 cores, 64 threads, 168 GiB, Ubuntu 26
 - Metamorphic property corpus on GPU: all 4 properties hold on both GPUs, matching the CPU x64 control within the recorded 2e-06 tolerance.
 - CUDA 13 remains unsupported for SM 6.1 and 7.0: the CUDA 13 wheel's `ptxas` has no kernels for those architectures, so `jax[cuda13]` fails with "ptxas too old". This is recorded honestly, not worked around.
 
-**Known issue.** `xlaxiom gpu campaign` must be invoked from inside the isolated interpreter (`<cuda12-probe>/bin/python -m xlaxiom gpu campaign ...`), not via `uv run xlaxiom gpu campaign` with `XLAXIOM_GPU_REEXEC=1` pre-set. Pre-setting the re-exec flag makes `_ensure_gpu_runtime` return early without re-executing into the CUDA environment, so every case reports `unsupported_backend` while the device itself is healthy. Evidence: [`epyc-gpu-campaign-v100-2026-10-13.json`](docs/experiments/epyc-gpu-campaign-v100-2026-10-13.json).
+**GPU launcher behavior.** `xlaxiom gpu campaign` verifies the active JAX runtime before
+it accepts a re-execution marker. From the CPU-first development environment it selects
+and re-executes into a compatible isolated CUDA interpreter; an inherited legacy marker
+such as `XLAXIOM_GPU_REEXEC=1` cannot suppress that handoff. A failed isolated runtime
+stops with an explicit diagnostic rather than looping or reporting a false CPU result.
+All CUDA child processes disable JAX's default device-memory preallocation, keeping
+discovery and bounded campaigns compatible with shared, otherwise-idle accelerators.
 
 Full machine-readable evidence: [`docs/experiments/`](docs/experiments/).
 
