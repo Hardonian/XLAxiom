@@ -121,6 +121,18 @@ class PhysicalGpu:
         return data
 
 
+def _visible_gpu_name(ordinal_names: list[str]) -> str | None:
+    """The single device name the runtime exposes when exactly one GPU is visible.
+
+    When ``CUDA_VISIBLE_DEVICES`` pins one GPU the runtime reports one name, so the
+    NVML listing cannot be reordered by it. Matching that name is the only reliable way
+    to attribute evidence to the correct physical device.
+    """
+    if len(ordinal_names) == 1:
+        return ordinal_names[0]
+    return None
+
+
 def enumerate_physical_gpus() -> list[PhysicalGpu]:
     """Report every visible GPU, keyed by CUDA ordinal, with redacted identity.
 
@@ -161,7 +173,38 @@ def enumerate_physical_gpus() -> list[PhysicalGpu]:
         devices.append(device)
     devices.sort(key=lambda item: item.smi_index or 0)
     ordinal_names = _cuda_runtime_names()
+    visible_name = _visible_gpu_name(ordinal_names)
     result: list[PhysicalGpu] = []
+    if visible_name is not None:
+        # Only one device is exposed to this process (CUDA_VISIBLE_DEVICES). Match it by
+        # the name the runtime reports so the evidence attributes the right physical GPU.
+        match = next(
+            (
+                device
+                for device in devices
+                if device.name.strip().lower() == visible_name.strip().lower()
+            ),
+            None,
+        )
+        if match is not None:
+            result = [
+                PhysicalGpu(
+                    ordinal=0,
+                    name=match.name,
+                    uuid_redacted=match.uuid_redacted,
+                    compute_capability=match.compute_capability,
+                    sm=match.sm,
+                    driver_version=match.driver_version,
+                    cuda_version=match.cuda_version,
+                    total_vram_mib=match.total_vram_mib,
+                    used_vram_mib=match.used_vram_mib,
+                    free_vram_mib=match.free_vram_mib,
+                    utilization_percent=match.utilization_percent,
+                    active_processes=match.active_processes,
+                    smi_index=match.smi_index,
+                )
+            ]
+            return result
     if ordinal_names and len(ordinal_names) == len(devices):
         remaining = list(devices)
         for ordinal, cuda_name in enumerate(ordinal_names):
@@ -389,6 +432,56 @@ class DeviceVerdict:
         return asdict(self)
 
 
+def library_path_risk() -> dict[str, Any]:
+    """Detect a host ``LD_LIBRARY_PATH`` that can shadow the JAX CUDA wheels.
+
+    JAX's pip wheels bundle their own CUDA libraries. A host ``LD_LIBRARY_PATH``
+    pointing at a system CUDA toolkit takes precedence and shadows them, so plugin
+    initialization fails with an error such as ``Unable to load cuSPARSE`` that names a
+    library the wheel actually ships. This is reported so the operator sees the cause
+    instead of debugging it from scratch; nothing is changed on the host.
+    """
+    value = os.environ.get("LD_LIBRARY_PATH", "")
+    entries = [entry for entry in value.split(":") if entry]
+    risky = [entry for entry in entries if "cuda" in entry.lower()]
+    return {
+        "shadowing_risk": bool(risky),
+        "cuda_entries": risky,
+        "guidance": (
+            "Clear LD_LIBRARY_PATH for the JAX process only (for example "
+            "'env -u LD_LIBRARY_PATH ...'). Do not change the host driver, the system "
+            "CUDA installation, or any running service."
+        )
+        if risky
+        else "no CUDA directory is present in LD_LIBRARY_PATH",
+    }
+
+
+def ordinal_ordering_risk(devices: list[PhysicalGpu]) -> dict[str, Any]:
+    """Report whether CUDA runtime ordinal order differs from nvidia-smi index order.
+
+    The two orderings are not guaranteed to match. Selecting a device by
+    ``CUDA_VISIBLE_DEVICES`` uses the CUDA runtime ordinal, so an operator who reads
+    ``nvidia-smi`` and picks index 1 can silently target a different GPU. Every
+    artifact records both identifiers so the mapping is never assumed.
+    """
+    if len(devices) < 2:
+        return {"differs": False, "note": "fewer than two devices; ordering is unambiguous"}
+    differs = [device.ordinal != device.smi_index for device in devices]
+    return {
+        "differs": any(differs),
+        "cuda_ordinals": [device.ordinal for device in devices],
+        "nvidia_smi_indices": [device.smi_index for device in devices],
+        "names": [device.name for device in devices],
+        "note": (
+            "CUDA runtime ordinal order differs from nvidia-smi index order on this "
+            "host. CUDA_VISIBLE_DEVICES uses the ordinal, not the nvidia-smi index."
+        )
+        if any(differs)
+        else "CUDA ordinal order matches nvidia-smi index order on this host",
+    }
+
+
 def environment_manifest() -> dict[str, Any]:
     """A portable, secret-free record of the host and JAX environment."""
     import sys
@@ -403,6 +496,8 @@ def environment_manifest() -> dict[str, Any]:
         "cuda_version": _driver_cuda_version(),
         "ld_library_path_present": "LD_LIBRARY_PATH" in os.environ,
     }
+    if "LD_LIBRARY_PATH" in os.environ:
+        manifest["ld_library_path_risk"] = library_path_risk()
     try:
         import numpy
 

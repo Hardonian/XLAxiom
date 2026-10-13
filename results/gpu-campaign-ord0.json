@@ -1,0 +1,4787 @@
+{
+  "anomalies": [],
+  "budget": {
+    "cases": 24,
+    "measurements": 5
+  },
+  "campaign": "XLAxiom bounded EPYC GPU campaign",
+  "classifications": {
+    "gpu_eager_vs_jit": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ],
+    "numpy_vs_gpu_jit": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ]
+  },
+  "cpu_vs_gpu_cases": [
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 39.9603,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.3005,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 41.021,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3607,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 2,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 36.12774100020033,
+          "device": "cpu:0",
+          "mean_ms": 0.017378200118400855,
+          "measurements": 5,
+          "median_ms": 0.014306000139185926,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005628415330557361
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 36.37367599958452,
+          "device": "cuda:0",
+          "mean_ms": 0.1828207999096776,
+          "measurements": 5,
+          "median_ms": 0.1795729999685136,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.0133787167645154
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-2"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.1112,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              5
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 0.9409,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 41.2318,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              5
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3335,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 1,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 33.19064099969182,
+          "device": "cpu:0",
+          "mean_ms": 0.01690540011622943,
+          "measurements": 5,
+          "median_ms": 0.013826000213157386,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.0055941886655285575
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 36.11802300019917,
+          "device": "cuda:0",
+          "mean_ms": 0.15234399998007575,
+          "measurements": 5,
+          "median_ms": 0.1483640003243636,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.02137927377744091
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-1"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 47.1814,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 14,
+              "shape": [
+                7,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1612,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 14,
+              "shape": [
+                7,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 47.9769,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 14,
+              "shape": [
+                7,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.2813,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 14,
+              "shape": [
+                7,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 3,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 37.859006999951816,
+          "device": "cpu:0",
+          "mean_ms": 0.014925799951015506,
+          "measurements": 5,
+          "median_ms": 0.01166199990620953,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005699358504427198
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 43.69071500013888,
+          "device": "cuda:0",
+          "mean_ms": 0.1481041999795707,
+          "measurements": 5,
+          "median_ms": 0.14195299991115462,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.01754693059747617
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-3"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 38.5311,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 42,
+              "shape": [
+                7,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 0.9276,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 42,
+              "shape": [
+                7,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 38.873,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 42,
+              "shape": [
+                7,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 1.1920928955078125e-07,
+            "max_relative_error": 2.0297911087842188e-07,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.2849,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 42,
+              "shape": [
+                7,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 0,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 50.070268000126816,
+          "device": "cpu:0",
+          "mean_ms": 0.015853599961701548,
+          "measurements": 5,
+          "median_ms": 0.012472999969759258,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006118941335575272
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 34.6422090001397,
+          "device": "cuda:0",
+          "mean_ms": 0.12466100006349734,
+          "measurements": 5,
+          "median_ms": 0.11531400014064275,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.022563308445845146
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-0"
+    },
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.3775,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              5
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1348,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 42.7541,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              5
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.363,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 6,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.40297199999986,
+          "device": "cpu:0",
+          "mean_ms": 0.024573800146754365,
+          "measurements": 5,
+          "median_ms": 0.019647000044642482,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.01041420486552583
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 39.73799499999586,
+          "device": "cuda:0",
+          "mean_ms": 0.15109980004126555,
+          "measurements": 5,
+          "median_ms": 0.14354599989019334,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.02773117894620401
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-6"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.5515,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              5
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1667,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.9814,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              5
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3768,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 5,
+              "shape": [
+                5
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 6,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.59370500018122,
+          "device": "cpu:0",
+          "mean_ms": 0.023206800051411847,
+          "measurements": 5,
+          "median_ms": 0.017441999716538703,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.010390913160146096
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 40.104724999764585,
+          "device": "cuda:0",
+          "mean_ms": 0.16710939999029506,
+          "measurements": 5,
+          "median_ms": 0.16341299988198443,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.008214197318548645
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-6"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 39.6408,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 39.527,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3511,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 9,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.945317000212526,
+          "device": "cpu:0",
+          "mean_ms": 0.016847000097186537,
+          "measurements": 5,
+          "median_ms": 0.013434000265988288,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006181966647631329
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 36.099828999795136,
+          "device": "cuda:0",
+          "mean_ms": 0.1757373999680567,
+          "measurements": 5,
+          "median_ms": 0.17142700016847812,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.007073715427283999
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-9"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 49.5489,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0571,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 47.9037,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 5.960464477539063e-08,
+            "max_relative_error": 9.637937388874582e-08,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.2927,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 7,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 40.66919000024427,
+          "device": "cpu:0",
+          "mean_ms": 0.015374600025097607,
+          "measurements": 5,
+          "median_ms": 0.012102999789931346,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005804492955876391
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 47.46393200002785,
+          "device": "cuda:0",
+          "mean_ms": 0.15770180007166346,
+          "measurements": 5,
+          "median_ms": 0.15706100020906888,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.0062165757047862305
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-7"
+    },
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 45.9602,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1649,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.535,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3507,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 10,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.30058300005112,
+          "device": "cpu:0",
+          "mean_ms": 0.022196999998413958,
+          "measurements": 5,
+          "median_ms": 0.015698999959568027,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.011526090974169444
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 38.95893299977615,
+          "device": "cuda:0",
+          "mean_ms": 0.15957720006554155,
+          "measurements": 5,
+          "median_ms": 0.15601800032527535,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.018598816004430294
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-10"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.7627,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.2348,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.5724,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3506,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 10,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.03474099973391,
+          "device": "cpu:0",
+          "mean_ms": 0.023546000011265278,
+          "measurements": 5,
+          "median_ms": 0.01664100000198232,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.012417853209790001
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 39.751078999870515,
+          "device": "cuda:0",
+          "mean_ms": 0.13661100001627347,
+          "measurements": 5,
+          "median_ms": 0.13807600043946877,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.006833317644433115
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-10"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 40.6483,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 0.9224,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 41.5057,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3334,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 13,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.19815300053597,
+          "device": "cpu:0",
+          "mean_ms": 0.01676319989201147,
+          "measurements": 5,
+          "median_ms": 0.013013999705435708,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006623026548764574
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 38.205577999178786,
+          "device": "cuda:0",
+          "mean_ms": 0.10069039999507368,
+          "measurements": 5,
+          "median_ms": 0.0983319996521459,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.005711283954872673
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-13"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 47.4991,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0749,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 48.4711,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3141,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 11,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 35.36172200074361,
+          "device": "cpu:0",
+          "mean_ms": 0.01516819993412355,
+          "measurements": 5,
+          "median_ms": 0.012081999557267409,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005395033894105477
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 46.066745000644005,
+          "device": "cuda:0",
+          "mean_ms": 0.154852400009986,
+          "measurements": 5,
+          "median_ms": 0.14764299976377515,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.03570899895843007
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-11"
+    },
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.2836,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              3
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0905,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.5758,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              3
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3535,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 14,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.146206999641436,
+          "device": "cpu:0",
+          "mean_ms": 0.022894600078871008,
+          "measurements": 5,
+          "median_ms": 0.017412000488548074,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.01105662389208987
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 39.00097099995037,
+          "device": "cuda:0",
+          "mean_ms": 0.16768660007073777,
+          "measurements": 5,
+          "median_ms": 0.1662380000198027,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.023007854021933293
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-14"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.2597,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              3
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0887,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 44.4568,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              3
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.35,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 14,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.09235700069257,
+          "device": "cpu:0",
+          "mean_ms": 0.022541800353792496,
+          "measurements": 5,
+          "median_ms": 0.017002000276988838,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.011484159273410177
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 40.468197999871336,
+          "device": "cuda:0",
+          "mean_ms": 0.14809839994995855,
+          "measurements": 5,
+          "median_ms": 0.14776399984839372,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.006366822636166484
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-14"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 42.5141,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 0.9913,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 46.2573,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 1024.0,
+            "max_relative_error": 8.960000229376005e-08,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3552,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 17,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 33.21733100074198,
+          "device": "cpu:0",
+          "mean_ms": 0.016602599862380885,
+          "measurements": 5,
+          "median_ms": 0.01358499957859749,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005840943785183395
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 37.71906699967076,
+          "device": "cuda:0",
+          "mean_ms": 0.18024959972535726,
+          "measurements": 5,
+          "median_ms": 0.17266899976675631,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.02287414087820763
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-17"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 48.3276,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.04,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 48.9266,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 5.960464477539063e-08,
+            "max_relative_error": 9.064146785518176e-08,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.2852,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 48,
+              "shape": [
+                8,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 15,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 40.40606300077343,
+          "device": "cpu:0",
+          "mean_ms": 0.014907799777574837,
+          "measurements": 5,
+          "median_ms": 0.011270999493717682,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006047510189267519
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 45.046055000057095,
+          "device": "cuda:0",
+          "mean_ms": 0.16157299978658557,
+          "measurements": 5,
+          "median_ms": 0.141813000482216,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.03033083575775478
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-15"
+    },
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 43.5455,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1005,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 46.2865,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3614,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 18,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.13372400023218,
+          "device": "cpu:0",
+          "mean_ms": 0.025827799800026696,
+          "measurements": 5,
+          "median_ms": 0.016259999938483816,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.017626321143016894
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 38.20549800002482,
+          "device": "cuda:0",
+          "mean_ms": 0.16075999992608558,
+          "measurements": 5,
+          "median_ms": 0.1570410004205769,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.016927521711270273
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-18"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 39.8591,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1232,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 40.9294,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              8
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3412,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 8,
+              "shape": [
+                8
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 18,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 31.69512200020108,
+          "device": "cpu:0",
+          "mean_ms": 0.022048599930712953,
+          "measurements": 5,
+          "median_ms": 0.016089999917312525,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.010876917611730298
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 36.61482200004684,
+          "device": "cuda:0",
+          "mean_ms": 0.20708700012619374,
+          "measurements": 5,
+          "median_ms": 0.21035900044807931,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.024180755211629292
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-18"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 44.3214,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.022,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 40.9196,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3531,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 21,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.7280849996896,
+          "device": "cpu:0",
+          "mean_ms": 0.01628600002732128,
+          "measurements": 5,
+          "median_ms": 0.012862999938079156,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.0058568048840929345
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 37.66723999979149,
+          "device": "cuda:0",
+          "mean_ms": 0.17473540028731804,
+          "measurements": 5,
+          "median_ms": 0.17285000012634555,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.019765490525460575
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-21"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 45.8574,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 24,
+              "shape": [
+                6,
+                4
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              6,
+              4
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0272,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 24,
+              "shape": [
+                6,
+                4
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 46.9913,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 24,
+              "shape": [
+                6,
+                4
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 5.960464477539063e-08,
+            "max_relative_error": 8.809600138416437e-08,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              6,
+              4
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.2989,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 24,
+              "shape": [
+                6,
+                4
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 19,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 38.49338100008026,
+          "device": "cpu:0",
+          "mean_ms": 0.015007599722594023,
+          "measurements": 5,
+          "median_ms": 0.012061999768775422,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.0059869713266041185
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 43.662162000146054,
+          "device": "cuda:0",
+          "mean_ms": 0.1473910000640899,
+          "measurements": 5,
+          "median_ms": 0.14684100005979417,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.02806010505128523
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-19"
+    },
+    {
+      "description": "bounded matrix multiply then reduce",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "matmul",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 42.3238,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.1542,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 41.8504,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3717,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 22,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 33.98316899983911,
+          "device": "cpu:0",
+          "mean_ms": 0.025879799795802683,
+          "measurements": 5,
+          "median_ms": 0.02102899998135399,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.013106219723399454
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 38.60126000017772,
+          "device": "cuda:0",
+          "mean_ms": 0.15432960008183727,
+          "measurements": 5,
+          "median_ms": 0.15797200012457324,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.026704351386265906
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-22"
+    },
+    {
+      "description": "column/row broadcast then mean",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "broadcasting",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 44.3233,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0689,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 41.2742,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              7
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.3505,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 7,
+              "shape": [
+                7
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 22,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 32.70596399943315,
+          "device": "cpu:0",
+          "mean_ms": 0.02191259991377592,
+          "measurements": 5,
+          "median_ms": 0.016521000361535698,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.010230097283995815
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 37.382894000074884,
+          "device": "cuda:0",
+          "mean_ms": 0.14705240009789122,
+          "measurements": 5,
+          "median_ms": 0.14751300022908254,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.01046004924394911
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-22"
+    },
+    {
+      "description": "reshape, elementwise, reshape, sum",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "reduction",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 39.9613,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              3
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 0.9718,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 40.5916,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              3
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.353,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 3,
+              "shape": [
+                3
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 25,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 33.1569390000368,
+          "device": "cpu:0",
+          "mean_ms": 0.016801200035843067,
+          "measurements": 5,
+          "median_ms": 0.013606000720756128,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.006004623556082251
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 36.73506500035728,
+          "device": "cuda:0",
+          "mean_ms": 0.12357059986243257,
+          "measurements": 5,
+          "median_ms": 0.11778799944295315,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.009030495876531265
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-25"
+    },
+    {
+      "description": "add then tanh saturation",
+      "device": {
+        "compute_capability": "7.0",
+        "name": "Tesla V100-SXM2-16GB",
+        "ordinal": 0,
+        "smi_index": 0,
+        "uuid_redacted": "dev-7562ed358f6c"
+      },
+      "family": "precision_sensitive",
+      "gpu_eager_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 48.5283,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 12,
+              "shape": [
+                2,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              2,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 1.0546,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 12,
+              "shape": [
+                2,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "numpy_vs_gpu_jit": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-gpu",
+          "device": "cuda:0",
+          "duration_ms": 49.8196,
+          "environment": {
+            "actual_devices": "cuda:0",
+            "device_index": "0",
+            "jax": "0.11.2",
+            "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+            "requested_platform": "gpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 12,
+              "shape": [
+                2,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "shape": [
+              2,
+              6
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "numpy",
+          "device": null,
+          "duration_ms": 0.2988,
+          "environment": null,
+          "error": null,
+          "mode": "eager",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 12,
+              "shape": [
+                2,
+                6
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "seed": 23,
+      "statuses": {
+        "gpu_eager": "ok",
+        "gpu_eager_device": "cuda:0",
+        "gpu_jit": "ok",
+        "gpu_jit_device": "cuda:0",
+        "numpy": "ok"
+      },
+      "timings": {
+        "cpu_jit": {
+          "backend": "jax-cpu-jit",
+          "compilation_ms": 35.84500599936291,
+          "device": "cpu:0",
+          "mean_ms": 0.015187600001809187,
+          "measurements": 5,
+          "median_ms": 0.011641000128292944,
+          "requested_platform": "cpu",
+          "stdev_ms": 0.005605051710236323
+        },
+        "gpu_jit": {
+          "backend": "jax-gpu-jit",
+          "compilation_ms": 44.01760099972307,
+          "device": "cuda:0",
+          "mean_ms": 0.1679528000749997,
+          "measurements": 5,
+          "median_ms": 0.152442000398878,
+          "requested_platform": "gpu",
+          "stdev_ms": 0.028470478745279665
+        }
+      },
+      "variant": "cuda12",
+      "workload_identifier": "generated-23"
+    }
+  ],
+  "device": {
+    "compute_capability": "7.0",
+    "name": "Tesla V100-SXM2-16GB",
+    "ordinal": 0,
+    "smi_index": 0,
+    "uuid_redacted": "dev-7562ed358f6c"
+  },
+  "duration_s": 27.33988979600008,
+  "gpu_eager_vs_jit_cases": [
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 2,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 1,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 3,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 0,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 6,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 6,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 9,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 7,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 10,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 10,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 13,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 11,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 14,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 14,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 17,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 15,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 18,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 18,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 21,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 19,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 22,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 22,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 25,
+      "variant": "cuda12"
+    },
+    {
+      "actual_devices": {
+        "left": "cuda:0",
+        "right": "cuda:0"
+      },
+      "classification": "pass",
+      "device": "Tesla V100-SXM2-16GB",
+      "left_device": "cuda:0",
+      "ordinal": 0,
+      "right_device": "cuda:0",
+      "seed": 23,
+      "variant": "cuda12"
+    }
+  ],
+  "notes": [
+    "Compilation is timed separately from steady-state synchronized execution.",
+    "NumPy is not an independent oracle for every JAX semantic; a discrepancy is an observation, not a root-cause claim.",
+    "No CPU fallback was performed: every GPU case records its actual device."
+  ],
+  "pass_count": 48,
+  "requested_device": {
+    "compute_capability": "7.0",
+    "cuda_visible_devices": "0",
+    "name": "Tesla V100-SXM2-16GB",
+    "nvidia_smi_index": 0,
+    "ordinal": 0,
+    "uuid_redacted": "dev-7562ed358f6c"
+  },
+  "variant": "cuda12"
+}
