@@ -6,24 +6,17 @@ CUDA runtime: 13.0
 ## ruff check
 All checks passed!
 
-## ruff format --check
-51 files already formatted
-
 ## mypy src
 Success: no issues found in 24 source files
 
-## pytest -q (Python 3.11)
-SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
-40 passed, 1 skipped in 8.15s
+## pytest (3.11)
+SKIPPED [1] tests/unit/test_gpu_cuda.py:219: no GPU in the primary environment
+42 passed, 2 skipped in 8.85s
 
-## pytest -q (Python 3.12)
-SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
-40 passed, 1 skipped in 7.81s
+## pytest (3.12)
+SKIPPED [1] tests/unit/test_gpu_cuda.py:219: no GPU in the primary environment
+42 passed, 2 skipped in 8.43s
 
 ## uv build
 Successfully built dist/xlaxiom-0.5.0.tar.gz
 Successfully built dist/xlaxiom-0.5.0-py3-none-any.whl
-
-## CUDA gradient campaign (uv run xlaxiom gradient-campaign --cases 40 --seed 0)
-devices: ['cuda:0'] gpu_probe: ok
-counts: {"candidate_discrepancy": 4, "known_historical_discrepancy": 2, "pass": 34}
