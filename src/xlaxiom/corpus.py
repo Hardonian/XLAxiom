@@ -446,15 +446,6 @@ def api_add(left: Any, right: Any) -> Any:
         return np_mod.add(left, right)
 
 
-def api_reshape(value: Any, shape: tuple[int, ...]) -> Any:
-    try:
-        return value.reshape(shape)
-    except AttributeError:
-        import numpy as np_mod
-
-        return np_mod.reshape(value, shape)
-
-
 def run_metamorphic_suite() -> dict[str, Any]:
     """Check every registered metamorphic property and summarise honestly."""
     results = [check_metamorphic_property(prop) for prop in METAMORPHIC_PROPERTIES]
