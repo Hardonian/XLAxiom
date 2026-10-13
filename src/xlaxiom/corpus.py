@@ -403,13 +403,6 @@ def _relation(prop: MetamorphicProperty, first: Any) -> Any:
     raise ValueError(f"unknown metamorphic operation {prop.operation!r}")
 
 
-def _shape(value: Any) -> tuple[int, ...]:
-    try:
-        return tuple(int(dim) for dim in value.shape)
-    except AttributeError:
-        return ()
-
-
 def api_slice(value: Any, selection: Any) -> Any:
     try:
         return value[selection]
