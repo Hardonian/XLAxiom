@@ -9,7 +9,11 @@ from xlaxiom.gradients import (
 
 
 def test_gradient_generator_is_domain_valid() -> None:
-    assert all(generate_gradient_case(seed).operation for seed in range(20))
+    assert all(
+        run_gradient_case(generate_gradient_case(seed))["classification"]
+        in {"pass", "gradient_discrepancy"}
+        for seed in range(20)
+    )
     with pytest.raises(ValueError):
         GradientCase("bad", "acosh", 0.5).validate()
 

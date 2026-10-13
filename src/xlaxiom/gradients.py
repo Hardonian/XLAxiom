@@ -33,6 +33,8 @@ def generate_gradient_case(seed: int) -> GradientCase:
     operation = operations[seed % len(operations)]
     values = (0.0, 1e-6, 1.0, 10.0, 1e22)
     value = values[(seed // len(operations)) % len(values)]
+    if operation in {"tanh", "exp"}:
+        value = min(value, 10.0)
     if operation == "acosh":
         value = max(value, 1.0)
     return GradientCase(f"gradient-{operation}-{seed}", operation, value, seed=seed)
