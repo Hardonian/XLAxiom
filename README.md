@@ -179,27 +179,13 @@ See [the architecture](docs/architecture/overview.md), [reproducibility methodol
 
 ## Roadmap
 
-<<<<<<< HEAD
-1. Completed: isolated subprocess workers with campaign timeout containment.
-2. Completed for CUDA: compatible-hardware validation, device identity evidence, and no CPU fallback.
-3. Completed initial corpus: checked-in, declarative metamorphic properties with per-run evidence.
+The evidence foundation is now in place: timeout- and memory-contained workers,
+checksummed single and relational artifacts, a reviewed metamorphic corpus, fresh-process
+reproduction, CUDA capability validation, and bounded CPU/GPU campaigns. The complete
+delivery and verification status—including explicit hardware and external-dependency
+boundaries—is tracked in the [holistic delivery plan](docs/roadmap.md).
 
-The initial [curated corpus](docs/corpus.md) deliberately contains no newly discovered
-compiler finding. A real finding can be admitted only after non-synthetic,
-failure-preserving minimization and fresh-process reproduction in an independently
-configured environment.
-=======
-Completed:
-
-1. Isolated subprocess workers with per-case timeout enforcement — `xlaxiom campaign --isolate --case-timeout-s N`. A hung kernel or out-of-memory failure now contains one case instead of the whole campaign, and contained failures are recorded rather than silently dropped.
-2. CUDA adapter validation on compatible hardware with captured device evidence — `xlaxiom gpu doctor`, `gpu validate`, `gpu campaign`, `gpu historical`. Validated on an AMD EPYC host with a V100 (SM 7.0), an RTX 3060 (SM 8.6), and a P40 (SM 6.1). See [the multi-GPU campaign evidence](docs/experiments/epyc-multi-gpu-campaign.md). TPU remains unvalidated because no TPU hardware is available here; it is reported unsupported rather than assumed.
-3. A curated corpus of independently reproduced findings and metamorphic properties — `xlaxiom corpus build`, `corpus validate`, `corpus metamorphic`. A finding is admitted only after it reproduces in at least two fresh processes, and the admission bar rejects an entry whose reproduction evidence is missing or whose checksum no longer matches.
-
-Next:
-
-1. **Minimize admitted corpus findings automatically.** `corpus build` admits a reproduced finding with its reduced workload, but does not yet run the failure-preserving minimizer over the corpus end to end. Wiring `minimize` into the corpus pipeline would shrink admitted cases to their smallest reproducing form.
-2. **Cross-backend corpus comparison.** `gradient-compare` already compares two campaigns. Extending the same treatment to the corpus would let a CPU baseline and a CUDA run be diffed entry by entry, separating shared candidates from accelerator-specific ones automatically.
-3. **Metamorphic properties on CUDA.** The property suite currently runs in whatever environment invokes it. Running it under `jax[cuda12]` and `jax[cuda13]` would check whether the relations hold identically across SM 6.1, 7.0, and 8.6.
-4. **More metamorphic relations.** The suite holds four properties. Precision-sensitive relations, such as a reduction commuting with a dtype change, or `sin`/`cos` identities holding under argument reduction, would widen coverage.
-5. **Longer bounded corpus campaigns.** A wider seed sweep would raise the chance of admitting a genuinely new finding rather than confirming that known behavior still reproduces.
->>>>>>> 5b3c899d15d3277a78140ad93a24d7b7b7f68556
+The corpus deliberately contains no newly discovered compiler finding unless it has a
+non-synthetic minimized artifact, fresh-process reproduction, and independently
+configured environment evidence. XLAxiom reports unavailable TPU/CUDA hardware as
+unsupported; it never converts that absence into a CPU or accelerator success claim.

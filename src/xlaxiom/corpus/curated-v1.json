@@ -36,6 +36,30 @@
       "title": "Matrix product transpose rule",
       "description": "(x @ y).T and y.T @ x.T produce equivalent outputs.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "negation-involution-v1",
+      "title": "Double negation is identity",
+      "description": "Negating a tensor twice preserves values and signed zero.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "subtraction-as-addition-v1",
+      "title": "Subtraction is addition of negation",
+      "description": "x - y and x + (-y) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "absolute-idempotence-v1",
+      "title": "Absolute value is idempotent",
+      "description": "abs(x) and abs(abs(x)) produce equivalent outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "integer-add-commutativity-v1",
+      "title": "Integer elementwise addition commutes",
+      "description": "int32 x + y and y + x produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
     }
   ]
 }

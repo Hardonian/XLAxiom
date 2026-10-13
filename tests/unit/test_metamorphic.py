@@ -17,6 +17,10 @@ def test_curated_properties_exactly_match_the_reviewed_registry() -> None:
         "transpose-involution-v1",
         "reshape-roundtrip-v1",
         "matmul-transpose-v1",
+        "negation-involution-v1",
+        "subtraction-as-addition-v1",
+        "absolute-idempotence-v1",
+        "integer-add-commutativity-v1",
     ]
 
 
@@ -39,7 +43,7 @@ def test_numpy_property_runner_records_passing_corpus_evidence() -> None:
     evidence = run_curated_properties(seed=12, backend="numpy")
 
     assert evidence["kind"] == "metamorphic-corpus-evidence"
-    assert evidence["counts"]["pass"] == 4
+    assert evidence["counts"]["pass"] == 8
     assert all(
         record["comparison"]["classification"] == "pass" for record in evidence["properties"]
     )
@@ -50,3 +54,18 @@ def test_unknown_property_and_invalid_seed_are_rejected() -> None:
         run_property("unreviewed", backend="numpy")
     with pytest.raises(MetamorphicPropertyError, match="seed must"):
         build_property("add-commutativity-v1", seed=-1)
+
+
+def test_property_campaign_and_coverage_are_bounded_and_explicit() -> None:
+    from xlaxiom.metamorphic import property_coverage, run_property_campaign
+
+    campaign = run_property_campaign(cases=2, seed=20, backend="numpy")
+    coverage = property_coverage(seed=20)
+
+    assert campaign["counts"]["pass"] == 16
+    assert campaign["candidate_observations"] == []
+    assert coverage["property_count"] == 8
+    assert {"add", "sub", "neg", "abs", "matmul", "reshape", "transpose"} <= set(
+        coverage["operations"]
+    )
+    assert coverage["dtypes"] == ["float32", "int32"]

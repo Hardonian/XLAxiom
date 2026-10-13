@@ -44,10 +44,15 @@ from .metamorphic import (
     MetamorphicPropertyError,
     build_property_artifact,
     curated_properties,
+    property_coverage,
     run_curated_properties,
+    run_property_campaign,
 )
 from .minimization import minimize
+from .model import ComparisonPolicy
+from .performance import PerformanceArtifactError, compare_benchmarks
 from .pipeline import FaultInjection, run_backend, run_comparison
+from .readiness import assess_upstream_readiness
 from .relational import (
     minimize_relational,
     reproduce_relational_isolated,
@@ -55,6 +60,7 @@ from .relational import (
     write_relational_report,
 )
 from .reporting import write_report
+from .stability import check_stability
 from .storage import (
     ArtifactError,
     CaseArtifact,
@@ -200,22 +206,21 @@ def command_report(args: argparse.Namespace) -> int:
 def command_benchmark(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
     if args.backend == "jax-jit":
-        _emit(benchmark_jax(artifact.workload, args.measurements))
-        return 0
-    warmup = run_backend(artifact.workload, args.backend)
-    if warmup.status.value != "ok":
-        _emit(warmup.summary())
-        return 2
-    timings: list[float] = []
-    for _ in range(args.measurements):
-        started = perf_counter()
-        result = run_backend(artifact.workload, args.backend)
-        if result.status.value != "ok":
-            _emit(result.summary())
+        record: dict[str, Any] = benchmark_jax(artifact.workload, args.measurements)
+    else:
+        warmup = run_backend(artifact.workload, args.backend)
+        if warmup.status.value != "ok":
+            _emit(warmup.summary())
             return 2
-        timings.append((perf_counter() - started) * 1000)
-    _emit(
-        {
+        timings: list[float] = []
+        for _ in range(args.measurements):
+            started = perf_counter()
+            result = run_backend(artifact.workload, args.backend)
+            if result.status.value != "ok":
+                _emit(result.summary())
+                return 2
+            timings.append((perf_counter() - started) * 1000)
+        record = {
             "backend": args.backend,
             "warmup_ms": warmup.duration_ms,
             "measurements": args.measurements,
@@ -223,7 +228,40 @@ def command_benchmark(args: argparse.Namespace) -> int:
             "min_ms": min(timings),
             "max_ms": max(timings),
         }
-    )
+    record["performance_version"] = "1.0"
+    record["workload_sha256"] = artifact.workload.digest()
+    if args.output:
+        save_json(args.output, record)
+    if args.baseline:
+        try:
+            baseline = json.loads(Path(args.baseline).read_text(encoding="utf-8"))
+            if not isinstance(baseline, dict):
+                raise PerformanceArtifactError("baseline must be a JSON object")
+            assessment = compare_benchmarks(baseline, record, args.max_relative_regression)
+        except (OSError, json.JSONDecodeError, PerformanceArtifactError) as exc:
+            raise SystemExit(f"invalid performance baseline: {exc}") from exc
+        _emit({"benchmark": record, "baseline_assessment": assessment})
+        return (
+            1 if assessment["classification"] == Classification.PERFORMANCE_REGRESSION.value else 0
+        )
+    _emit(record)
+    return 0
+
+
+def command_stability(args: argparse.Namespace) -> int:
+    artifact = _load(args.case)
+    try:
+        record = check_stability(artifact.workload, args.backend, args.runs)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
+    return 0 if record["classification"] == Classification.PASS.value else 1
+
+
+def command_readiness(args: argparse.Namespace) -> int:
+    _emit(assess_upstream_readiness(_load(args.case)))
     return 0
 
 
@@ -321,19 +359,61 @@ def command_property_list(_: argparse.Namespace) -> int:
     return 0
 
 
+def _property_policy(args: argparse.Namespace) -> ComparisonPolicy | None:
+    if args.rtol is None and args.atol is None:
+        return None
+    default = ComparisonPolicy()
+    policy = ComparisonPolicy(
+        identifier="property-cli-override-v1",
+        rtol=default.rtol if args.rtol is None else args.rtol,
+        atol=default.atol if args.atol is None else args.atol,
+    )
+    policy.validate()
+    return policy
+
+
 def command_property_run(args: argparse.Namespace) -> int:
     try:
         result = run_curated_properties(
             seed=args.seed,
             backend=args.backend,
             identifiers=tuple(args.property) if args.property else None,
+            policy=_property_policy(args),
         )
-    except MetamorphicPropertyError as exc:
+    except (MetamorphicPropertyError, ValueError) as exc:
         raise SystemExit(f"invalid curated property corpus: {exc}") from exc
     if args.output:
         save_json(args.output, result)
     _emit(result)
     return 0 if result["counts"][Classification.PASS.value] == len(result["properties"]) else 1
+
+
+def command_property_campaign(args: argparse.Namespace) -> int:
+    try:
+        result = run_property_campaign(
+            cases=args.cases,
+            seed=args.seed,
+            backend=args.backend,
+            identifiers=tuple(args.property) if args.property else None,
+            policy=_property_policy(args),
+        )
+    except (MetamorphicPropertyError, ValueError) as exc:
+        raise SystemExit(f"invalid property campaign: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0 if not result["candidate_observations"] else 1
+
+
+def command_property_coverage(args: argparse.Namespace) -> int:
+    try:
+        result = property_coverage(args.seed)
+    except MetamorphicPropertyError as exc:
+        raise SystemExit(f"invalid curated property corpus: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0
 
 
 def command_relation_create(args: argparse.Namespace) -> int:
@@ -892,7 +972,32 @@ def parser() -> argparse.ArgumentParser:
         "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
     )
     benchmark_parser.add_argument("--measurements", type=int, default=5, choices=range(1, 51))
+    benchmark_parser.add_argument("--output", help="write a portable benchmark evidence record")
+    benchmark_parser.add_argument(
+        "--baseline", help="compare against a saved benchmark evidence record"
+    )
+    benchmark_parser.add_argument(
+        "--max-relative-regression",
+        type=float,
+        default=0.2,
+        help="maximum median slowdown fraction before reporting a regression",
+    )
     benchmark_parser.set_defaults(func=command_benchmark)
+    stability_parser = commands.add_parser(
+        "stability", help="repeat one backend and detect output nondeterminism"
+    )
+    stability_parser.add_argument("--case", required=True)
+    stability_parser.add_argument(
+        "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
+    )
+    stability_parser.add_argument("--runs", type=int, default=3)
+    stability_parser.add_argument("--output")
+    stability_parser.set_defaults(func=command_stability)
+    readiness_parser = commands.add_parser(
+        "readiness", help="assess evidence needed before a human files an upstream issue"
+    )
+    readiness_parser.add_argument("--case", required=True)
+    readiness_parser.set_defaults(func=command_readiness)
     historical_parser = commands.add_parser(
         "historical", help="replay trusted adapters for documented historical regressions"
     )
@@ -972,8 +1077,40 @@ def parser() -> argparse.ArgumentParser:
     property_run.add_argument(
         "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
     )
+    property_run.add_argument("--rtol", type=float, help="explicit property relative tolerance")
+    property_run.add_argument("--atol", type=float, help="explicit property absolute tolerance")
     property_run.add_argument("--output", help="JSON evidence path")
     property_run.set_defaults(func=command_property_run)
+    property_campaign = property_commands.add_parser(
+        "campaign", help="run deterministic property shards across a bounded seed range"
+    )
+    property_campaign.add_argument("--cases", type=int, default=20)
+    property_campaign.add_argument("--seed", type=int, default=0)
+    property_campaign.add_argument(
+        "--property",
+        action="append",
+        choices=tuple(
+            property_definition.identifier for property_definition in curated_properties()
+        ),
+        help="property identifier; repeat to select more than one (default: all)",
+    )
+    property_campaign.add_argument(
+        "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
+    )
+    property_campaign.add_argument(
+        "--rtol", type=float, help="explicit property relative tolerance"
+    )
+    property_campaign.add_argument(
+        "--atol", type=float, help="explicit property absolute tolerance"
+    )
+    property_campaign.add_argument("--output", help="JSON evidence path")
+    property_campaign.set_defaults(func=command_property_campaign)
+    property_coverage_parser = property_commands.add_parser(
+        "coverage", help="report reviewed operations, dtypes, ranks, and edge-value coverage"
+    )
+    property_coverage_parser.add_argument("--seed", type=int, default=0)
+    property_coverage_parser.add_argument("--output", help="JSON evidence path")
+    property_coverage_parser.set_defaults(func=command_property_coverage)
     relation_parser = commands.add_parser(
         "relation", help="create, minimize, reproduce, and report relational case artifacts"
     )

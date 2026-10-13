@@ -15,7 +15,7 @@ from typing import Any
 
 from .comparison import Classification, compare
 from .execution import ExecutionResult, execute_jax, execute_numpy
-from .model import InputSpec, Node, Workload
+from .model import ComparisonPolicy, InputSpec, Node, Workload
 from .storage import RelationalArtifact
 
 CORPUS_VERSION = "1.0"
@@ -169,11 +169,103 @@ def _matmul_transpose(seed: int) -> PropertyWorkloads:
     )
 
 
+def _negation_involution(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload("negation-involution-v1", seed, inputs, (), ("x",), "left"),
+        _workload(
+            "negation-involution-v1",
+            seed,
+            inputs,
+            (Node("neg", ("x",), "negated"), Node("neg", ("negated",), "out")),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _subtraction_as_addition(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "subtraction-as-addition-v1",
+            seed,
+            inputs,
+            (Node("sub", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "subtraction-as-addition-v1",
+            seed,
+            inputs,
+            (Node("neg", ("y",), "negated"), Node("add", ("x", "negated"), "out")),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _absolute_idempotence(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "absolute-idempotence-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "absolute-idempotence-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "first"), Node("abs", ("first",), "out")),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _integer_add_commutativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (
+        InputSpec("x", (rows, columns), dtype="int32"),
+        InputSpec("y", (rows, columns), dtype="int32"),
+    )
+    return PropertyWorkloads(
+        _workload(
+            "integer-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "integer-add-commutativity-v1",
+            seed,
+            inputs,
+            (Node("add", ("y", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
 _BUILDERS: dict[str, PropertyBuilder] = {
     "add-commutativity-v1": _add_commutativity,
     "transpose-involution-v1": _transpose_involution,
     "reshape-roundtrip-v1": _reshape_roundtrip,
     "matmul-transpose-v1": _matmul_transpose,
+    "negation-involution-v1": _negation_involution,
+    "subtraction-as-addition-v1": _subtraction_as_addition,
+    "absolute-idempotence-v1": _absolute_idempotence,
+    "integer-add-commutativity-v1": _integer_add_commutativity,
 }
 
 
@@ -259,7 +351,20 @@ def _execute(workload: Workload, backend: str) -> ExecutionResult:
     raise MetamorphicPropertyError(f"unsupported property backend {backend!r}")
 
 
-def run_property(identifier: str, seed: int = 0, backend: str = "jax-jit") -> dict[str, Any]:
+def _triage(comparison: Any) -> str:
+    if comparison.classification == Classification.PASS:
+        return "pass"
+    if comparison.classification == Classification.NUMERICAL_DISCREPANCY:
+        return "candidate_metamorphic_violation"
+    return "execution_or_environment_failure"
+
+
+def run_property(
+    identifier: str,
+    seed: int = 0,
+    backend: str = "jax-jit",
+    policy: ComparisonPolicy | None = None,
+) -> dict[str, Any]:
     """Execute both sides of one property and record its numerical observation."""
     property_definition = next(
         (
@@ -273,7 +378,9 @@ def run_property(identifier: str, seed: int = 0, backend: str = "jax-jit") -> di
         raise MetamorphicPropertyError(f"unknown curated property {identifier!r}")
     workloads = build_property(identifier, seed)
     observation = compare(
-        _execute(workloads.left, backend), _execute(workloads.right, backend), workloads.left.policy
+        _execute(workloads.left, backend),
+        _execute(workloads.right, backend),
+        policy or workloads.left.policy,
     )
     return {
         "evidence_version": "1.0",
@@ -290,6 +397,7 @@ def run_property(identifier: str, seed: int = 0, backend: str = "jax-jit") -> di
         "left_workload_sha256": workloads.left.digest(),
         "right_workload_sha256": workloads.right.digest(),
         "comparison": observation.to_dict(),
+        "triage": _triage(observation),
         "interpretation": (
             "A passing property confirms this relation for the recorded bounded input and "
             "backend only; a discrepancy is an observation requiring ordinary evidence review."
@@ -298,13 +406,16 @@ def run_property(identifier: str, seed: int = 0, backend: str = "jax-jit") -> di
 
 
 def run_curated_properties(
-    seed: int = 0, backend: str = "jax-jit", identifiers: tuple[str, ...] | None = None
+    seed: int = 0,
+    backend: str = "jax-jit",
+    identifiers: tuple[str, ...] | None = None,
+    policy: ComparisonPolicy | None = None,
 ) -> dict[str, Any]:
     """Run all, or a named subset, of the curated property corpus."""
     selected = identifiers or tuple(
         property_definition.identifier for property_definition in curated_properties()
     )
-    records = [run_property(identifier, seed, backend) for identifier in selected]
+    records = [run_property(identifier, seed, backend, policy) for identifier in selected]
     counts = {classification.value: 0 for classification in Classification}
     for record in records:
         counts[str(record["comparison"]["classification"])] += 1
@@ -320,5 +431,67 @@ def run_curated_properties(
         "warning": (
             "This corpus contains reviewed metamorphic relations, not newly discovered compiler "
             "findings. It does not establish correctness beyond the recorded executions."
+        ),
+    }
+
+
+def run_property_campaign(
+    cases: int,
+    seed: int = 0,
+    backend: str = "jax-jit",
+    identifiers: tuple[str, ...] | None = None,
+    policy: ComparisonPolicy | None = None,
+) -> dict[str, Any]:
+    """Run deterministic property shards across sequential seeds under a fixed bound."""
+    if not 1 <= cases <= 500:
+        raise MetamorphicPropertyError("property campaign cases must be between 1 and 500")
+    selected = identifiers or tuple(
+        property_definition.identifier for property_definition in curated_properties()
+    )
+    records = [
+        run_curated_properties(seed + offset, backend, selected, policy) for offset in range(cases)
+    ]
+    counts = {classification.value: 0 for classification in Classification}
+    candidates: list[dict[str, Any]] = []
+    for record in records:
+        for classification, count in record["counts"].items():
+            counts[classification] += int(count)
+        for property_record in record["properties"]:
+            if property_record["comparison"]["classification"] != Classification.PASS.value:
+                candidates.append(property_record)
+    return {
+        "evidence_version": "1.0",
+        "corpus_version": CORPUS_VERSION,
+        "kind": "metamorphic-property-campaign-evidence",
+        "seed": seed,
+        "cases": cases,
+        "backend": backend,
+        "requested_properties": list(selected),
+        "counts": counts,
+        "candidate_observations": candidates,
+        "shards": records,
+    }
+
+
+def property_coverage(seed: int = 0) -> dict[str, Any]:
+    """Report operations, dtypes, ranks, and edge-value coverage of reviewed pairs."""
+    operations: set[str] = set()
+    dtypes: set[str] = set()
+    ranks: set[int] = set()
+    for property_definition in curated_properties():
+        pair = build_property(property_definition.identifier, seed)
+        for workload in (pair.left, pair.right):
+            operations.update(node.op for node in workload.nodes)
+            dtypes.update(spec.dtype for spec in workload.inputs)
+            ranks.update(len(spec.shape) for spec in workload.inputs)
+    return {
+        "corpus_version": CORPUS_VERSION,
+        "kind": "metamorphic-property-coverage",
+        "property_count": len(curated_properties()),
+        "operations": sorted(operations),
+        "dtypes": sorted(dtypes),
+        "ranks": sorted(ranks),
+        "edge_value_strategy": (
+            "random inputs deterministically include signed zero and magnitude edges"
         ),
     }

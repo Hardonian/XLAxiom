@@ -107,7 +107,46 @@ def test_property_corpus_cli_writes_replayable_evidence(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     evidence = json.loads(output.read_text(encoding="utf-8"))
     assert evidence["kind"] == "metamorphic-corpus-evidence"
-    assert evidence["counts"]["pass"] == 4
+    assert evidence["counts"]["pass"] == 8
+
+
+def test_property_campaign_and_coverage_cli(tmp_path) -> None:
+    campaign = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "property",
+            "campaign",
+            "--cases",
+            "2",
+            "--backend",
+            "numpy",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    coverage_path = tmp_path / "coverage.json"
+    coverage = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "property",
+            "coverage",
+            "--output",
+            str(coverage_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert campaign.returncode == 0, campaign.stderr
+    assert json.loads(campaign.stdout)["counts"]["pass"] == 16
+    assert coverage.returncode == 0, coverage.stderr
+    assert json.loads(coverage_path.read_text(encoding="utf-8"))["property_count"] == 8
 
 
 def test_relational_artifact_cli_round_trip(tmp_path) -> None:

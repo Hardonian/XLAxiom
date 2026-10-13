@@ -3,6 +3,9 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,3 +32,31 @@ jobs:
       - run: uv run pytest
       - run: uv build
       - run: uv run xlaxiom doctor
+      - run: uv run xlaxiom property coverage
+  properties:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        property:
+          - add-commutativity-v1
+          - transpose-involution-v1
+          - reshape-roundtrip-v1
+          - matmul-transpose-v1
+          - negation-involution-v1
+          - subtraction-as-addition-v1
+          - absolute-idempotence-v1
+          - integer-add-commutativity-v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --extra dev
+      - run: uv run xlaxiom property run --property ${{ matrix.property }} --backend jax-jit
+  scheduled-corpus:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --extra dev
+      - run: uv run xlaxiom property campaign --cases 25 --backend jax-jit

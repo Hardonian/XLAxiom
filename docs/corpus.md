@@ -11,7 +11,11 @@ property is run.
 ```console
 uv run xlaxiom property list
 uv run xlaxiom property run --seed 42 --backend jax-jit --output results/properties.json
+uv run xlaxiom property campaign --cases 20 --backend jax-jit
+uv run xlaxiom property coverage
 uv run xlaxiom property run --property matmul-transpose-v1 --backend numpy
+uv run xlaxiom relation create --property matmul-transpose-v1 --output relation.json
+uv run xlaxiom relation reproduce --case relation.json
 ```
 
 Each result records both generated workload checksums, the execution backend, numerical
@@ -27,6 +31,10 @@ review, minimize, and reproduce; it does not diagnose a compiler defect.
 | `transpose-involution-v1` | Transposing a rank-two tensor twice restores it. |
 | `reshape-roundtrip-v1` | Flattening and restoring a rank-two tensor preserves it. |
 | `matmul-transpose-v1` | `(x @ y).T` equals `y.T @ x.T`. |
+| `negation-involution-v1` | Negating twice preserves values and signed zero. |
+| `subtraction-as-addition-v1` | `x - y` equals `x + (-y)`. |
+| `absolute-idempotence-v1` | `abs(x)` equals `abs(abs(x))`. |
+| `integer-add-commutativity-v1` | `int32 x + y` equals `y + x`. |
 
 The corpus manifest is [`src/xlaxiom/corpus/curated-v1.json`](../src/xlaxiom/corpus/curated-v1.json).
 It carries no executable payload and has no general `builder` or import field.
@@ -45,5 +53,7 @@ A proposed finding must include all of the following before admission:
    evidence captured.
 
 Use the normal evidence workflow—`minimize`, `reproduce`, `report`, and optionally a
-validated `bundle`—before proposing an entry. This preserves the distinction between
-an observed discrepancy and a supported root-cause claim.
+validated `bundle`—before proposing an entry. A failed property can be materialized as
+a relational artifact, minimized on both sides, reproduced in fresh processes, reported,
+and bundled without executable payloads. This preserves the distinction between an
+observed discrepancy and a supported root-cause claim.
