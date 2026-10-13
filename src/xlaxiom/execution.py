@@ -5,7 +5,6 @@ from __future__ import annotations
 import platform
 import time
 import traceback
-from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
@@ -56,23 +55,26 @@ class ExecutionResult:
         }
 
 
+_OP_ATTR_MAP: dict[str, str] = {
+    "add": "add",
+    "sub": "subtract",
+    "mul": "multiply",
+    "div": "divide",
+    "matmul": "matmul",
+    "neg": "negative",
+    "sin": "sin",
+    "cos": "cos",
+    "exp": "exp",
+    "tanh": "tanh",
+    "abs": "abs",
+}
+
+
 def _apply(op: Node, values: dict[str, Any], api: Any) -> Any:
     args = [values[name] for name in op.inputs]
-    functions: dict[str, Callable[..., Any]] = {
-        "add": api.add,
-        "sub": api.subtract,
-        "mul": api.multiply,
-        "div": api.divide,
-        "matmul": api.matmul,
-        "neg": api.negative,
-        "sin": api.sin,
-        "cos": api.cos,
-        "exp": api.exp,
-        "tanh": api.tanh,
-        "abs": api.abs,
-    }
-    if op.op in functions:
-        return functions[op.op](*args)
+    func_name = _OP_ATTR_MAP.get(op.op)
+    if func_name is not None:
+        return getattr(api, func_name)(*args)
     if op.op == "reshape":
         return api.reshape(args[0], tuple(op.params["shape"]))
     if op.op == "transpose":
