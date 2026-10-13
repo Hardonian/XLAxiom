@@ -254,6 +254,8 @@ def benchmark_jax(
     ``requested_platform`` is required, not preferred: an unavailable accelerator
     raises rather than silently benchmarking on CPU.
     """
+    if measurements < 1:
+        raise ValueError("measurements must be at least 1")
     workload.validate()
     try:
         import jax

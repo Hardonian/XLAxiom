@@ -80,6 +80,34 @@ def _status_classification(result: ExecutionResult) -> Classification:
     }.get(result.status, Classification.INCONCLUSIVE)
 
 
+def _max_or_zero(values: Any) -> float:
+    """Maximum absolute error, or 0.0 for an output with no elements.
+
+    ``np.max`` raises on a zero-size array. An empty output is a legitimate,
+    validated shape, so the metric reports zero rather than failing the comparison.
+    """
+    if values.size == 0:
+        return 0.0
+    return float(np.max(values))
+
+
+def _max_relative_error(absolute: Any, expected: Any) -> float:
+    """Worst-case relative error, scaled by each element's own magnitude.
+
+    Dividing by an ``atol`` floor — as an earlier revision did — reports a relative
+    error of 1.0 for a 1e-7 difference against a 1e-7 tolerance, which reads as a
+    100% error and is not interpretable. Scaling by ``|expected|`` per element keeps
+    the metric meaningful; elements whose reference magnitude is zero contribute
+    nothing, and the absolute-error metric already covers those cases.
+    """
+    magnitude = np.abs(expected)
+    relative = np.zeros(absolute.shape, dtype=np.float64)
+    scalable = magnitude > 0
+    with np.errstate(invalid="ignore", divide="ignore"):
+        np.divide(absolute, magnitude, out=relative, where=scalable)
+    return _max_or_zero(relative)
+
+
 def compare(
     left: ExecutionResult, right: ExecutionResult, policy: ComparisonPolicy
 ) -> ComparisonResult:
@@ -104,10 +132,6 @@ def compare(
         delta = np.zeros(actual.shape, dtype=np.float64)
         np.subtract(actual, expected, out=delta, where=finite, casting="unsafe")
         absolute = np.abs(delta)
-        denominator = np.maximum(np.abs(expected), policy.atol)
-        relative = np.zeros(actual.shape, dtype=np.float64)
-        with np.errstate(invalid="ignore", divide="ignore"):
-            np.divide(absolute, denominator, out=relative, where=finite)
         close = absolute <= (policy.atol + policy.rtol * np.abs(expected))
         finite_mismatches = int((finite & ~close).sum())
         same_nan = (
@@ -128,8 +152,8 @@ def compare(
             OutputMetrics(
                 tuple(actual.shape),
                 str(actual.dtype),
-                float(np.max(absolute)),
-                float(np.max(relative)),
+                _max_or_zero(absolute),
+                _max_relative_error(absolute, expected),
                 finite_mismatches,
                 int(nonfinite.sum()),
                 int(signed_zero.sum()),
