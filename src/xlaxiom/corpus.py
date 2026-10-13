@@ -351,12 +351,6 @@ def check_metamorphic_property(prop: MetamorphicProperty) -> dict[str, Any]:
     return record
 
 
-def _materialize(workload: Workload, api: Any) -> Any:
-    from .model import materialize_inputs
-
-    return materialize_inputs(workload)["x"]
-
-
 def _property_program(prop: MetamorphicProperty) -> Any:
     """The JIT-compiled form of a property's relation."""
 
