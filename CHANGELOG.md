@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 - Unreleased
+
+- Added per-operation, analytic-oracle #40634 historical studies and isolated version execution.
+- Added validated execution of portable case bundles without archive extraction.
+
 ## 0.3.0 - Unreleased
 
 - Added isolated uv-backed JAX version matrix execution and conservative version classification.

@@ -1,0 +1,92 @@
+{
+  "fix_release_status": "PENDING: upstream commit 86d3fe7 is not verified in a released wheel.",
+  "report_version": "1.0",
+  "results": [
+    {
+      "duration_s": 8.728787499999953,
+      "exit_code": 0,
+      "requested_jax": "0.11.1",
+      "stderr": "Installed 7 packages in 660ms\nInstalled 7 packages in 715ms\n",
+      "study": {
+        "jax": "0.11.1",
+        "jaxlib": "0.11.1",
+        "observations": [
+          {
+            "analytic_reference": 1e-22,
+            "classification": "analytic_discrepancy",
+            "eager_gradient": 0.0,
+            "input": 1e+22,
+            "jit_gradient": 0.0,
+            "operation": "arcsinh",
+            "rtol": 2e-05
+          },
+          {
+            "analytic_reference": 1e-22,
+            "classification": "analytic_discrepancy",
+            "eager_gradient": 0.0,
+            "input": -1e+22,
+            "jit_gradient": 0.0,
+            "operation": "arcsinh",
+            "rtol": 2e-05
+          },
+          {
+            "analytic_reference": 1e-22,
+            "classification": "analytic_discrepancy",
+            "eager_gradient": 0.0,
+            "input": 1e+22,
+            "jit_gradient": 0.0,
+            "operation": "acosh",
+            "rtol": 2e-05
+          }
+        ],
+        "platform": "Windows-11-10.0.29683-SP0",
+        "source": "https://github.com/jax-ml/jax/issues/40634",
+        "study": "XLAxiom Historical Regression Study 001 \u2014 JAX Hyperbolic Gradient Stability",
+        "x64_enabled": false
+      }
+    },
+    {
+      "duration_s": 8.33973130000004,
+      "exit_code": 0,
+      "requested_jax": "0.11.2",
+      "stderr": "Installed 7 packages in 686ms\n",
+      "study": {
+        "jax": "0.11.2",
+        "jaxlib": "0.11.2",
+        "observations": [
+          {
+            "analytic_reference": 1e-22,
+            "classification": "analytic_discrepancy",
+            "eager_gradient": 0.0,
+            "input": 1e+22,
+            "jit_gradient": 0.0,
+            "operation": "arcsinh",
+            "rtol": 2e-05
+          },
+          {
+            "analytic_reference": 1e-22,
+            "classification": "analytic_discrepancy",
+            "eager_gradient": 0.0,
+            "input": -1e+22,
+            "jit_gradient": 0.0,
+            "operation": "arcsinh",
+            "rtol": 2e-05
+          },
+          {
+            "analytic_reference": 1e-22,
+            "classification": "pass",
+            "eager_gradient": 9.999999682655225e-23,
+            "input": 1e+22,
+            "jit_gradient": 9.999999682655225e-23,
+            "operation": "acosh",
+            "rtol": 2e-05
+          }
+        ],
+        "platform": "Windows-11-10.0.29683-SP0",
+        "source": "https://github.com/jax-ml/jax/issues/40634",
+        "study": "XLAxiom Historical Regression Study 001 \u2014 JAX Hyperbolic Gradient Stability",
+        "x64_enabled": false
+      }
+    }
+  ]
+}

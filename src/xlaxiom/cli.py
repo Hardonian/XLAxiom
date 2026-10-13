@@ -8,13 +8,14 @@ from statistics import median
 from time import perf_counter
 from typing import Any
 
-from .bundle import create_bundle, validate_bundle
+from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CampaignConfig, run_cpu_campaign
 from .comparison import Classification
 from .cuda import cuda_capability
 from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
-from .historical import replay_jax_40634
+from .historical import hyperbolic_gradient_study, replay_jax_40634
+from .historical_matrix import run_hyperbolic_matrix
 from .matrix import run_matrix
 from .minimization import minimize
 from .pipeline import FaultInjection, run_backend, run_comparison
@@ -186,6 +187,19 @@ def command_historical(_: argparse.Namespace) -> int:
     )
 
 
+def command_historical_study(args: argparse.Namespace) -> int:
+    study = hyperbolic_gradient_study()
+    if args.output:
+        save_json(args.output, study)
+    _emit(study)
+    return 0
+
+
+def command_historical_matrix(args: argparse.Namespace) -> int:
+    _emit(run_hyperbolic_matrix(args.version, args.output))
+    return 0
+
+
 def command_campaign(args: argparse.Namespace) -> int:
     try:
         record = run_cpu_campaign(CampaignConfig(args.cases, args.seed, args.max_duration_s))
@@ -214,6 +228,11 @@ def command_bundle_create(args: argparse.Namespace) -> int:
 
 def command_bundle_validate(args: argparse.Namespace) -> int:
     _emit(validate_bundle(args.bundle))
+    return 0
+
+
+def command_bundle_run(args: argparse.Namespace) -> int:
+    _emit(run_bundle(args.bundle, args.output))
     return 0
 
 
@@ -279,6 +298,17 @@ def parser() -> argparse.ArgumentParser:
         "historical", help="replay trusted adapters for documented historical regressions"
     )
     historical_parser.set_defaults(func=command_historical)
+    historical_study = commands.add_parser(
+        "historical-study", help="run per-operation #40634 study"
+    )
+    historical_study.add_argument("--output")
+    historical_study.set_defaults(func=command_historical_study)
+    historical_matrix = commands.add_parser(
+        "historical-matrix", help="run #40634 study in isolated versions"
+    )
+    historical_matrix.add_argument("--version", action="append", required=True)
+    historical_matrix.add_argument("--output", required=True)
+    historical_matrix.set_defaults(func=command_historical_matrix)
     campaign_parser = commands.add_parser(
         "campaign", help="run a bounded trusted CPU NumPy/JAX differential campaign"
     )
@@ -305,6 +335,10 @@ def parser() -> argparse.ArgumentParser:
     bundle_validate = bundle_commands.add_parser("validate")
     bundle_validate.add_argument("--bundle", required=True)
     bundle_validate.set_defaults(func=command_bundle_validate)
+    bundle_run = bundle_commands.add_parser("run")
+    bundle_run.add_argument("--bundle", required=True)
+    bundle_run.add_argument("--output", required=True)
+    bundle_run.set_defaults(func=command_bundle_run)
     return root
 
 

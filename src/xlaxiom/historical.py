@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import math
 import platform
+import sys
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -24,6 +26,59 @@ class HistoricalObservation:
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
+
+
+def hyperbolic_gradient_study() -> dict[str, object]:
+    """Per-operation eager/JIT gradient observations with analytic float64 references."""
+    import jax
+    import jax.numpy as jnp
+    import jaxlib
+
+    cases = (("arcsinh", 1e22), ("arcsinh", -1e22), ("acosh", 1e22))
+    observations: list[dict[str, object]] = []
+    for operation, raw_value in cases:
+        value = jnp.float32(raw_value)
+        function = getattr(jnp, operation)
+        eager = float(jax.grad(function)(value).block_until_ready())
+        compiled = float(jax.jit(jax.grad(function))(value).block_until_ready())
+        if operation == "arcsinh":
+            reference = 1.0 / math.hypot(1.0, abs(raw_value))
+        else:
+            reference = 1.0 / (math.sqrt(raw_value - 1.0) * math.sqrt(raw_value + 1.0))
+        passed = np.isclose(eager, reference, rtol=2e-5, atol=0.0) and np.isclose(
+            compiled, reference, rtol=2e-5, atol=0.0
+        )
+        observations.append(
+            {
+                "operation": operation,
+                "input": raw_value,
+                "eager_gradient": eager,
+                "jit_gradient": compiled,
+                "analytic_reference": reference,
+                "rtol": 2e-5,
+                "classification": "pass" if passed else "analytic_discrepancy",
+            }
+        )
+    return {
+        "study": "XLAxiom Historical Regression Study 001 — JAX Hyperbolic Gradient Stability",
+        "source": "https://github.com/jax-ml/jax/issues/40634",
+        "jax": jax.__version__,
+        "jaxlib": jaxlib.__version__,
+        "platform": platform.platform(),
+        "x64_enabled": bool(jax.config.jax_enable_x64),
+        "observations": observations,
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    if argv == ["_study"]:
+        print(json.dumps(hyperbolic_gradient_study(), sort_keys=True))
+        return 0
+    raise SystemExit("historical module is invoked by xlaxiom historical")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
 
 
 def replay_jax_40634() -> HistoricalObservation:

@@ -25,6 +25,8 @@ On 2026-10-12, the repository's test environment ran JAX 0.11.2/jaxlib 0.11.2 on
 
 XLAxiom 0.2 additionally completed a bounded 500-case CPU campaign (seeds 1000–1499) in 39.73 seconds: all 500 NumPy-vs-JIT comparisons and all 500 eager-vs-JIT comparisons passed under the recorded dtype-aware policy. The exact machine-readable record is [available here](docs/experiments/cpu-campaign-2026-10-12.json). It found no new candidate anomalies in that bounded corpus. The [historical replay](docs/research/jax-40634.md) did reproduce known JAX issue #40634 behavior on the locally installed 0.11.2 package; it is explicitly not represented as a new discovery.
 
+Version 0.4 provides a real per-operation historical transition: isolated JAX 0.11.1→0.11.2 testing confirms that `acosh(float32(1e22))` gradient changed from an analytic discrepancy to an oracle pass, while `arcsinh` remains discrepant in both released wheels. See [Historical Regression Study 001](docs/research/historical-regression-study-001.md).
+
 ## What it does
 
 ```text
