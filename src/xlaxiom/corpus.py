@@ -32,7 +32,8 @@ from typing import Any
 
 from .comparison import Classification
 from .minimization import MinimizationResult, minimize
-from .model import Workload
+from .model import ValidationError, Workload
+from .storage import atomic_write_text
 
 CORPUS_VERSION = "1.0"
 
@@ -121,6 +122,8 @@ def validate_entry(payload: dict[str, Any]) -> None:
     This is the guard that keeps the corpus honest: an entry claiming to be a
     reproduced finding must actually carry the reproduction evidence.
     """
+    if not isinstance(payload, dict):
+        raise ValueError("corpus entry must be an object")
     if payload.get("corpus_version") != CORPUS_VERSION:
         raise ValueError(f"unsupported corpus version {payload.get('corpus_version')!r}")
     if payload.get("sha256") != digest(payload):
@@ -131,13 +134,25 @@ def validate_entry(payload: dict[str, Any]) -> None:
     if not payload.get("identifier"):
         raise ValueError("corpus entry needs an identifier")
     if category == "reproduced-finding":
-        if payload.get("reproductions", 0) < REQUIRED_REPRODUCTIONS:
+        reproductions = payload.get("reproductions")
+        if not isinstance(reproductions, int) or isinstance(reproductions, bool):
+            raise ValueError("a reproduced finding must record an integer reproduction count")
+        if reproductions < REQUIRED_REPRODUCTIONS:
             raise ValueError(
                 "a reproduced finding requires independent reproduction in at least "
                 f"{REQUIRED_REPRODUCTIONS} fresh processes"
             )
-        if payload.get("workload") is None:
+        workload_payload = payload.get("workload")
+        if not isinstance(workload_payload, dict):
             raise ValueError("a reproduced finding must carry its reduced workload")
+        try:
+            workload = Workload.from_dict(workload_payload)
+        except ValidationError as exc:
+            raise ValueError(
+                f"a reproduced finding has an invalid reduced workload: {exc}"
+            ) from exc
+        if payload.get("workload_sha256") != workload.digest():
+            raise ValueError("a reproduced finding workload checksum mismatch")
         if payload.get("classification") in {None, Classification.PASS.value}:
             raise ValueError("a reproduced finding must record a non-pass classification")
     if category == "metamorphic-property" and payload.get("property_check") is None:
@@ -162,9 +177,7 @@ def save_corpus(path: str | Path, entries: list[dict[str, Any]]) -> Path:
             "Known upstream behavior is filed as known-historical and never as a new finding.",
         ],
     }
-    temporary = destination.with_suffix(destination.suffix + ".tmp")
-    temporary.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary.replace(destination)
+    atomic_write_text(destination, json.dumps(document, indent=2, sort_keys=True) + "\n")
     return destination
 
 
@@ -180,6 +193,11 @@ def load_corpus(path: str | Path) -> dict[str, Any]:
     entries = document.get("entries")
     if not isinstance(entries, list):
         raise ValueError("corpus entries must be a list")
+    if document.get("entry_count") != len(entries):
+        raise ValueError("corpus entry_count does not match its entries")
+    expected_categories = {name: _count(entries, name) for name in sorted(CATEGORIES)}
+    if document.get("categories") != expected_categories:
+        raise ValueError("corpus category counts do not match its entries")
     for payload in entries:
         validate_entry(payload)
     return document

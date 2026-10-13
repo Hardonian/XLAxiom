@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-No changes yet.
-
-## 0.5.3 - 2026-10-13
-
+- Reframed the README and documentation entry points around complete user journeys;
+  moved host-specific evidence detail out of the primary product surface.
+- Corrected the documented property-comparison workflow so it creates both evidence
+  artifacts before attempting a comparison.
 - Moved the repeat distribution build outside the source checkout so the verification
   output directory cannot affect source-distribution file selection.
 

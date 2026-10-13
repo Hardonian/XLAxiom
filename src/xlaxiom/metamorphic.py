@@ -720,14 +720,21 @@ def property_coverage(seed: int = 0) -> dict[str, Any]:
 
 
 def validate_property_evidence(data: object) -> dict[str, Any]:
-    """Validate the identity-bearing fields required for cross-backend comparison."""
+    """Validate the identity-bearing fields required for cross-backend comparison.
+
+    The workload digests are not merely opaque labels.  Every curated property is
+    deterministic for a given seed, so evidence must carry the exact digests rebuilt
+    from the reviewed registry.  This prevents a well-formed but invented property or
+    arbitrary 64-character digest from being compared as if it were curated evidence.
+    """
     if not isinstance(data, dict):
         raise MetamorphicEvidenceError("property evidence must be a JSON object")
     if data.get("evidence_version") != "1.0" or data.get("corpus_version") != CORPUS_VERSION:
         raise MetamorphicEvidenceError("unsupported property evidence version")
     if data.get("kind") != "metamorphic-corpus-evidence":
         raise MetamorphicEvidenceError("artifact is not metamorphic corpus evidence")
-    if not isinstance(data.get("seed"), int):
+    seed = data.get("seed")
+    if isinstance(seed, bool) or not isinstance(seed, int) or not 0 <= seed < 2**63:
         raise MetamorphicEvidenceError("property evidence seed must be an integer")
     if data.get("backend") not in PROPERTY_BACKENDS:
         raise MetamorphicEvidenceError("property evidence has an unsupported backend")
@@ -742,6 +749,15 @@ def validate_property_evidence(data: object) -> dict[str, Any]:
         raise MetamorphicEvidenceError("property evidence has invalid records or counts")
     if "execution" in data and not isinstance(data["execution"], dict):
         raise MetamorphicEvidenceError("property evidence execution context must be an object")
+    definitions = {
+        property_definition.identifier: property_definition
+        for property_definition in curated_properties()
+    }
+    unknown_requested = set(requested) - set(definitions)
+    if unknown_requested:
+        raise MetamorphicEvidenceError(
+            f"property evidence names unknown curated properties: {sorted(unknown_requested)!r}"
+        )
     by_identifier: dict[str, dict[str, Any]] = {}
     observed_counts = {classification.value: 0 for classification in Classification}
     for record in records:
@@ -756,14 +772,37 @@ def validate_property_evidence(data: object) -> dict[str, Any]:
             raise MetamorphicEvidenceError("property evidence record has no identifier")
         if identifier in by_identifier:
             raise MetamorphicEvidenceError(f"duplicate property evidence for {identifier!r}")
+        expected_definition = definitions.get(identifier)
+        if expected_definition is None:
+            raise MetamorphicEvidenceError(
+                f"property evidence names unknown curated property {identifier!r}"
+            )
+        if definition != {
+            "identifier": expected_definition.identifier,
+            "title": expected_definition.title,
+            "description": expected_definition.description,
+            "relation": expected_definition.relation,
+        }:
+            raise MetamorphicEvidenceError(
+                f"property definition does not match curated property {identifier!r}"
+            )
         classification = comparison.get("classification")
         if classification not in observed_counts:
             raise MetamorphicEvidenceError(f"property {identifier!r} has no classification")
         observed_counts[classification] += 1
+        expected_workloads = build_property(identifier, seed)
+        expected_identity = (expected_workloads.left.digest(), expected_workloads.right.digest())
+        observed_identity: list[str] = []
         for field in ("left_workload_sha256", "right_workload_sha256"):
             value = record.get(field)
             if not isinstance(value, str) or len(value) != 64:
                 raise MetamorphicEvidenceError(f"property {identifier!r} has invalid {field}")
+            observed_identity.append(value)
+        if tuple(observed_identity) != expected_identity:
+            raise MetamorphicEvidenceError(
+                f"property workload identity mismatch for {identifier!r}: "
+                "evidence does not match the curated workload"
+            )
         if record.get("seed") != data["seed"] or record.get("backend") != data["backend"]:
             raise MetamorphicEvidenceError(
                 f"property {identifier!r} does not match its artifact configuration"

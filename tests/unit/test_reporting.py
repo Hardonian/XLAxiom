@@ -73,7 +73,8 @@ def test_write_report_creates_json_and_markdown(tmp_path) -> None:
     artifact = CaseArtifact(synthetic_control(seed=42), fault=None)
     comparison = _make_sample_comparison(Classification.NUMERICAL_DISCREPANCY)
 
-    json_path, markdown_path = write_report(tmp_path, artifact, comparison)
+    case_path = tmp_path / "reduced-case.json"
+    json_path, markdown_path = write_report(tmp_path, artifact, comparison, case_path)
 
     assert json_path.exists()
     assert markdown_path.exists()
@@ -92,3 +93,8 @@ def test_write_report_creates_json_and_markdown(tmp_path) -> None:
     assert artifact.workload.identifier in md_text
     assert "numerical_discrepancy" in md_text
     assert "No upstream issue is filed by XLAxiom." in md_text
+    assert f"xlaxiom reproduce --case {case_path}" in md_text
+
+    issue_draft = data["issue_draft"]
+    assert issue_draft["case_sha256"] == artifact.to_dict()["sha256"]
+    assert issue_draft["workload_sha256"] == artifact.workload.digest()

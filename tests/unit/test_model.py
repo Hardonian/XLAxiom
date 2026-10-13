@@ -79,3 +79,45 @@ def test_broadcast_shape_incompatible() -> None:
 
     with pytest.raises(ValidationError, match="incompatible broadcast shapes"):
         _broadcast_shape((5, 2, 4), (5, 3, 4))
+
+
+@pytest.mark.parametrize(
+    ("params", "message"),
+    [
+        ({"axis": [2]}, "reduction axis must be between"),
+        ({"axis": [-3]}, "reduction axis must be between"),
+        ({"axis": [0, 0]}, "duplicate reduction axis"),
+        ({"axis": [0], "keepdims": 1}, "keepdims must be a boolean"),
+        ({"axis": [0], "unexpected": True}, "unsupported parameters"),
+    ],
+)
+def test_rejects_malformed_reduction_parameters_before_execution(params, message) -> None:
+    data = generate(GenerationConfig(seed=1)).canonical_dict()
+    data["nodes"] = [
+        {
+            "op": "sum",
+            "inputs": ["x"],
+            "output": "out",
+            "params": params,
+        }
+    ]
+    data["outputs"] = ["out"]
+
+    with pytest.raises(ValidationError, match=message):
+        Workload.from_dict(data)
+
+
+def test_rejects_malformed_operation_parameter_types_without_coercion() -> None:
+    data = generate(GenerationConfig(seed=1)).canonical_dict()
+    data["nodes"] = [
+        {
+            "op": "reshape",
+            "inputs": ["x"],
+            "output": "out",
+            "params": {"shape": ["4"]},
+        }
+    ]
+    data["outputs"] = ["out"]
+
+    with pytest.raises(ValidationError, match="reshape shape must be an array of integers"):
+        Workload.from_dict(data)

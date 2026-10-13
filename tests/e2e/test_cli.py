@@ -46,6 +46,8 @@ def test_module_invocation_forms_are_equivalent(tmp_path) -> None:
 def test_fresh_process_reproduction(tmp_path) -> None:
     original = tmp_path / "original.json"
     reduced = tmp_path / "reduced.json"
+    reproduction_evidence = tmp_path / "reproduction.json"
+    environment_evidence = tmp_path / "environment.json"
     generate = subprocess.run(
         [
             sys.executable,
@@ -77,12 +79,74 @@ def test_fresh_process_reproduction(tmp_path) -> None:
         text=True,
     )
     assert minimized.returncode == 0, minimized.stderr
+    captured_environment = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "environment",
+            "capture",
+            "--label",
+            "cli-test-host",
+            "--output",
+            str(environment_evidence),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert captured_environment.returncode == 0, captured_environment.stderr
     reproduced = subprocess.run(
-        [sys.executable, "-m", "xlaxiom", "reproduce", "--case", str(reduced)],
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "reproduce",
+            "--case",
+            str(reduced),
+            "--output",
+            str(reproduction_evidence),
+            "--environment-evidence",
+            str(environment_evidence),
+        ],
         capture_output=True,
         text=True,
     )
     assert reproduced.returncode == 0, reproduced.stdout
+    record = json.loads(reproduction_evidence.read_text(encoding="utf-8"))
+    environment = json.loads(environment_evidence.read_text(encoding="utf-8"))
+    assert record["reproduction_evidence_version"] == "1.0"
+    assert record["verdict"] == "reproduced"
+    assert record["environment_sha256"] == environment["sha256"]
+
+
+def test_strict_readiness_fails_closed_for_incomplete_evidence(tmp_path) -> None:
+    case = tmp_path / "synthetic.json"
+    generated = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "generate",
+            "--synthetic",
+            "--output",
+            str(case),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert generated.returncode == 0, generated.stderr
+
+    readiness = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "readiness", "--case", str(case), "--strict"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert readiness.returncode == 1
+    assert json.loads(readiness.stdout)["ready"] is False
 
 
 def test_invalid_bundle_has_actionable_cli_error(tmp_path) -> None:

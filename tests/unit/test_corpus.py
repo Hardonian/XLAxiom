@@ -30,13 +30,15 @@ from xlaxiom.generation import GenerationConfig, generate
 
 
 def make_entry(**overrides):
+    workload = generate(GenerationConfig(seed=17))
     payload = {
         "identifier": "finding-test",
         "category": "reproduced-finding",
         "title": "Reproduced numerical_discrepancy",
         "summary": "outputs differ under the configured policy",
         "classification": Classification.NUMERICAL_DISCREPANCY.value,
-        "workload": {"schema_version": "1.0"},
+        "workload": workload.canonical_dict(),
+        "workload_sha256": workload.digest(),
         "reproductions": REQUIRED_REPRODUCTIONS,
     }
     payload.update(overrides)
@@ -72,6 +74,23 @@ class TestAdmissionBar:
         with pytest.raises(ValueError, match="checksum mismatch"):
             validate_entry(entry)
 
+    def test_malformed_reduced_workload_is_rejected_even_with_a_recomputed_entry_checksum(
+        self,
+    ) -> None:
+        entry = make_entry()
+        entry["workload"] = {"not": "a workload"}
+        entry["sha256"] = digest(entry)
+
+        with pytest.raises(ValueError, match="invalid reduced workload"):
+            validate_entry(entry)
+
+    def test_reduced_workload_digest_is_rebuilt_not_trusted(self) -> None:
+        entry = make_entry(workload_sha256="0" * 64)
+        entry["sha256"] = digest(entry)
+
+        with pytest.raises(ValueError, match="workload checksum mismatch"):
+            validate_entry(entry)
+
     def test_unknown_category_is_rejected(self) -> None:
         entry = make_entry(category="invented")
         with pytest.raises(ValueError, match="unsupported corpus category"):
@@ -103,6 +122,22 @@ class TestCorpusRoundTrip:
         payload["entries"][0]["summary"] = "edited in place"
         path.write_text(json.dumps(payload), encoding="utf-8")
         with pytest.raises(ValueError, match="checksum mismatch"):
+            load_corpus(path)
+
+    def test_document_count_and_categories_are_validated(self, tmp_path) -> None:
+        path = save_corpus(tmp_path / "corpus.json", [make_entry()])
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["entry_count"] = 2
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+        with pytest.raises(ValueError, match="entry_count does not match"):
+            load_corpus(path)
+
+        payload["entry_count"] = 1
+        payload["categories"]["reproduced-finding"] = 0
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+        with pytest.raises(ValueError, match="category counts do not match"):
             load_corpus(path)
 
     def test_digest_ignores_its_own_field(self) -> None:

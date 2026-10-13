@@ -276,6 +276,8 @@ class TestRunGpuCampaign:
         assert summary["device"]["name"] == device.name
         assert summary["budget"]["cases"] == 2
         assert summary["budget"]["measurements"] == 3
+        assert summary["budget"]["max_duration_s"] == 300.0
+        assert summary["completion"]["truncated"] is False
         assert len(summary["cpu_vs_gpu_cases"]) == 2
         assert len(summary["gpu_eager_vs_jit_cases"]) == 2
         assert summary["pass_count"] == 4
@@ -310,6 +312,7 @@ class TestRunGpuCampaign:
 
     def test_run_gpu_campaign_timeout_guard(self, monkeypatch: pytest.MonkeyPatch) -> None:
         device = make_device()
+        calls: list[str] = []
 
         times = [0.0, 10.0, 310.0]
         time_idx = 0
@@ -323,17 +326,63 @@ class TestRunGpuCampaign:
         monkeypatch.setattr("time.perf_counter", fake_perf_counter)
         monkeypatch.setattr(
             "xlaxiom.gpu_campaign.cpu_vs_gpu",
-            lambda s, d, v, m: {"numpy_vs_gpu_jit": {"classification": "pass"}},
+            lambda s, d, v, m: (
+                calls.append("cpu") or {"numpy_vs_gpu_jit": {"classification": "pass"}}
+            ),
         )
         monkeypatch.setattr(
             "xlaxiom.gpu_campaign.gpu_eager_vs_jit",
-            lambda s, d, v: {"classification": "pass"},
+            lambda s, d, v: calls.append("eager") or {"classification": "pass"},
         )
 
         budget = CampaignBudget(cases=5)
         summary = run_gpu_campaign(device, "cuda13", budget=budget)
 
         assert len(summary["cpu_vs_gpu_cases"]) == 1
+        assert summary["gpu_eager_vs_jit_cases"] == []
+        assert calls == ["cpu"]
+        assert summary["completion"] == {
+            "requested_cases_per_phase": 5,
+            "cpu_vs_gpu_cases_completed": 1,
+            "gpu_eager_vs_jit_cases_completed": 0,
+            "duration_limit_reached": True,
+            "truncated": True,
+            "truncation_reason": "maximum_duration_reached",
+        }
+
+    def test_run_gpu_campaign_deadline_applies_to_eager_phase(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        device = make_device()
+        calls: list[str] = []
+        times = [0.0, 1.0, 2.0, 301.0]
+        time_idx = 0
+
+        def fake_perf_counter():
+            nonlocal time_idx
+            value = times[min(time_idx, len(times) - 1)]
+            time_idx += 1
+            return value
+
+        monkeypatch.setattr("time.perf_counter", fake_perf_counter)
+        monkeypatch.setattr(
+            "xlaxiom.gpu_campaign.cpu_vs_gpu",
+            lambda s, d, v, m: (
+                calls.append("cpu") or {"numpy_vs_gpu_jit": {"classification": "pass"}}
+            ),
+        )
+        monkeypatch.setattr(
+            "xlaxiom.gpu_campaign.gpu_eager_vs_jit",
+            lambda s, d, v: calls.append("eager") or {"classification": "pass"},
+        )
+
+        summary = run_gpu_campaign(device, "cuda13", budget=CampaignBudget(cases=2))
+
+        assert len(summary["cpu_vs_gpu_cases"]) == 2
+        assert summary["gpu_eager_vs_jit_cases"] == []
+        assert calls == ["cpu", "cpu"]
+        assert summary["completion"]["truncated"] is True
+        assert summary["completion"]["truncation_reason"] == "maximum_duration_reached"
 
 
 class TestReplayJax40634:

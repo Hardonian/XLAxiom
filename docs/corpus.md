@@ -11,13 +11,22 @@ property is run.
 ```console
 uv run xlaxiom property list
 uv run xlaxiom property run --seed 42 --backend jax-jit --x64 --output results/properties.json
-uv run xlaxiom property campaign --cases 20 --backend jax-jit --x64
+uv run xlaxiom property campaign --cases 20 --backend jax-jit --x64 --output results/campaign.json
 uv run xlaxiom property coverage
-uv run xlaxiom property run --property matmul-transpose-v1 --backend numpy
-uv run xlaxiom property compare --baseline cpu.json --comparison gpu.json --output comparison.json
+uv run xlaxiom property run --property matmul-transpose-v1 --seed 42 --backend jax-jit --x64 --output results/cpu.json
+# On a separately validated GPU host, use the same property and seed:
+xlaxiom property run --property matmul-transpose-v1 --seed 42 --backend jax-gpu-jit --x64 --output results/gpu.json
+# Bring both evidence files together before comparing them:
+uv run xlaxiom property compare --baseline results/cpu.json --comparison results/gpu.json --output results/comparison.json
 uv run xlaxiom relation create --property matmul-transpose-v1 --output relation.json
 uv run xlaxiom relation reproduce --case relation.json
 ```
+
+`property compare` compares two existing single-property or corpus-evidence artifacts;
+it does not create `cpu.json` or `gpu.json`, and campaign evidence is intentionally not
+accepted as a comparison input. The two artifacts must use the same requested property
+ordering and seed so their workload identities can be checked before classifications are
+compared.
 
 Each result records both generated workload checksums, the execution backend, numerical
 policy, and the ordinary XLAxiom comparison classification. A passing relation only

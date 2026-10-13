@@ -37,7 +37,7 @@ from .gpu_campaign import (
     replay_jax_40634_on_gpu,
     run_gpu_campaign,
 )
-from .gpu_validation import JAX_GPU_PREALLOCATE, VARIANT_PYTHON, DeviceState, validate_all
+from .gpu_validation import JAX_GPU_PREALLOCATE, DeviceState, validate_all, variant_python
 from .gradient_artifacts import (
     GradientArtifactError,
     compare_gradient_campaigns,
@@ -71,7 +71,12 @@ from .model import ComparisonPolicy
 from .outcomes import compare_outcomes
 from .performance import PerformanceArtifactError, compare_benchmarks, compare_compilation_cache
 from .pipeline import FaultInjection, run_backend, run_comparison
-from .readiness import assess_upstream_readiness
+from .readiness import (
+    ReadinessEvidenceError,
+    assess_upstream_readiness,
+    build_reproduction_evidence,
+    load_reproduction_evidence,
+)
 from .relational import (
     minimize_relational,
     reproduce_relational_isolated,
@@ -217,23 +222,27 @@ def command_minimize(args: argparse.Namespace) -> int:
 
 def command_reproduce(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
+    environment = None
+    if args.environment_evidence:
+        try:
+            environment = load_environment(args.environment_evidence)
+        except ArtifactError as exc:
+            raise SystemExit(f"invalid environment evidence: {exc}") from exc
     comparison = run_comparison(artifact.workload, artifact.comparison_mode, artifact.fault)
-    expected = artifact.expected_classification
-    verdict = expected is not None and comparison.classification.value == expected
-    _emit(
-        {
-            "verdict": "reproduced" if verdict else "not_reproduced",
-            "expected": expected,
-            "observed": comparison.to_dict(),
-        }
-    )
-    return 0 if verdict else 1
+    try:
+        record = build_reproduction_evidence(artifact, comparison, environment)
+    except ReadinessEvidenceError as exc:
+        raise SystemExit(f"cannot create reproduction evidence: {exc}") from exc
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
+    return 0 if record["verdict"] == "reproduced" else 1
 
 
 def command_report(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
     comparison = run_comparison(artifact.workload, artifact.comparison_mode, artifact.fault)
-    json_path, markdown_path = write_report(args.output, artifact, comparison)
+    json_path, markdown_path = write_report(args.output, artifact, comparison, args.case)
     _emit(
         {
             "json": str(json_path),
@@ -318,8 +327,17 @@ def command_stability(args: argparse.Namespace) -> int:
 
 
 def command_readiness(args: argparse.Namespace) -> int:
-    _emit(assess_upstream_readiness(_load(args.case)))
-    return 0
+    artifact = _load(args.case)
+    try:
+        reproductions = tuple(
+            load_reproduction_evidence(path) for path in args.reproduction_evidence or ()
+        )
+        environments = tuple(load_environment(path) for path in args.environment_evidence or ())
+        assessment = assess_upstream_readiness(artifact, reproductions, environments)
+    except (ArtifactError, ReadinessEvidenceError) as exc:
+        raise SystemExit(f"invalid readiness evidence: {exc}") from exc
+    _emit(assessment)
+    return 0 if assessment["ready"] or not args.strict else 1
 
 
 def command_historical(_: argparse.Namespace) -> int:
@@ -727,7 +745,7 @@ def _gpu_interpreter() -> tuple[str, int] | None:
         variant, _ = select_variant(device)
         if variant is None:
             continue
-        interpreter = VARIANT_PYTHON[variant]
+        interpreter = variant_python(variant)
         if not os.path.isfile(interpreter):
             continue
         if _interpreter_has_gpu(interpreter):
@@ -830,7 +848,7 @@ def command_gpu_campaign(args: argparse.Namespace) -> int:
             }
         )
         return 2
-    if args.device is not None and args.device >= len(passed):
+    if args.device is not None and not 0 <= args.device < len(passed):
         _emit(
             {
                 "campaign": "skipped",
@@ -1291,6 +1309,13 @@ def parser() -> argparse.ArgumentParser:
         "reproduce", help="reexecute and evaluate the stored predicate"
     )
     reproduce_parser.add_argument("--case", required=True)
+    reproduce_parser.add_argument(
+        "--environment-evidence",
+        help="validated environment JSON to bind to this reproduction record",
+    )
+    reproduce_parser.add_argument(
+        "--output", help="write checksummed reproduction evidence JSON for readiness review"
+    )
     reproduce_parser.set_defaults(func=command_reproduce)
     report_parser = commands.add_parser("report", help="write JSON and Markdown evidence reports")
     report_parser.add_argument("--case", required=True)
@@ -1336,6 +1361,21 @@ def parser() -> argparse.ArgumentParser:
         "readiness", help="assess evidence needed before a human files an upstream issue"
     )
     readiness_parser.add_argument("--case", required=True)
+    readiness_parser.add_argument(
+        "--reproduction-evidence",
+        action="append",
+        help="checksummed JSON from `xlaxiom reproduce --output`; repeat for each host",
+    )
+    readiness_parser.add_argument(
+        "--environment-evidence",
+        action="append",
+        help="validated host-environment JSON bound by a reproduction record; repeat as needed",
+    )
+    readiness_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="exit nonzero until every readiness check passes",
+    )
     readiness_parser.set_defaults(func=command_readiness)
     historical_parser = commands.add_parser(
         "historical", help="replay trusted adapters for documented historical regressions"

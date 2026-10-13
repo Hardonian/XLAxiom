@@ -17,24 +17,100 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
       - run: uv python install ${{ matrix.python-version }}
-      - run: uv sync --python ${{ matrix.python-version }} --extra dev
+      - name: Verify lockfile
+        run: uv lock --check
+      - run: uv sync --python ${{ matrix.python-version }} --extra dev --frozen
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src
-      - run: uv run pytest
+      - name: Run tests
+        shell: bash
+        run: |
+          diagnostics="${RUNNER_TEMP}/xlaxiom-test-${{ matrix.python-version }}"
+          mkdir -p "${diagnostics}"
+          uv run pytest --junitxml="${diagnostics}/pytest.xml"
       - run: uv build
-      - run: uv run xlaxiom doctor
-      - run: uv run xlaxiom property coverage
+      - name: Capture CPU diagnostics
+        shell: bash
+        run: |
+          diagnostics="${RUNNER_TEMP}/xlaxiom-test-${{ matrix.python-version }}"
+          mkdir -p "${diagnostics}"
+          uv run xlaxiom doctor > "${diagnostics}/doctor.json"
+          uv run xlaxiom property coverage --output "${diagnostics}/property-coverage.json"
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-diagnostics-py${{ matrix.python-version }}
+          path: ${{ runner.temp }}/xlaxiom-test-${{ matrix.python-version }}
+          if-no-files-found: warn
+
+  package-smoke:
+    name: Package smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      - run: uv python install 3.12
+      - name: Verify lockfile
+        run: uv lock --check
+      - run: uv sync --python 3.12 --extra dev --frozen
+      - run: uv build
+      - run: uvx twine check dist/*
+      - name: Smoke-test clean wheel and source distribution installs
+        shell: bash
+        run: |
+          set -o pipefail
+          diagnostics="${RUNNER_TEMP}/xlaxiom-package-smoke"
+          mkdir -p "${diagnostics}"
+          smoke_root="${RUNNER_TEMP}/xlaxiom-package-installs"
+
+          run_smoke() {
+            local kind="$1"
+            local distribution="$2"
+            local environment="${smoke_root}/${kind}-venv"
+            local workdir="${smoke_root}/${kind}-work"
+
+            uv venv --python 3.12 "${environment}"
+            uv pip install --python "${environment}/bin/python" "${distribution}"
+            mkdir -p "${workdir}"
+            (
+              cd "${workdir}"
+              "${environment}/bin/python" -c 'from importlib.resources import files; assert files("xlaxiom").joinpath("py.typed").is_file()'
+              "${environment}/bin/xlaxiom" --version
+              "${environment}/bin/xlaxiom" property list
+              "${environment}/bin/xlaxiom" corpus validate --corpus "${GITHUB_WORKSPACE}/corpus/findings.json"
+              "${environment}/bin/xlaxiom" generate --synthetic --seed 7 --output original.json
+              "${environment}/bin/xlaxiom" minimize --case original.json --output reduced.json
+              "${environment}/bin/xlaxiom" reproduce --case reduced.json --output reproduction.json
+            )
+          }
+
+          {
+            run_smoke wheel "${GITHUB_WORKSPACE}"/dist/*.whl
+            run_smoke sdist "${GITHUB_WORKSPACE}"/dist/*.tar.gz
+          } 2>&1 | tee "${diagnostics}/package-smoke.log"
+      - name: Upload package smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package-smoke-diagnostics
+          path: ${{ runner.temp }}/xlaxiom-package-smoke
+          if-no-files-found: warn
+
   properties:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -53,15 +129,47 @@ jobs:
           - nonfinite-absolute-idempotence-v1
           - extreme-finite-absolute-idempotence-v1
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
-      - run: uv sync --extra dev
-      - run: uv run xlaxiom property run --property ${{ matrix.property }} --backend jax-jit --x64
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      - run: uv python install 3.12
+      - name: Verify lockfile
+        run: uv lock --check
+      - run: uv sync --python 3.12 --extra dev --frozen
+      - name: Run property shard
+        shell: bash
+        run: |
+          diagnostics="${RUNNER_TEMP}/xlaxiom-property-${{ matrix.property }}"
+          mkdir -p "${diagnostics}"
+          uv run xlaxiom property run --property "${{ matrix.property }}" --backend jax-jit --x64 --output "${diagnostics}/evidence.json"
+      - name: Upload property evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: property-${{ matrix.property }}
+          path: ${{ runner.temp }}/xlaxiom-property-${{ matrix.property }}
+          if-no-files-found: warn
+
   scheduled-corpus:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
-      - run: uv sync --extra dev
-      - run: uv run xlaxiom property campaign --cases 25 --backend jax-jit --x64
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      - run: uv python install 3.12
+      - name: Verify lockfile
+        run: uv lock --check
+      - run: uv sync --python 3.12 --extra dev --frozen
+      - name: Run scheduled property campaign
+        shell: bash
+        run: |
+          diagnostics="${RUNNER_TEMP}/xlaxiom-scheduled-corpus"
+          mkdir -p "${diagnostics}"
+          uv run xlaxiom property campaign --cases 25 --backend jax-jit --x64 --output "${diagnostics}/evidence.json"
+      - name: Upload scheduled campaign evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: scheduled-corpus-evidence
+          path: ${{ runner.temp }}/xlaxiom-scheduled-corpus
+          if-no-files-found: warn

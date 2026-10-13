@@ -39,16 +39,39 @@ JAX_GPU_PREALLOCATE = "XLA_PYTHON_CLIENT_PREALLOCATE"
 
 PROBE_SHAPE = (32, 32)
 PROBE_ELEMENTS = PROBE_SHAPE[0] * PROBE_SHAPE[1]
-ENV_DIR = os.environ.get("XLAXIOM_GPU_ENV_DIR", "/home/scott/.cache/xlaxiom-gpu")
 
 VARIANT_EXTRA: dict[CudaVariant, str] = {
     CudaVariant.CUDA12: "cuda12",
     CudaVariant.CUDA13: "cuda13",
 }
-VARIANT_PYTHON: dict[CudaVariant, str] = {
-    CudaVariant.CUDA12: os.path.join(ENV_DIR, "cuda12-probe", "bin", "python"),
-    CudaVariant.CUDA13: os.path.join(ENV_DIR, "cuda13-probe", "bin", "python"),
-}
+
+
+def gpu_environment_dir() -> str:
+    """Return the host-local directory that contains isolated CUDA probe environments.
+
+    ``XLAXIOM_GPU_ENV_DIR`` is an explicit operator override. Otherwise use the
+    platform's per-user cache location rather than a path tied to one developer's
+    home directory.
+    """
+    configured = os.environ.get("XLAXIOM_GPU_ENV_DIR")
+    if configured:
+        return os.path.abspath(os.path.expanduser(configured))
+
+    home = os.path.expanduser("~")
+    system = platform.system()
+    if system == "Windows":
+        cache_root = os.environ.get("LOCALAPPDATA", os.path.join(home, "AppData", "Local"))
+    elif system == "Darwin":
+        cache_root = os.path.join(home, "Library", "Caches")
+    else:
+        cache_root = os.environ.get("XDG_CACHE_HOME", os.path.join(home, ".cache"))
+    return os.path.join(os.path.expanduser(cache_root), "xlaxiom-gpu")
+
+
+def variant_python(variant: CudaVariant) -> str:
+    """Return the isolated interpreter for a CUDA wheel variant on this platform."""
+    interpreter = ("Scripts", "python.exe") if platform.system() == "Windows" else ("bin", "python")
+    return os.path.join(gpu_environment_dir(), f"{variant.value}-probe", *interpreter)
 
 
 @dataclass
@@ -193,7 +216,7 @@ print(json.dumps(result, sort_keys=True))
 
 
 def _python_for(variant: CudaVariant) -> str:
-    return VARIANT_PYTHON[variant]
+    return variant_python(variant)
 
 
 def environment_exists(variant: CudaVariant) -> bool:

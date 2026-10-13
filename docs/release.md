@@ -1,5 +1,13 @@
 # Release and schema policy
 
+## Release state
+
+The source tree currently declares version 0.5.3, but it is not a published release
+until an annotated `v0.5.3` tag has passed Release verification. The latest tagged
+release in this repository is 0.5.2; citation metadata deliberately tracks that tagged
+release until the next tag is verified. Do not describe a source-only version as
+released, published, or independently verified.
+
 ## Release criteria
 
 A release requires clean formatting, linting, typing, tests, an sdist/wheel build, and
@@ -14,10 +22,17 @@ is represented as publisher-signed.
 The `Release verification` workflow runs on `v*` tags, GitHub Release publication,
 and manual dispatch. It repeats
 lint, format, typing, and test gates, verifies that a tag equals the packaged version,
-validates package metadata, installs the wheel under Python 3.11–3.13, exercises
-package data through the CLI, verifies repeat builds byte-for-byte,
+validates package metadata, installs the wheel under Python 3.11–3.13 and the source
+distribution under Python 3.12, exercises package data through the CLI, verifies
+repeat builds byte-for-byte,
 and retains both wheel and source distribution as workflow artifacts. It deliberately
 does not create a GitHub release.
+
+Pull requests and pushes first verify the committed lockfile and use frozen dependency
+installs. Always-run artifact uploads retain JUnit and JSON capability/property evidence
+that was produced before a failed check. A separate CI package-smoke job builds the
+distributions, validates their metadata, then installs the wheel and source distribution
+into fresh environments outside the checkout and exercises the CLI end to end.
 
 Both build passes receive `SOURCE_DATE_EPOCH` from the tagged commit timestamp. This
 normalizes archive headers across runner operating systems instead of relying on wall

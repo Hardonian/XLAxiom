@@ -23,6 +23,18 @@ class ValidationError(ValueError):
     """A declarative workload violates the bounded schema."""
 
 
+def _is_plain_int(value: object) -> bool:
+    """Return whether ``value`` is an integer JSON value, excluding booleans."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _integer_sequence(value: object, field: str) -> tuple[int, ...]:
+    """Read a JSON integer array without silently coercing malformed values."""
+    if not isinstance(value, (list, tuple)) or not all(_is_plain_int(item) for item in value):
+        raise ValidationError(f"{field} must be an array of integers")
+    return tuple(cast(int, item) for item in value)
+
+
 @dataclass(frozen=True)
 class ResourceLimits:
     """Conservative, pre-materialization limits for one declarative workload."""
@@ -79,7 +91,7 @@ class InputSpec:
         if self.value_mode == "signed_zero" and not self.dtype.startswith("float"):
             raise ValidationError("signed_zero input mode requires a floating-point dtype")
         if len(self.shape) > limits.max_rank or any(
-            not isinstance(d, int) or d < 1 for d in self.shape
+            not _is_plain_int(d) or d < 1 for d in self.shape
         ):
             raise ValidationError(f"input {self.name} has invalid shape {self.shape}")
         elements = _checked_product(self.shape)
@@ -102,6 +114,8 @@ class Node:
             raise ValidationError(f"operation {self.op!r} is not in the safe registry")
         if not self.output.isidentifier():
             raise ValidationError(f"invalid output name: {self.output!r}")
+        if not isinstance(self.params, dict):
+            raise ValidationError(f"{self.op} parameters must be an object")
         expected = 1 if self.op in UNARY_OPS | {"reshape", "transpose", "sum", "mean"} else 2
         if len(self.inputs) != expected:
             raise ValidationError(f"{self.op} expects {expected} inputs")
@@ -193,15 +207,19 @@ class Workload:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Workload:
         try:
+            if not isinstance(data, dict):
+                raise ValidationError("workload must be a JSON object")
+            if not _is_plain_int(data["seed"]):
+                raise ValidationError("workload seed must be an integer")
             policy = ComparisonPolicy(**data.get("policy", {}))
             workload = cls(
-                identifier=str(data["identifier"]),
-                seed=int(data["seed"]),
+                identifier=data["identifier"],
+                seed=data["seed"],
                 inputs=tuple(
                     InputSpec(
-                        name=str(item["name"]),
-                        shape=tuple(int(v) for v in item["shape"]),
-                        dtype=str(item.get("dtype", "float32")),
+                        name=item["name"],
+                        shape=_integer_sequence(item["shape"], "input shape"),
+                        dtype=item.get("dtype", "float32"),
                         value_mode=cast(
                             Literal[
                                 "random",
@@ -219,19 +237,19 @@ class Workload:
                 ),
                 nodes=tuple(
                     Node(
-                        op=str(item["op"]),
-                        inputs=tuple(str(v) for v in item["inputs"]),
-                        output=str(item["output"]),
-                        params=dict(item.get("params", {})),
+                        op=item["op"],
+                        inputs=tuple(item["inputs"]),
+                        output=item["output"],
+                        params=item.get("params", {}),
                     )
                     for item in data["nodes"]
                 ),
-                outputs=tuple(str(v) for v in data["outputs"]),
-                schema_version=str(data.get("schema_version", SCHEMA_VERSION)),
+                outputs=tuple(data["outputs"]),
+                schema_version=data.get("schema_version", SCHEMA_VERSION),
                 policy=policy,
-                metadata={str(k): str(v) for k, v in data.get("metadata", {}).items()},
+                metadata=data.get("metadata", {}),
             )
-        except (KeyError, TypeError, ValueError) as exc:
+        except (KeyError, TypeError, ValueError, ValidationError) as exc:
             raise ValidationError(f"malformed workload: {exc}") from exc
         workload.validate()
         return workload
@@ -241,39 +259,79 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
     shapes = [known[name] for name in node.inputs]
     try:
         if node.op in {"add", "sub", "mul", "div"}:
+            _require_no_params(node)
             return _broadcast_shape(*shapes)
         if node.op == "matmul":
+            _require_no_params(node)
             return _matmul_shape(shapes[0], shapes[1])
         if node.op in UNARY_OPS:
+            _require_no_params(node)
             return shapes[0]
         if node.op == "reshape":
-            shape = tuple(int(v) for v in node.params["shape"])
-            if int(np.prod(shape)) != int(np.prod(shapes[0])) or any(v < 1 for v in shape):
+            _require_parameter_keys(node, {"shape"}, required={"shape"})
+            shape = _integer_sequence(node.params["shape"], "reshape shape")
+            if _checked_product(shape) != _checked_product(shapes[0]) or any(v < 1 for v in shape):
                 raise ValidationError("reshape does not preserve element count")
             return shape
         if node.op == "transpose":
-            axes = tuple(
-                int(v) for v in node.params.get("axes", tuple(reversed(range(len(shapes[0])))))
+            _require_parameter_keys(node, {"axes"}, required=set())
+            axes = (
+                tuple(reversed(range(len(shapes[0]))))
+                if "axes" not in node.params
+                else _integer_sequence(node.params["axes"], "transpose axes")
             )
             if sorted(axes) != list(range(len(shapes[0]))):
                 raise ValidationError("transpose axes are not a permutation")
             return tuple(shapes[0][axis] for axis in axes)
         if node.op in {"sum", "mean"}:
+            _require_parameter_keys(node, {"axis", "keepdims"}, required=set())
+            keepdims = node.params.get("keepdims", False)
+            if not isinstance(keepdims, bool):
+                raise ValidationError("reduction keepdims must be a boolean")
+            rank = len(shapes[0])
             axes_value = node.params.get("axis")
-            axes = (
-                tuple(range(len(shapes[0])))
-                if axes_value is None
-                else tuple(int(v) for v in axes_value)
-            )
-            normalized = tuple(axis % len(shapes[0]) for axis in axes)
+            axes = _reduction_axes(axes_value, rank)
+            normalized = tuple(axis + rank if axis < 0 else axis for axis in axes)
             if len(set(normalized)) != len(normalized):
                 raise ValidationError("duplicate reduction axis")
-            if node.params.get("keepdims", False):
+            if keepdims:
                 return tuple(1 if i in normalized else dim for i, dim in enumerate(shapes[0]))
             return tuple(dim for i, dim in enumerate(shapes[0]) if i not in normalized)
-    except (KeyError, TypeError, ValueError) as exc:
+    except (KeyError, TypeError, ValueError, OverflowError) as exc:
         raise ValidationError(f"invalid {node.op} parameters: {exc}") from exc
     raise ValidationError(f"shape inference unavailable for {node.op}")
+
+
+def _require_parameter_keys(node: Node, allowed: set[str], required: set[str]) -> None:
+    """Reject unexpected or missing parameters before an execution backend sees them."""
+    keys = set(node.params)
+    unknown = keys - allowed
+    missing = required - keys
+    if unknown:
+        raise ValidationError(f"{node.op} has unsupported parameters: {sorted(unknown)}")
+    if missing:
+        raise ValidationError(f"{node.op} is missing required parameters: {sorted(missing)}")
+
+
+def _require_no_params(node: Node) -> None:
+    _require_parameter_keys(node, set(), required=set())
+
+
+def _reduction_axes(value: object, rank: int) -> tuple[int, ...]:
+    """Validate a reduction axis exactly as the execution backends will receive it."""
+    if value is None:
+        return tuple(range(rank))
+    if _is_plain_int(value):
+        axes: tuple[int, ...] = (cast(int, value),)
+    else:
+        axes = _integer_sequence(value, "reduction axis")
+    if rank == 0:
+        raise ValidationError("a scalar reduction cannot name an explicit axis")
+    if not axes:
+        raise ValidationError("reduction axis must not be empty")
+    if any(axis < -rank or axis >= rank for axis in axes):
+        raise ValidationError(f"reduction axis must be between {-rank} and {rank - 1}")
+    return axes
 
 
 def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:

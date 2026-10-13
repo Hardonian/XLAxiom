@@ -30,6 +30,36 @@ Bundle validation rejects unsafe archive paths, duplicate or undeclared members,
 
 Generated case, JSON evidence, and Markdown report files are written atomically: a complete temporary file is flushed beside its destination and then replaced in one operation. An interrupted write therefore leaves the prior artifact intact rather than a misleading partial record.
 
+## Strict readiness gate
+
+For a non-synthetic, minimized candidate, retain a reproduction record and a redacted
+environment record on each independently configured host. Bind each reproduction to its
+host record, then ask the strict gate to validate the complete set:
+
+```console
+# On host A
+xlaxiom environment capture --label host-a --output evidence/environment-a.json
+xlaxiom reproduce --case cases/candidate.json \
+  --environment-evidence evidence/environment-a.json \
+  --output evidence/reproduction-a.json
+
+# On independently configured host B
+xlaxiom environment capture --label host-b --output evidence/environment-b.json
+xlaxiom reproduce --case cases/candidate.json \
+  --environment-evidence evidence/environment-b.json \
+  --output evidence/reproduction-b.json
+
+xlaxiom readiness --case cases/candidate.json --strict \
+  --reproduction-evidence evidence/reproduction-a.json \
+  --reproduction-evidence evidence/reproduction-b.json \
+  --environment-evidence evidence/environment-a.json \
+  --environment-evidence evidence/environment-b.json
+```
+
+`--strict` exits nonzero until every gate passes. Readiness validates case identity,
+reproduction verdicts, evidence checksums, and that the two bound environment records
+establish independent hosts; it never files an issue.
+
 ## Interpretation rules
 
 1. **Start with provenance.** Confirm that the case is non-synthetic and identify the comparison mode and expected classification.

@@ -108,6 +108,23 @@ def test_property_evidence_validation_rejects_drifted_counts() -> None:
         validate_property_evidence(evidence)
 
 
+def test_property_evidence_validation_rebuilds_curated_workload_identity() -> None:
+    evidence = run_curated_properties(seed=4, backend="numpy")
+    evidence["properties"][0]["left_workload_sha256"] = "a" * 64
+
+    with pytest.raises(MetamorphicEvidenceError, match="workload identity mismatch"):
+        validate_property_evidence(evidence)
+
+
+def test_property_evidence_validation_rejects_invented_property() -> None:
+    evidence = run_curated_properties(seed=4, backend="numpy")
+    evidence["requested_properties"][0] = "invented-property-v1"
+    evidence["properties"][0]["property"]["identifier"] = "invented-property-v1"
+
+    with pytest.raises(MetamorphicEvidenceError, match="unknown curated propert"):
+        validate_property_evidence(evidence)
+
+
 def test_tpu_property_backend_never_falls_back_to_cpu() -> None:
     record = run_property("add-commutativity-v1", seed=3, backend="jax-tpu-jit")
 

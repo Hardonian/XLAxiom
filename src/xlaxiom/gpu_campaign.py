@@ -243,15 +243,25 @@ def run_gpu_campaign(
 
     entries = campaign_cases(budget)
     started = time.perf_counter()
+    deadline = started + MAX_DURATION_S
     cases: list[dict[str, Any]] = []
     for entry in entries:
-        if time.perf_counter() - started > MAX_DURATION_S:
+        # The CPU-versus-GPU and eager-versus-JIT observations share one deadline.
+        # An in-flight JAX operation cannot be safely preempted, but no new bounded
+        # case is dispatched once the campaign budget has expired.
+        if time.perf_counter() >= deadline:
             break
         record = cpu_vs_gpu(entry["seed"], device, variant, budget.measurements)
         record["family"] = entry["family"]
         record["description"] = entry["description"]
         cases.append(record)
-    eager_jit = [gpu_eager_vs_jit(entry["seed"], device, variant) for entry in entries]
+    eager_jit: list[dict[str, Any]] = []
+    for entry in entries:
+        if time.perf_counter() >= deadline:
+            break
+        eager_jit.append(gpu_eager_vs_jit(entry["seed"], device, variant))
+    duration_s = time.perf_counter() - started
+    truncated = len(cases) < len(entries) or len(eager_jit) < len(entries)
     classifications = [case["numpy_vs_gpu_jit"]["classification"] for case in cases]
     eager_classifications = [item["classification"] for item in eager_jit]
     pass_terms = {Classification.PASS.value, DeviceState.PASS.value}
@@ -272,8 +282,20 @@ def run_gpu_campaign(
             "uuid_redacted": device.uuid_redacted,
         },
         "variant": variant,
-        "budget": {"cases": budget.cases, "measurements": budget.measurements},
-        "duration_s": time.perf_counter() - started,
+        "budget": {
+            "cases": budget.cases,
+            "measurements": budget.measurements,
+            "max_duration_s": MAX_DURATION_S,
+        },
+        "duration_s": duration_s,
+        "completion": {
+            "requested_cases_per_phase": len(entries),
+            "cpu_vs_gpu_cases_completed": len(cases),
+            "gpu_eager_vs_jit_cases_completed": len(eager_jit),
+            "duration_limit_reached": duration_s >= MAX_DURATION_S,
+            "truncated": truncated,
+            "truncation_reason": "maximum_duration_reached" if truncated else None,
+        },
         "cpu_vs_gpu_cases": cases,
         "gpu_eager_vs_jit_cases": eager_jit,
         "classifications": {

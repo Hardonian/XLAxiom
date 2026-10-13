@@ -14,15 +14,29 @@ permissions:
 jobs:
   package:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
       - run: uv python install 3.12
+      - name: Verify lockfile
+        run: uv lock --check
       - run: uv sync --python 3.12 --extra dev --frozen
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src
-      - run: uv run pytest
+      - name: Prepare verification diagnostics
+        shell: bash
+        run: mkdir -p "${RUNNER_TEMP}/xlaxiom-release-diagnostics"
+      - name: Run tests
+        shell: bash
+        run: uv run pytest --junitxml="${RUNNER_TEMP}/xlaxiom-release-diagnostics/pytest.xml"
+      - name: Capture CPU diagnostics
+        shell: bash
+        run: |
+          diagnostics="${RUNNER_TEMP}/xlaxiom-release-diagnostics"
+          uv run xlaxiom doctor > "${diagnostics}/doctor.json"
+          uv run xlaxiom property coverage --output "${diagnostics}/property-coverage.json"
       - name: Set reproducible build timestamp
         shell: bash
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" >> "${GITHUB_ENV}"
@@ -56,24 +70,48 @@ jobs:
             "${environment}/bin/xlaxiom" corpus validate \
               --corpus "${GITHUB_WORKSPACE}/corpus/findings.json"
           done
-      - uses: actions/upload-artifact@v7
+      - name: Smoke-test installed source distribution
+        shell: bash
+        run: |
+          environment="${RUNNER_TEMP}/xlaxiom-sdist"
+          uv venv --python 3.12 "${environment}"
+          uv pip install --python "${environment}/bin/python" \
+            "${GITHUB_WORKSPACE}"/dist/*.tar.gz
+          cd "$(mktemp -d)"
+          "${environment}/bin/python" -c 'from importlib.resources import files; assert files("xlaxiom").joinpath("py.typed").is_file()'
+          "${environment}/bin/xlaxiom" --version
+          "${environment}/bin/xlaxiom" property list
+          "${environment}/bin/xlaxiom" corpus validate \
+            --corpus "${GITHUB_WORKSPACE}/corpus/findings.json"
+          "${environment}/bin/xlaxiom" generate --synthetic --seed 7 --output original.json
+          "${environment}/bin/xlaxiom" minimize --case original.json --output reduced.json
+          "${environment}/bin/xlaxiom" reproduce --case reduced.json --output reproduction.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: xlaxiom-${{ github.ref_name }}
           path: dist/*
           if-no-files-found: error
+      - name: Upload release diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-diagnostics-${{ github.ref_name }}
+          path: ${{ runner.temp }}/xlaxiom-release-diagnostics
+          if-no-files-found: warn
 
   publish:
     if: github.event_name == 'release' && github.event.action == 'published'
     needs: package
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: pypi
       url: https://pypi.org/p/xlaxiom
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: xlaxiom-${{ github.ref_name }}
           path: dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

@@ -16,11 +16,11 @@ uv run xlaxiom doctor
 ## From a verified wheel
 
 Download the wheel from a successful `Release verification` workflow artifact, then
-install it into a fresh environment:
+install that exact artifact into a fresh environment:
 
 ```console
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python xlaxiom-0.5.3-py3-none-any.whl
+uv pip install --python .venv/bin/python path/to/xlaxiom-<version>-py3-none-any.whl
 .venv/bin/xlaxiom --version
 ```
 

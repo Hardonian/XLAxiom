@@ -7,6 +7,8 @@ which on a CPU-only host must report UNSUPPORTED rather than silently using CPU.
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -16,7 +18,13 @@ from xlaxiom.cuda import cuda_capability, recommended_variant
 from xlaxiom.execution import ExecutionStatus, execute_jax
 from xlaxiom.generation import GenerationConfig, generate
 from xlaxiom.gpu_campaign import _cpu_baseline_subprocess, _cpu_environment, _safe_benchmark
-from xlaxiom.gpu_validation import JAX_GPU_PREALLOCATE, DeviceState, clean_environment
+from xlaxiom.gpu_validation import (
+    JAX_GPU_PREALLOCATE,
+    DeviceState,
+    clean_environment,
+    gpu_environment_dir,
+    variant_python,
+)
 from xlaxiom.hardware import (
     CUDA12_MIN_DRIVER,
     CUDA12_MIN_SM,
@@ -269,6 +277,46 @@ class TestEnvironmentTraps:
         assert environment[JAX_GPU_PREALLOCATE] == "false"
 
 
+class TestGpuEnvironmentPaths:
+    """Probe environments must be portable and remain explicitly configurable."""
+
+    def test_explicit_gpu_environment_override_is_honored(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        configured = tmp_path / "cuda-probes"
+        monkeypatch.setenv("XLAXIOM_GPU_ENV_DIR", str(configured))
+
+        assert gpu_environment_dir() == str(configured)
+
+    def test_linux_gpu_environment_uses_xdg_cache_and_posix_interpreter(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        cache_root = tmp_path / "xdg-cache"
+        monkeypatch.delenv("XLAXIOM_GPU_ENV_DIR", raising=False)
+        monkeypatch.setenv("XDG_CACHE_HOME", str(cache_root))
+        monkeypatch.setattr("xlaxiom.gpu_validation.platform.system", lambda: "Linux")
+
+        expected = os.path.join(str(cache_root), "xlaxiom-gpu")
+        assert gpu_environment_dir() == expected
+        assert variant_python(CudaVariant.CUDA12) == os.path.join(
+            expected, "cuda12-probe", "bin", "python"
+        )
+
+    def test_windows_gpu_environment_uses_local_app_data_and_windows_interpreter(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        cache_root = tmp_path / "local-app-data"
+        monkeypatch.delenv("XLAXIOM_GPU_ENV_DIR", raising=False)
+        monkeypatch.setenv("LOCALAPPDATA", str(cache_root))
+        monkeypatch.setattr("xlaxiom.gpu_validation.platform.system", lambda: "Windows")
+
+        expected = os.path.join(str(cache_root), "xlaxiom-gpu")
+        assert gpu_environment_dir() == expected
+        assert variant_python(CudaVariant.CUDA13) == os.path.join(
+            expected, "cuda13-probe", "Scripts", "python.exe"
+        )
+
+
 class TestGpuRuntimeReexecution:
     """GPU launch guards must not mistake an inherited marker for a CUDA runtime."""
 
@@ -320,6 +368,66 @@ class TestGpuRuntimeReexecution:
 
         with pytest.raises(SystemExit, match="stopping to avoid a re-execution loop"):
             cli._ensure_gpu_runtime()
+
+    def test_gpu_interpreter_uses_configured_probe_environment(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        device = make_device("RTX 3060", "8.6", ordinal=2)
+        monkeypatch.setenv("XLAXIOM_GPU_ENV_DIR", str(tmp_path / "cuda-probes"))
+        expected = Path(variant_python(CudaVariant.CUDA13))
+        expected.parent.mkdir(parents=True)
+        expected.touch()
+        monkeypatch.setattr(cli, "enumerate_physical_gpus", lambda: [device])
+        monkeypatch.setattr(
+            cli, "_interpreter_has_gpu", lambda interpreter: interpreter == str(expected)
+        )
+
+        assert cli._gpu_interpreter() == (str(expected), 2)
+
+
+class TestGpuCampaignCliGuards:
+    """CLI selection must not use Python's negative sequence indexes for GPUs."""
+
+    def test_negative_device_index_is_rejected_before_campaign_runs(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        device = make_device("RTX 3060", "8.6")
+        emitted: list[dict[str, object]] = []
+        monkeypatch.setattr(cli, "_ensure_gpu_runtime", lambda: None)
+        monkeypatch.setattr(cli, "enumerate_physical_gpus", lambda: [device])
+        monkeypatch.setattr(
+            cli,
+            "validate_all",
+            lambda devices, allow_busy: {
+                "results": [{"state": DeviceState.PASS.value, "variant": "cuda13"}],
+                "summary": {},
+            },
+        )
+        monkeypatch.setattr(cli, "_emit", emitted.append)
+        monkeypatch.setattr(
+            cli,
+            "run_gpu_campaign",
+            lambda *args, **kwargs: pytest.fail(
+                "campaign must not run for a negative device index"
+            ),
+        )
+
+        result = cli.command_gpu_campaign(
+            SimpleNamespace(
+                shard_count=1,
+                shard_index=0,
+                resume=False,
+                ledger=None,
+                allow_busy=False,
+                device=-1,
+            )
+        )
+
+        assert result == 2
+        assert emitted[0]["reason"] == (
+            "device index -1 is out of range; 1 device(s) "
+            "passed every bounded probe in this process"
+        )
 
     def test_ordinal_ordering_risk_detects_mismatch(self) -> None:
         devices = [

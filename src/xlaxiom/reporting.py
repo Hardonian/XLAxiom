@@ -13,7 +13,11 @@ from .comparison import ComparisonResult
 from .storage import CaseArtifact, atomic_write_text, observation_record, save_json
 
 
-def build_report(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[str, Any]:
+def build_report(
+    artifact: CaseArtifact,
+    comparison: ComparisonResult,
+    case_path: str | Path | None = None,
+) -> dict[str, Any]:
     record = observation_record(artifact, comparison)
     return {
         "report_version": "1.0",
@@ -46,11 +50,17 @@ def build_report(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[s
         "upstream_candidate": bool(
             comparison.classification.value == "numerical_discrepancy" and not artifact.fault
         ),
-        "issue_draft": issue_draft(artifact, comparison),
+        "issue_draft": issue_draft(artifact, comparison, case_path),
     }
 
 
-def issue_draft(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[str, Any]:
+def issue_draft(
+    artifact: CaseArtifact,
+    comparison: ComparisonResult,
+    case_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Build a non-filing handoff draft tied to the actual case when known."""
+    case_reference = str(case_path) if case_path is not None else "<case.json>"
     return {
         "title": (
             f"Differential observation: {comparison.classification.value} "
@@ -58,7 +68,9 @@ def issue_draft(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[st
         ),
         "expected_behavior": "The compared executions agree under the recorded policy.",
         "actual_behavior": comparison.explanation,
-        "reproduction": "xlaxiom reproduce --case <case.json>",
+        "case_sha256": artifact.to_dict()["sha256"],
+        "workload_sha256": artifact.workload.digest(),
+        "reproduction": f"xlaxiom reproduce --case {case_reference}",
         "limitations": "Not suitable for filing while this case is synthetic."
         if artifact.fault
         else "Requires fresh-process and independent-environment reproduction.",
@@ -67,10 +79,13 @@ def issue_draft(artifact: CaseArtifact, comparison: ComparisonResult) -> dict[st
 
 
 def write_report(
-    directory: str | Path, artifact: CaseArtifact, comparison: ComparisonResult
+    directory: str | Path,
+    artifact: CaseArtifact,
+    comparison: ComparisonResult,
+    case_path: str | Path | None = None,
 ) -> tuple[Path, Path]:
     destination = Path(directory)
-    report = build_report(artifact, comparison)
+    report = build_report(artifact, comparison, case_path)
     json_path = save_json(destination / "report.json", report)
     observed = report["observed_result"]["comparison"]
     markdown = "\n".join(
@@ -97,7 +112,7 @@ def write_report(
             "## Reproduction",
             "",
             "```console",
-            "xlaxiom reproduce --case case.json",
+            report["issue_draft"]["reproduction"],
             "```",
             "",
             "No upstream issue is filed by XLAxiom.",
