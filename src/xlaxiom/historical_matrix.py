@@ -3,16 +3,25 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
 from typing import Any
 
 from .storage import save_json
 
+VERSION_PATTERN = re.compile(r"^[vV]?[0-9]+(?:\.[0-9]+)*(?:[a-zA-Z0-9._\-+]+)?$")
+
+
+def validate_version(version: str) -> None:
+    if not isinstance(version, str) or not VERSION_PATTERN.match(version):
+        raise ValueError(f"Invalid version string: {version!r}")
+
 
 def run_hyperbolic_matrix(versions: list[str], output: str) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     for version in versions:
+        validate_version(version)
         started = time.perf_counter()
         command = [
             "uv",
