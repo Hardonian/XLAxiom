@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass, field
+from itertools import zip_longest
 from typing import Any, Literal, cast
 
 import numpy as np
@@ -253,16 +254,18 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
 def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
     result: tuple[int, ...] = ()
     for shape in shapes:
-        reversed_result = list(reversed(result))
-        reversed_shape = list(reversed(shape))
+        if not result:
+            result = shape
+            continue
+        if result == shape or not shape:
+            continue
         output: list[int] = []
-        for index in range(max(len(reversed_result), len(reversed_shape))):
-            left = reversed_result[index] if index < len(reversed_result) else 1
-            right = reversed_shape[index] if index < len(reversed_shape) else 1
+        for left, right in zip_longest(reversed(result), reversed(shape), fillvalue=1):
             if left != right and left != 1 and right != 1:
                 raise ValidationError(f"incompatible broadcast shapes: {shapes}")
-            output.append(max(left, right))
-        result = tuple(reversed(output))
+            output.append(left if right == 1 else right)
+        output.reverse()
+        result = tuple(output)
     return result
 
 
