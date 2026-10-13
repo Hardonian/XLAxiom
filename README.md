@@ -27,6 +27,12 @@ XLAxiom 0.2 additionally completed a bounded 500-case CPU campaign (seeds 1000â€
 
 Version 0.4 provides a real per-operation historical transition: isolated JAX 0.11.1â†’0.11.2 testing confirms that `acosh(float32(1e22))` gradient changed from an analytic discrepancy to an oracle pass, while `arcsinh` remains discrepant in both released wheels. See [Historical Regression Study 001](docs/research/historical-regression-study-001.md).
 
+Version 0.5 adds a bounded analytic-gradient campaign. Its local forty-case
+CPU record distinguishes two documented large-magnitude `arcsinh`
+observations from four unclassified `float32 tanh(10)` candidates; it does not
+claim CUDA behavior. See [Gradient Campaign 001](docs/research/gradient-campaign-001.md)
+and its [machine-readable record](docs/experiments/gradient-campaign-local.json).
+
 ## What it does
 
 ```text
@@ -50,6 +56,7 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `report` | Produce evidence JSON and readable Markdown. |
 | `benchmark` | Run a bounded warmup plus timing sample. |
 | `historical` | Replay trusted adapters for documented historical regressions. |
+| `gradient` / `gradient-campaign` | Run one or a bounded set of analytic-gradient checks. |
 | `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
 | `matrix run` | Execute one saved case in isolated pinned JAX environments. |
 | `bundle create` / `bundle validate` | Create and validate portable checksummed case bundles. |
