@@ -2,6 +2,31 @@ import subprocess
 import sys
 
 
+def test_module_invocation_forms_are_equivalent(tmp_path) -> None:
+    """``python -m xlaxiom.cli`` must not silently succeed without doing anything.
+
+    Without a ``__main__`` guard the module imports and exits 0 with no output, which
+    looks like success and produces no evidence.
+    """
+    package_form = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "doctor"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    cli_form = subprocess.run(
+        [sys.executable, "-m", "xlaxiom.cli", "doctor"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert package_form.returncode == 0, package_form.stderr
+    assert cli_form.returncode == 0, cli_form.stderr
+    assert package_form.stdout.strip(), "python -m xlaxiom produced no output"
+    assert cli_form.stdout.strip(), "python -m xlaxiom.cli produced no output"
+    assert cli_form.stdout == package_form.stdout
+
+
 def test_fresh_process_reproduction(tmp_path) -> None:
     original = tmp_path / "original.json"
     reduced = tmp_path / "reduced.json"
