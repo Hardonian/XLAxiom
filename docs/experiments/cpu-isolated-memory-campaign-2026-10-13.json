@@ -1,0 +1,55 @@
+{
+  "campaign_version": "1.0",
+  "candidate_anomalies": [],
+  "completed_cases": 2,
+  "configuration": {
+    "case_memory_mb": 1024,
+    "case_timeout_s": 60.0,
+    "cases": 2,
+    "isolate": true,
+    "max_duration_s": 180.0,
+    "seed": 600
+  },
+  "contained_failures": [],
+  "duration_s": 4.6902571000000535,
+  "eager_vs_jit_counts": {
+    "compilation_failure": 0,
+    "dtype_mismatch": 0,
+    "environment_failure": 0,
+    "execution_failure": 0,
+    "inconclusive": 0,
+    "invalid_workload": 0,
+    "nondeterminism": 0,
+    "numerical_discrepancy": 0,
+    "pass": 2,
+    "performance_regression": 0,
+    "shape_mismatch": 0,
+    "timeout": 0,
+    "unsupported_backend": 0
+  },
+  "isolation": {
+    "case_memory_mb": 1024,
+    "case_timeout_s": 60.0,
+    "contained_count": 0,
+    "enabled": true
+  },
+  "numpy_vs_jit_counts": {
+    "compilation_failure": 0,
+    "dtype_mismatch": 0,
+    "environment_failure": 0,
+    "execution_failure": 0,
+    "inconclusive": 0,
+    "invalid_workload": 0,
+    "nondeterminism": 0,
+    "numerical_discrepancy": 0,
+    "pass": 2,
+    "performance_regression": 0,
+    "shape_mismatch": 0,
+    "timeout": 0,
+    "unsupported_backend": 0
+  },
+  "platform": "Windows-11-10.0.29683-SP0",
+  "requested_cases": 2,
+  "stop_reason": "completed",
+  "warning": "Generated workloads are trusted bounded graphs; persisted untrusted cases use workers."
+}

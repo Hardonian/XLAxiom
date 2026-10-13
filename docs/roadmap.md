@@ -27,9 +27,9 @@ verification. It is deliberately not a substitute for hardware evidence.
 | 18 | Deterministic CI sharding | Implemented | One CI shard per named property. |
 | 19 | Corpus coverage report | Implemented | Operations, dtypes, ranks, and edge-value strategy are reported. |
 | 20 | Policy overrides | Implemented | Property CLI accepts explicit `--rtol` and `--atol`. |
-| 21 | Campaign profiles | Pending | Named profiles need reviewed resource budgets. |
-| 22 | Generator diversity | Partial | Elementwise, broadcast, matmul, reshape, and reduction motifs exist. |
-| 23 | Higher-rank/batched matmul | Pending | Requires new bounded generator motifs and evidence. |
+| 21 | Campaign profiles | Implemented | Smoke, standard, and thorough profiles expose explicit resource budgets. |
+| 22 | Generator diversity | Implemented | Elementwise, broadcast, matmul, reshape, reduction, and batched motifs exist. |
+| 23 | Higher-rank/batched matmul | Implemented | Rank-three broadcast and batched-matmul motifs are opt-in via generation rank. |
 | 24 | Integer/mixed dtypes | Partial | `int32` coverage exists; mixed-dtype semantics are not claimed. |
 | 25 | Edge-value strategies | Partial | Deterministic signed-zero and magnitude edges exist; configurable strategies are pending. |
 | 26 | Overflow/underflow controls | Partial | Historical gradient studies cover overflow; graph controls are pending. |
@@ -47,7 +47,7 @@ verification. It is deliberately not a substitute for hardware evidence.
 | 38 | Cross-platform evidence | Prepared | Commands are portable; each platform needs a retained result. |
 | 39 | Hardware redaction | Implemented | GPU UUIDs are salted/redacted and process details minimized. |
 | 40 | GPU resume/sharding | Pending | Needs a durable campaign ledger on target hardware. |
-| 41 | CLI profiles | Pending | See priority 21; profiles must not hide resource changes. |
+| 41 | CLI profiles | Implemented | `campaign --profile` exposes budgets, with explicit flags as overrides. |
 | 42 | JSON-schema documents | Implemented | Versioned schemas document artifacts and corpus records. |
 | 43 | Schema migration strategy | Implemented | Versioning/migration policy is documented; readers reject unknown versions. |
 | 44 | Signing/attestation | Prepared | Checksums provide integrity; publisher signing needs release credentials. |

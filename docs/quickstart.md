@@ -7,7 +7,7 @@ uv sync --extra dev
 uv run xlaxiom doctor
 uv run xlaxiom property coverage
 uv run xlaxiom property campaign --cases 20 --backend jax-jit
-uv run xlaxiom campaign --isolate --case-memory-mb 1024 --output results/campaign.json
+uv run xlaxiom campaign --profile smoke --output results/campaign.json
 ```
 
 For a relational handoff, materialize a property, run it, then report or bundle it:

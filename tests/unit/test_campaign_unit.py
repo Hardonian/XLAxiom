@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from xlaxiom.campaign import CampaignConfig, _run_isolated, run_cpu_campaign
+from xlaxiom.campaign import CampaignConfig, _run_isolated, configure_campaign, run_cpu_campaign
 from xlaxiom.comparison import Classification
 
 
@@ -34,6 +34,17 @@ def test_campaign_config_validation() -> None:
 
     with pytest.raises(ValueError, match="case_memory_mb must be between 16 and 65536"):
         CampaignConfig(case_memory_mb=15).validate()
+
+
+def test_campaign_profiles_have_explicit_safe_budgets() -> None:
+    smoke = configure_campaign("smoke", seed=9, cases=2)
+    thorough = configure_campaign("thorough")
+
+    assert smoke.isolate is True
+    assert smoke.case_memory_mb == 1024
+    assert smoke.seed == 9
+    assert smoke.cases == 2
+    assert thorough.cases == 100
 
 
 def test_run_isolated_success() -> None:

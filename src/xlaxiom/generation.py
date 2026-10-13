@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .model import InputSpec, Node, Workload
+from .model import DTYPES, InputSpec, Node, Workload
 
 
 @dataclass(frozen=True)
@@ -17,21 +17,43 @@ class GenerationConfig:
     max_nodes: int = 8
     dtype: str = "float32"
 
+    def validate(self) -> None:
+        if not 1 <= self.max_rank <= 6:
+            raise ValueError("max_rank must be between 1 and 6")
+        if not 2 <= self.max_dim <= 32:
+            raise ValueError("max_dim must be between 2 and 32")
+        if not 1 <= self.max_nodes <= 64:
+            raise ValueError("max_nodes must be between 1 and 64")
+        if self.dtype not in DTYPES:
+            raise ValueError(f"unsupported generation dtype {self.dtype!r}")
+
 
 def generate(config: GenerationConfig) -> Workload:
     """Systematically vary bounded elementwise, broadcast, reduction, and matmul motifs."""
+    config.validate()
     rng = np.random.default_rng(config.seed)
 
     def dim() -> int:
         return int(rng.integers(2, config.max_dim + 1))
 
-    motif = config.seed % 4
+    if config.dtype.startswith("int"):
+        motif = config.seed % 2
+    else:
+        motif = config.seed % (6 if config.max_rank >= 3 else 4)
     inputs: tuple[InputSpec, ...]
     nodes: list[Node]
     if motif == 0:
         shape = (dim(), dim())
         inputs = (InputSpec("x", shape, config.dtype), InputSpec("y", shape, config.dtype))
-        nodes = [Node("add", ("x", "y"), "n0"), Node("tanh", ("n0",), "out")]
+        tail = "abs" if config.dtype.startswith("int") else "tanh"
+        nodes = [Node("add", ("x", "y"), "n0"), Node(tail, ("n0",), "out")]
+    elif motif == 1 and config.dtype.startswith("int"):
+        rows, inner, columns = dim(), dim(), dim()
+        inputs = (
+            InputSpec("x", (rows, inner), config.dtype),
+            InputSpec("y", (inner, columns), config.dtype),
+        )
+        nodes = [Node("matmul", ("x", "y"), "out")]
     elif motif == 1:
         rows, columns = dim(), dim()
         inputs = (
@@ -53,13 +75,34 @@ def generate(config: GenerationConfig) -> Workload:
             Node("transpose", ("n0",), "n1", {"axes": [1, 0]}),
             Node("sum", ("n1",), "out", {"axis": [0], "keepdims": False}),
         ]
-    else:
+    elif motif == 3:
         first, second = dim(), dim()
         inputs = (InputSpec("x", (first, second), config.dtype),)
         nodes = [
             Node("reshape", ("x",), "n0", {"shape": [first * second]}),
             Node("sin", ("n0",), "n1"),
             Node("reshape", ("n1",), "out", {"shape": [first, second]}),
+        ]
+    elif motif == 4:
+        batch, rows, columns = dim(), dim(), dim()
+        inputs = (
+            InputSpec("x", (batch, rows, 1), config.dtype),
+            InputSpec("y", (1, rows, columns), config.dtype),
+        )
+        nodes = [
+            Node("add", ("x", "y"), "n0"),
+            Node("mean", ("n0",), "out", {"axis": [1], "keepdims": False}),
+        ]
+    else:
+        batch, rows, inner, columns = dim(), dim(), dim(), dim()
+        inputs = (
+            InputSpec("x", (batch, rows, inner), config.dtype),
+            InputSpec("y", (1, inner, columns), config.dtype),
+        )
+        nodes = [
+            Node("matmul", ("x", "y"), "n0"),
+            Node("transpose", ("n0",), "n1", {"axes": [0, 2, 1]}),
+            Node("sum", ("n1",), "out", {"axis": [1], "keepdims": False}),
         ]
     workload = Workload(
         identifier=f"generated-{config.seed}",

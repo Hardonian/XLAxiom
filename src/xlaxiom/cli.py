@@ -14,7 +14,7 @@ from time import perf_counter
 from typing import Any
 
 from .bundle import create_bundle, run_bundle, validate_bundle
-from .campaign import CampaignConfig, run_cpu_campaign
+from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .comparison import Classification
 from .cuda import cuda_capability, driver_capability, recommended_variant
 from .execution import benchmark_jax, doctor
@@ -100,7 +100,14 @@ def command_generate(args: argparse.Namespace) -> int:
     workload = (
         synthetic_control(args.seed)
         if args.synthetic
-        else generate(GenerationConfig(seed=args.seed, max_nodes=args.max_nodes))
+        else generate(
+            GenerationConfig(
+                seed=args.seed,
+                max_rank=args.max_rank,
+                max_nodes=args.max_nodes,
+                dtype=args.dtype,
+            )
+        )
     )
     artifact = CaseArtifact(
         workload=workload,
@@ -323,7 +330,8 @@ def command_gradient_compare(args: argparse.Namespace) -> int:
 def command_campaign(args: argparse.Namespace) -> int:
     try:
         record = run_cpu_campaign(
-            CampaignConfig(
+            configure_campaign(
+                args.profile,
                 cases=args.cases,
                 seed=args.seed,
                 max_duration_s=args.max_duration_s,
@@ -926,7 +934,11 @@ def parser() -> argparse.ArgumentParser:
         "generate", help="create a deterministic declarative case"
     )
     generate_parser.add_argument("--seed", type=int, default=0)
+    generate_parser.add_argument("--max-rank", type=int, choices=range(1, 7), default=2)
     generate_parser.add_argument("--max-nodes", type=int, default=8)
+    generate_parser.add_argument(
+        "--dtype", choices=("float32", "float64", "int32", "int64"), default="float32"
+    )
     generate_parser.add_argument(
         "--synthetic",
         action="store_true",
@@ -1035,9 +1047,10 @@ def parser() -> argparse.ArgumentParser:
     campaign_parser = commands.add_parser(
         "campaign", help="run a bounded trusted CPU NumPy/JAX differential campaign"
     )
-    campaign_parser.add_argument("--cases", type=int, default=20)
-    campaign_parser.add_argument("--seed", type=int, default=0)
-    campaign_parser.add_argument("--max-duration-s", type=float, default=180.0)
+    campaign_parser.add_argument("--profile", choices=tuple(CAMPAIGN_PROFILES), default="standard")
+    campaign_parser.add_argument("--cases", type=int)
+    campaign_parser.add_argument("--seed", type=int)
+    campaign_parser.add_argument("--max-duration-s", type=float)
     campaign_parser.add_argument("--output")
     campaign_parser.add_argument(
         "--isolate",
@@ -1048,7 +1061,7 @@ def parser() -> argparse.ArgumentParser:
         ),
     )
     campaign_parser.add_argument(
-        "--case-timeout-s", type=float, default=60.0, help="per-case timeout with --isolate"
+        "--case-timeout-s", type=float, help="per-case timeout with --isolate"
     )
     campaign_parser.add_argument(
         "--case-memory-mb",

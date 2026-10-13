@@ -23,6 +23,17 @@ def test_rejects_forward_reference() -> None:
         raise AssertionError("invalid workload accepted")
 
 
+def test_generator_covers_rank_three_and_integer_safe_motifs() -> None:
+    rank_three = generate(GenerationConfig(seed=4, max_rank=3))
+    integer = generate(GenerationConfig(seed=1, dtype="int32"))
+
+    assert max(len(spec.shape) for spec in rank_three.inputs) == 3
+    assert all(spec.dtype == "int32" for spec in integer.inputs)
+
+    with pytest.raises(ValueError, match="unsupported generation dtype"):
+        generate(GenerationConfig(dtype="float16"))
+
+
 def test_broadcast_shape_valid() -> None:
     assert _broadcast_shape() == ()
     assert _broadcast_shape((2, 3)) == (2, 3)

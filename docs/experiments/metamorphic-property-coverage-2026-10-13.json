@@ -1,0 +1,22 @@
+{
+  "corpus_version": "1.0",
+  "dtypes": [
+    "float32",
+    "int32"
+  ],
+  "edge_value_strategy": "random inputs deterministically include signed zero and magnitude edges",
+  "kind": "metamorphic-property-coverage",
+  "operations": [
+    "abs",
+    "add",
+    "matmul",
+    "neg",
+    "reshape",
+    "sub",
+    "transpose"
+  ],
+  "property_count": 8,
+  "ranks": [
+    2
+  ]
+}

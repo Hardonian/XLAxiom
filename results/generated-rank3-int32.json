@@ -1,0 +1,58 @@
+{
+  "case_version": "1.0",
+  "comparison_mode": "jax-jit",
+  "expected_classification": null,
+  "fault": null,
+  "minimization": null,
+  "provenance": "generated",
+  "sha256": "3a909c05c9e2cba9fd074530b71d772237649f9a66f581b119354c706ceaae15",
+  "workload": {
+    "identifier": "generated-5",
+    "inputs": [
+      {
+        "dtype": "int32",
+        "name": "x",
+        "shape": [
+          6,
+          7
+        ],
+        "value_mode": "random"
+      },
+      {
+        "dtype": "int32",
+        "name": "y",
+        "shape": [
+          7,
+          2
+        ],
+        "value_mode": "random"
+      }
+    ],
+    "metadata": {
+      "generator": "bounded-v1"
+    },
+    "nodes": [
+      {
+        "inputs": [
+          "x",
+          "y"
+        ],
+        "op": "matmul",
+        "output": "out",
+        "params": {}
+      }
+    ],
+    "outputs": [
+      "out"
+    ],
+    "policy": {
+      "atol": 2e-06,
+      "check_signed_zero": true,
+      "equal_nan": true,
+      "identifier": "dtype-aware-v1",
+      "rtol": 2e-05
+    },
+    "schema_version": "1.0",
+    "seed": 5
+  }
+}
