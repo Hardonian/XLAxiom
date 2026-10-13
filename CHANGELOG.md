@@ -1,11 +1,32 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 - 2026-10-13
 
+<<<<<<< HEAD
 - Reframed the README and documentation entry points around complete user journeys;
   moved host-specific evidence detail out of the primary product surface.
 - Corrected the documented property-comparison workflow so it creates both evidence
   artifacts before attempting a comparison.
+=======
+- Removed dead code: the unused `DeviceVerdict` value object and `to_json` helper in
+  `hardware`, the unused `_materialize`/`_shape`/`api_reshape` helpers in `corpus`, the
+  unused `last_error` helper in `gpu_validation`, and the unused
+  `expected_hyperbolic_status` table in `historical`. Test-only references were removed
+  with them.
+- Hardened the isolated version matrix: `MatrixEnvironment` now validates its JAX
+  specifier at construction and `load_config` rejects unsafe specifiers before any
+  subprocess is spawned, closing an argument-injection path.
+- Optimized hot paths: `recommended_variant` selects a CUDA variant in a single pass
+  instead of re-enumerating devices per variant, and `_apply` resolves operations from a
+  module-level map instead of rebuilding a function dictionary per node.
+- Added unit coverage for campaign configuration, isolated execution, memory limits, and
+  hardware discovery and capability gating.
+- Consolidated the outstanding agent branches into main; all previously open work is
+  landed.
+
+## 0.5.3 - 2026-10-13
+
+>>>>>>> fe29713c62c2a9400a468ef7214de97ccca5cec0
 - Moved the repeat distribution build outside the source checkout so the verification
   output directory cannot affect source-distribution file selection.
 
