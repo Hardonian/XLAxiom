@@ -96,6 +96,12 @@ observations from four unclassified `float32 tanh(10)` candidates; it does not
 claim CUDA behavior. See [Gradient Campaign 001](docs/research/gradient-campaign-001.md)
 and its [machine-readable record](docs/experiments/gradient-campaign-local.json).
 
+The initial curated metamorphic corpus also passed all four properties on JAX 0.11.2
+CPU JIT with seed 42 on 2026-10-13. The checked-in
+[evidence record](docs/experiments/metamorphic-corpus-local-2026-10-13.json) includes
+both workload identities, execution details, and the numerical policy; it does not
+make a broader correctness claim.
+
 ## What it does
 
 ```text
@@ -122,6 +128,7 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `gradient` / `gradient-campaign` | Run one or a bounded set of analytic-gradient checks. |
 | `gradient-compare` | Compare two self-identifying gradient campaign artifacts. |
 | `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
+| `property list` / `property run` | Inspect and execute curated declarative metamorphic properties. |
 | `matrix run` | Execute one saved case in isolated pinned JAX environments. |
 | `bundle create` / `bundle validate` | Create and validate portable checksummed case bundles. |
 
@@ -169,6 +176,11 @@ See [the architecture](docs/architecture/overview.md), [reproducibility methodol
 
 ## Roadmap
 
-1. Add isolated subprocess workers and timeout/memory enforcement.
-2. Validate CUDA/TPU adapters only on compatible hardware and capture device evidence.
-3. Build a curated corpus of independently reproduced, minimized findings and metamorphic properties.
+1. Completed: isolated subprocess workers with campaign timeout containment.
+2. Completed for CUDA: compatible-hardware validation, device identity evidence, and no CPU fallback.
+3. Completed initial corpus: checked-in, declarative metamorphic properties with per-run evidence.
+
+The initial [curated corpus](docs/corpus.md) deliberately contains no newly discovered
+compiler finding. A real finding can be admitted only after non-synthetic,
+failure-preserving minimization and fresh-process reproduction in an independently
+configured environment.

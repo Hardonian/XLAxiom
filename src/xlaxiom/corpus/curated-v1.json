@@ -1,0 +1,41 @@
+{
+  "corpus_version": "1.0",
+  "kind": "xlaxiom-curated-corpus",
+  "title": "XLAxiom Curated Corpus v1",
+  "finding_admission": {
+    "requires": [
+      "non_synthetic",
+      "failure_preserving_minimization",
+      "fresh_process_reproduction",
+      "independent_environment_reproduction"
+    ],
+    "note": "No newly discovered compiler finding is admitted in v1. Historical studies remain explicitly labelled adapters, not corpus discoveries."
+  },
+  "findings": [],
+  "metamorphic_properties": [
+    {
+      "identifier": "add-commutativity-v1",
+      "title": "Elementwise addition commutes",
+      "description": "x + y and y + x produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "transpose-involution-v1",
+      "title": "Double transpose is identity",
+      "description": "Transposing a rank-two tensor twice restores the original tensor.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "reshape-roundtrip-v1",
+      "title": "Reshape round trip is identity",
+      "description": "Flattening and restoring a rank-two tensor preserves every element.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "matmul-transpose-v1",
+      "title": "Matrix product transpose rule",
+      "description": "(x @ y).T and y.T @ x.T produce equivalent outputs.",
+      "relation": "outputs_equal"
+    }
+  ]
+}

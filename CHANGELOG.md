@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 - Unreleased
+
+- Added a checked-in curated metamorphic-property corpus with safe closed-registry validation.
+- Added `xlaxiom property list` and `xlaxiom property run` evidence commands.
+
 ## 0.4.0 - Unreleased
 
 - Added per-operation, analytic-oracle #40634 historical studies and isolated version execution.

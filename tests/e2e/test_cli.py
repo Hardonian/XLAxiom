@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 
@@ -79,3 +80,31 @@ def test_invalid_bundle_has_actionable_cli_error(tmp_path) -> None:
     )
     assert result.returncode != 0
     assert "invalid bundle: cannot read bundle" in result.stderr
+
+
+def test_property_corpus_cli_writes_replayable_evidence(tmp_path) -> None:
+    output = tmp_path / "properties.json"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "property",
+            "run",
+            "--seed",
+            "12",
+            "--backend",
+            "numpy",
+            "--output",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    evidence = json.loads(output.read_text(encoding="utf-8"))
+    assert evidence["kind"] == "metamorphic-corpus-evidence"
+    assert evidence["counts"]["pass"] == 4

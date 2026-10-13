@@ -39,6 +39,11 @@ from .hardware import (
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .matrix import run_matrix
+from .metamorphic import (
+    MetamorphicPropertyError,
+    curated_properties,
+    run_curated_properties,
+)
 from .minimization import minimize
 from .pipeline import FaultInjection, run_backend, run_comparison
 from .reporting import write_report
@@ -270,6 +275,40 @@ def command_campaign(args: argparse.Namespace) -> int:
         save_json(args.output, record)
     _emit(record)
     return 0 if not record["candidate_anomalies"] else 1
+
+
+def command_property_list(_: argparse.Namespace) -> int:
+    _emit(
+        {
+            "corpus_version": "1.0",
+            "kind": "metamorphic-property-catalog",
+            "properties": [
+                {
+                    "identifier": property_definition.identifier,
+                    "title": property_definition.title,
+                    "description": property_definition.description,
+                    "relation": property_definition.relation,
+                }
+                for property_definition in curated_properties()
+            ],
+        }
+    )
+    return 0
+
+
+def command_property_run(args: argparse.Namespace) -> int:
+    try:
+        result = run_curated_properties(
+            seed=args.seed,
+            backend=args.backend,
+            identifiers=tuple(args.property) if args.property else None,
+        )
+    except MetamorphicPropertyError as exc:
+        raise SystemExit(f"invalid curated property corpus: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0 if result["counts"][Classification.PASS.value] == len(result["properties"]) else 1
 
 
 def command_matrix_run(args: argparse.Namespace) -> int:
@@ -670,6 +709,29 @@ def parser() -> argparse.ArgumentParser:
         "--case-timeout-s", type=float, default=60.0, help="per-case timeout with --isolate"
     )
     campaign_parser.set_defaults(func=command_campaign)
+    property_parser = commands.add_parser(
+        "property", help="inspect or run reviewed declarative metamorphic properties"
+    )
+    property_commands = property_parser.add_subparsers(dest="property_command", required=True)
+    property_list = property_commands.add_parser("list", help="list the curated property corpus")
+    property_list.set_defaults(func=command_property_list)
+    property_run = property_commands.add_parser(
+        "run", help="run all or selected curated metamorphic properties"
+    )
+    property_run.add_argument(
+        "--property",
+        action="append",
+        choices=tuple(
+            property_definition.identifier for property_definition in curated_properties()
+        ),
+        help="property identifier; repeat to select more than one (default: all)",
+    )
+    property_run.add_argument("--seed", type=int, default=0)
+    property_run.add_argument(
+        "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
+    )
+    property_run.add_argument("--output", help="JSON evidence path")
+    property_run.set_defaults(func=command_property_run)
     matrix_parser = commands.add_parser("matrix", help="run isolated JAX version matrices")
     matrix_commands = matrix_parser.add_subparsers(dest="matrix_command", required=True)
     matrix_run = matrix_commands.add_parser("run")
