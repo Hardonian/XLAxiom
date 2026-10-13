@@ -1,18 +1,29 @@
+## Environment
+OS: Ubuntu 26.04.1 LTS / kernel 7.0.0-38-generic
+Driver: 580.178.04
+CUDA runtime: 13.0
+
 ## ruff check
 All checks passed!
 
 ## ruff format --check
-50 files already formatted
+51 files already formatted
 
 ## mypy src
 Success: no issues found in 24 source files
 
-## pytest -q
-=========================== short test summary info ============================
+## pytest -q (Python 3.11)
 SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
-39 passed, 1 skipped in 5.22s
+39 passed, 1 skipped in 6.75s
+
+## pytest -q (Python 3.12)
+SKIPPED [1] tests/unit/test_gpu_cuda.py:185: no GPU is available in this environment
+39 passed, 1 skipped in 6.43s
 
 ## uv build
-Building wheel from source distribution...
 Successfully built dist/xlaxiom-0.5.0.tar.gz
 Successfully built dist/xlaxiom-0.5.0-py3-none-any.whl
+
+## CUDA gradient campaign
+devices: ['cuda:0'] (Tesla V100-SXM2-16GB via jax[cuda12])
+counts: {"candidate_discrepancy": 4, "known_historical_discrepancy": 2, "pass": 34}

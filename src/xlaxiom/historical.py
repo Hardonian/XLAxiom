@@ -65,7 +65,7 @@ def hyperbolic_gradient_study() -> dict[str, object]:
         "jax": jax.__version__,
         "jaxlib": jaxlib.__version__,
         "platform": platform.platform(),
-        "x64_enabled": bool(jax.config.jax_enable_x64),
+        "x64_enabled": bool(getattr(jax.config, "jax_enable_x64", False)),
         "observations": observations,
     }
 

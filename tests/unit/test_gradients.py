@@ -34,8 +34,16 @@ def test_gradient_campaign_segregates_known_historical_observations() -> None:
     result = run_gradient_campaign(20)
     assert set(result["operation_coverage"]) == {"tanh", "exp", "arcsinh", "acosh"}
     assert result["environment"]["jax"] is not None
-    assert result["counts"]["known_historical_discrepancy"] == 1
-    assert result["counts"]["candidate_discrepancy"] == 2
-    assert {candidate["case"]["operation"] for candidate in result["candidate_anomalies"]} == {
-        "tanh"
-    }
+    # The lockfile resolves JAX 0.10.2 on Python 3.11 and 0.11.2 on Python 3.12+. The
+    # acosh(+1e22) gradient was fixed in 0.11.2, so it is a candidate on 0.10.2 only.
+    import jax
+
+    acosh_is_candidate = jax.__version__ < "0.11.2"
+    expected_known = 1
+    expected_candidates = 3 if acosh_is_candidate else 2
+    expected_operations = {"tanh", "acosh"} if acosh_is_candidate else {"tanh"}
+    assert result["counts"]["known_historical_discrepancy"] == expected_known
+    assert result["counts"]["candidate_discrepancy"] == expected_candidates
+    assert {candidate["case"]["operation"] for candidate in result["candidate_anomalies"]} == (
+        expected_operations
+    )
