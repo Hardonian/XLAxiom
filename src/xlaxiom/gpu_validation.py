@@ -16,7 +16,6 @@ import os
 import platform
 import subprocess
 import sys
-import traceback
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -406,6 +405,16 @@ def validate_all(
     }
 
 
-def last_error() -> str:
-    """Format the most recent traceback for structured failure diagnostics."""
-    return traceback.format_exc()
+def failure_summary(validation: DeviceValidation) -> str:
+    """A compact, portable diagnostic string for a non-passing device."""
+    if validation.state == DeviceState.PASS.value:
+        return f"PASS: {validation.reason}"
+    parts = [f"{validation.state}: {validation.reason}"]
+    for check in validation.checks:
+        if check.status != "pass":
+            parts.append(f"  - {check.name}: {check.detail}")
+    diagnostics = validation.diagnostics
+    if diagnostics.get("stderr"):
+        tail = " ".join(diagnostics["stderr"].split())[:400]
+        parts.append(f"  - stderr: {tail}")
+    return "\n".join(parts)
