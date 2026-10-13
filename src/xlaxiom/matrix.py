@@ -23,6 +23,15 @@ def validate_jax_version(version: str) -> str:
         raise ValueError(f"Invalid or unsafe JAX version specifier: {version!r}")
     return version
 
+_VERSION_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._\-+]*$")
+
+
+def validate_jax_version(version: str) -> str:
+    """Validate that a JAX version specifier is safe and free from argument injection."""
+    if not isinstance(version, str) or not version or not _VERSION_PATTERN.fullmatch(version):
+        raise ValueError(f"Invalid or unsafe JAX version specifier: {version!r}")
+    return version
+
 
 @dataclass(frozen=True)
 class MatrixEnvironment:
