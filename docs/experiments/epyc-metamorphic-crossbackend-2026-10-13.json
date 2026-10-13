@@ -1,0 +1,259 @@
+{
+  "cpu_x64": {
+    "execution_platform": "cpu",
+    "interpretation": "A violation is an observation about the relation, not a root-cause claim about any single backend. A property is checked against an independent NumPy evaluation of the same relation.",
+    "jax": "0.11.2",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+    "property_count": 4,
+    "results": [
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "sum(M) equals sum(M^T): a reduction must not depend on layout",
+        "eager": 0.0,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-commutes-with-transpose",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-transpose",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "(A@B)@C equals A@(B@C) within a bounded tolerance",
+        "eager": 0.0,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "matmul-associativity",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "matmul-assoc",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "adding a row and a column broadcast equals adding them separately",
+        "eager": 0.0,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "broadcast-distributes-over-add",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "broadcast-distributive",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "summing a matrix equals the sum of its row sums",
+        "eager": -2.384185791015625e-07,
+        "eager_device": "cpu:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-splits-over-blocks",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-split",
+        "oracle": -2.384185791015625e-07,
+        "rtol": 2e-05,
+        "state": "holds"
+      }
+    ],
+    "suite": "XLAxiom metamorphic properties",
+    "summary": {
+      "blocked": 0,
+      "holds": 4,
+      "inconclusive": 0,
+      "violated": 0
+    },
+    "x64_enabled": true
+  },
+  "cross_backend_comparison": {
+    "cpu_x64_vs_gpu_v100_identical": false,
+    "gpu_v100_vs_gpu_p40_identical": true,
+    "note": "V100 (SM 7.0) and P40 (SM 6.1) produced identical results for all four bounded properties. CPU-x64 differs on one property (reduction-splits-over-blocks: eager -2.384185791015625e-07 on cpu:0 vs 0.0 on cuda:0); both are within the recorded atol of 2e-06 and both classify as 'holds', so this is a sub-tolerance rounding observation, not a violation. Recorded as measured; it is not represented as a compiler or hardware defect.",
+    "subtolerance_difference": {
+      "atol": 2e-06,
+      "classification_both": "holds",
+      "cpu_x64_eager": -2.384185791015625e-07,
+      "gpu_v100_eager": 0.0,
+      "property": "reduction-splits-over-blocks",
+      "within_tolerance": true
+    },
+    "summary": {
+      "blocked": 0,
+      "holds": 4,
+      "inconclusive": 0,
+      "violated": 0
+    }
+  },
+  "gpu_p40": {
+    "execution_platform": "gpu",
+    "gpu_devices": [
+      "cuda:0"
+    ],
+    "interpretation": "A violation is an observation about the relation, not a root-cause claim about any single backend. A property is checked against an independent NumPy evaluation of the same relation.",
+    "jax": "0.11.2",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+    "property_count": 4,
+    "results": [
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "sum(M) equals sum(M^T): a reduction must not depend on layout",
+        "eager": -2.384185791015625e-07,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-commutes-with-transpose",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-transpose",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "(A@B)@C equals A@(B@C) within a bounded tolerance",
+        "eager": 0.0,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "matmul-associativity",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "matmul-assoc",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "adding a row and a column broadcast equals adding them separately",
+        "eager": 0.0,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "broadcast-distributes-over-add",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "broadcast-distributive",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "summing a matrix equals the sum of its row sums",
+        "eager": 0.0,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-splits-over-blocks",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-split",
+        "oracle": -2.384185791015625e-07,
+        "rtol": 2e-05,
+        "state": "holds"
+      }
+    ],
+    "suite": "XLAxiom metamorphic properties",
+    "summary": {
+      "blocked": 0,
+      "holds": 4,
+      "inconclusive": 0,
+      "violated": 0
+    }
+  },
+  "gpu_v100": {
+    "execution_platform": "gpu",
+    "gpu_devices": [
+      "cuda:0"
+    ],
+    "interpretation": "A violation is an observation about the relation, not a root-cause claim about any single backend. A property is checked against an independent NumPy evaluation of the same relation.",
+    "jax": "0.11.2",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+    "property_count": 4,
+    "results": [
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "sum(M) equals sum(M^T): a reduction must not depend on layout",
+        "eager": -2.384185791015625e-07,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-commutes-with-transpose",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-transpose",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "(A@B)@C equals A@(B@C) within a bounded tolerance",
+        "eager": 0.0,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "matmul-associativity",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "matmul-assoc",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "adding a row and a column broadcast equals adding them separately",
+        "eager": 0.0,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "broadcast-distributes-over-add",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "broadcast-distributive",
+        "oracle": 0.0,
+        "rtol": 2e-05,
+        "state": "holds"
+      },
+      {
+        "atol": 2e-06,
+        "classification": "pass",
+        "description": "summing a matrix equals the sum of its row sums",
+        "eager": 0.0,
+        "eager_device": "cuda:0",
+        "eager_matches_oracle": true,
+        "identifier": "reduction-splits-over-blocks",
+        "jit": 0.0,
+        "jit_matches_oracle": true,
+        "operation": "reduction-split",
+        "oracle": -2.384185791015625e-07,
+        "rtol": 2e-05,
+        "state": "holds"
+      }
+    ],
+    "suite": "XLAxiom metamorphic properties",
+    "summary": {
+      "blocked": 0,
+      "holds": 4,
+      "inconclusive": 0,
+      "violated": 0
+    }
+  },
+  "host": "AMD EPYC 7452, Ubuntu 26.04, driver 580.178.04, CUDA 13.0",
+  "jax": "0.11.2",
+  "report": "XLAxiom metamorphic property corpus \u2014 CPU x64 control vs CUDA GPU"
+}
