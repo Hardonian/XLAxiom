@@ -14,11 +14,12 @@ both the CUDA ordinal and the physical device name so the two can be reconciled.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import platform
 import shutil
 import subprocess
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from typing import Any
 
@@ -42,6 +43,30 @@ class DeviceState(StrEnum):
 class CudaVariant(StrEnum):
     CUDA12 = "cuda12"
     CUDA13 = "cuda13"
+
+
+@dataclass(frozen=True)
+class DeviceVerdict:
+    """A portable capability verdict for one explicitly identified device.
+
+    Validation commands use the richer ``DeviceValidation`` record, while this small
+    value object remains useful for inventory and API consumers that only need the
+    selected wheel, result, reason, and initialized JAX devices.
+    """
+
+    device: dict[str, Any]
+    variant: str | None
+    state: str
+    reason: str
+    jax_devices: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def to_json(data: dict[str, Any]) -> str:
+    """Render a stable JSON view for CLI and test consumers without custom encoders."""
+    return json.dumps(data, indent=2, sort_keys=True, default=str)
 
 
 def _sm_tuple(text: str) -> tuple[int, int]:

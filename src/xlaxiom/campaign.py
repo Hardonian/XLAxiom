@@ -19,6 +19,7 @@ class CampaignConfig:
     max_duration_s: float = 180.0
     isolate: bool = False
     case_timeout_s: float = 60.0
+    case_memory_mb: int | None = None
 
     def validate(self) -> None:
         if not 1 <= self.cases <= 500:
@@ -27,6 +28,8 @@ class CampaignConfig:
             raise ValueError("max_duration_s must be between 1 and 900")
         if self.isolate and not 1 <= self.case_timeout_s <= 600:
             raise ValueError("case_timeout_s must be between 1 and 600")
+        if self.case_memory_mb is not None and not 16 <= self.case_memory_mb <= 65_536:
+            raise ValueError("case_memory_mb must be between 16 and 65536 when supplied")
 
 
 def _run_isolated(
@@ -40,7 +43,10 @@ def _run_isolated(
     """
     from .safety import compare_isolated
 
-    result = compare_isolated(workload, mode, timeout_s=config.case_timeout_s)
+    kwargs: dict[str, Any] = {"timeout_s": config.case_timeout_s}
+    if config.case_memory_mb is not None:
+        kwargs["memory_limit_mb"] = config.case_memory_mb
+    result = compare_isolated(workload, mode, **kwargs)
     if result.status != "ok":
         return None, {"status": result.status, "error": result.error}
     return dict(result.record or {}), None
@@ -114,6 +120,7 @@ def run_cpu_campaign(config: CampaignConfig) -> dict[str, Any]:
         "isolation": {
             "enabled": config.isolate,
             "case_timeout_s": config.case_timeout_s if config.isolate else None,
+            "case_memory_mb": config.case_memory_mb if config.isolate else None,
             "contained_count": len(contained),
         },
         "warning": (

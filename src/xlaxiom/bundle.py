@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .pipeline import run_comparison
-from .storage import ArtifactError, load_case, save_json
+from .storage import ArtifactError, RelationalArtifact, artifact_from_dict, load_artifact, save_json
 
 BUNDLE_VERSION = "1.0"
 MAX_UNCOMPRESSED_SIZE = 20_000_000
@@ -29,7 +29,7 @@ def create_bundle(cases: list[str], output: str) -> dict[str, Any]:
         raise ArtifactError("bundle requires at least one case")
     for item in cases:
         path = Path(item)
-        artifact = load_case(path)
+        artifact = load_artifact(path)
         member_path = f"cases/{path.name}"
         if any(entry["path"] == member_path for entry in entries):
             raise ArtifactError(f"bundle contains duplicate case name {path.name!r}")
@@ -91,7 +91,7 @@ def validate_bundle(path: str) -> dict[str, Any]:
                 if not isinstance(payload, dict) or payload.get("sha256") != checksum:
                     raise ArtifactError(f"checksum mismatch for {member_path}")
                 # A valid bundle is executable evidence, not merely a ZIP with matching strings.
-                load_case_from_payload(payload)
+                load_artifact_from_payload(payload)
             if set(names) != {"manifest.json", *member_paths}:
                 raise ArtifactError("bundle contains undeclared archive members")
     except (OSError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
@@ -106,15 +106,20 @@ def run_bundle(bundle: str, output: str) -> dict[str, Any]:
     with zipfile.ZipFile(bundle) as archive:
         for entry in manifest["cases"]:
             payload = json.loads(archive.read(entry["path"]))
-            artifact = load_case_from_payload(payload)
-            comparison = run_comparison(artifact.workload, artifact.comparison_mode, artifact.fault)
+            artifact = load_artifact_from_payload(payload)
+            if isinstance(artifact, RelationalArtifact):
+                from .relational import run_relational_comparison
+
+                comparison = run_relational_comparison(artifact)
+            else:
+                comparison = run_comparison(
+                    artifact.workload, artifact.comparison_mode, artifact.fault
+                )
             results.append({"case_sha256": entry["sha256"], "comparison": comparison.to_dict()})
     evidence = {"evidence_version": "1.0", "bundle_manifest": manifest, "results": results}
     save_json(output, evidence)
     return evidence
 
 
-def load_case_from_payload(payload: dict[str, Any]):
-    from .storage import CaseArtifact
-
-    return CaseArtifact.from_dict(payload)
+def load_artifact_from_payload(payload: dict[str, Any]):
+    return artifact_from_dict(payload)

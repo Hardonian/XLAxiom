@@ -32,6 +32,9 @@ def test_campaign_config_validation() -> None:
     # When isolate is False, out-of-range case_timeout_s is ignored during validation
     CampaignConfig(isolate=False, case_timeout_s=0.0).validate()
 
+    with pytest.raises(ValueError, match="case_memory_mb must be between 16 and 65536"):
+        CampaignConfig(case_memory_mb=15).validate()
+
 
 def test_run_isolated_success() -> None:
     config = CampaignConfig(isolate=True, case_timeout_s=10.0)
@@ -59,6 +62,19 @@ def test_run_isolated_failure() -> None:
         record, failure = _run_isolated(mock_workload, "jax-jit", config)
         assert record is None
         assert failure == {"status": "timeout", "error": "Execution timed out after 10s"}
+
+
+def test_run_isolated_passes_configured_memory_limit() -> None:
+    config = CampaignConfig(isolate=True, case_timeout_s=10.0, case_memory_mb=512)
+    mock_result = MagicMock(status="ok", record={"classification": "pass"})
+    workload = MagicMock()
+
+    with patch("xlaxiom.safety.compare_isolated", return_value=mock_result) as mock_compare:
+        record, failure = _run_isolated(workload, "jax-jit", config)
+
+    assert record == {"classification": "pass"}
+    assert failure is None
+    mock_compare.assert_called_once_with(workload, "jax-jit", timeout_s=10.0, memory_limit_mb=512)
 
 
 def test_run_cpu_campaign_non_isolated_with_anomalies() -> None:

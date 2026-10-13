@@ -16,6 +16,7 @@ from typing import Any
 from .comparison import Classification, compare
 from .execution import ExecutionResult, execute_jax, execute_numpy
 from .model import InputSpec, Node, Workload
+from .storage import RelationalArtifact
 
 CORPUS_VERSION = "1.0"
 RELATION_OUTPUTS_EQUAL = "outputs_equal"
@@ -231,6 +232,21 @@ def build_property(identifier: str, seed: int) -> PropertyWorkloads:
     }:
         raise MetamorphicPropertyError(f"unknown curated property {identifier!r}")
     return _BUILDERS[identifier](seed)
+
+
+def build_property_artifact(
+    identifier: str, seed: int = 0, backend: str = "jax-jit"
+) -> RelationalArtifact:
+    """Materialize a reviewed property as a portable relational artifact."""
+    workloads = build_property(identifier, seed)
+    return RelationalArtifact(
+        identifier=f"{identifier}-{seed}",
+        left=workloads.left,
+        right=workloads.right,
+        expected_classification=Classification.PASS.value,
+        backend=backend,
+        provenance="curated-metamorphic-property",
+    )
 
 
 def _execute(workload: Workload, backend: str) -> ExecutionResult:

@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from statistics import median
 from time import perf_counter
@@ -41,13 +42,29 @@ from .historical_matrix import run_hyperbolic_matrix
 from .matrix import run_matrix
 from .metamorphic import (
     MetamorphicPropertyError,
+    build_property_artifact,
     curated_properties,
     run_curated_properties,
 )
 from .minimization import minimize
 from .pipeline import FaultInjection, run_backend, run_comparison
+from .relational import (
+    minimize_relational,
+    reproduce_relational_isolated,
+    run_relational_comparison,
+    write_relational_report,
+)
 from .reporting import write_report
-from .storage import ArtifactError, CaseArtifact, load_case, save_case, save_json
+from .storage import (
+    ArtifactError,
+    CaseArtifact,
+    RelationalArtifact,
+    load_case,
+    load_relational_case,
+    save_case,
+    save_json,
+    save_relational_case,
+)
 
 
 def _emit(data: Any) -> None:
@@ -59,6 +76,13 @@ def _load(path: str) -> CaseArtifact:
         return load_case(path)
     except ArtifactError as exc:
         raise SystemExit(f"invalid case artifact: {exc}") from exc
+
+
+def _load_relation(path: str) -> RelationalArtifact:
+    try:
+        return load_relational_case(path)
+    except ArtifactError as exc:
+        raise SystemExit(f"invalid relational artifact: {exc}") from exc
 
 
 def command_doctor(_: argparse.Namespace) -> int:
@@ -267,6 +291,7 @@ def command_campaign(args: argparse.Namespace) -> int:
                 max_duration_s=args.max_duration_s,
                 isolate=args.isolate,
                 case_timeout_s=args.case_timeout_s,
+                case_memory_mb=args.case_memory_mb,
             )
         )
     except ValueError as exc:
@@ -309,6 +334,69 @@ def command_property_run(args: argparse.Namespace) -> int:
         save_json(args.output, result)
     _emit(result)
     return 0 if result["counts"][Classification.PASS.value] == len(result["properties"]) else 1
+
+
+def command_relation_create(args: argparse.Namespace) -> int:
+    try:
+        artifact = build_property_artifact(args.property, args.seed, args.backend)
+    except MetamorphicPropertyError as exc:
+        raise SystemExit(f"invalid curated property: {exc}") from exc
+    path = save_relational_case(args.output, artifact)
+    _emit({"case": str(path), "sha256": artifact.to_dict()["sha256"], "identifier": artifact.identifier})
+    return 0
+
+
+def command_relation_run(args: argparse.Namespace) -> int:
+    artifact = _load_relation(args.case)
+    comparison = run_relational_comparison(artifact)
+    record = comparison.to_dict()
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
+    return 0 if comparison.classification == Classification.PASS else 1
+
+
+def command_relation_minimize(args: argparse.Namespace) -> int:
+    artifact = _load_relation(args.case)
+    try:
+        outcome = minimize_relational(artifact, args.max_evaluations)
+    except ArtifactError as exc:
+        raise SystemExit(f"cannot minimize relational artifact: {exc}") from exc
+    path = save_relational_case(args.output, outcome.artifact)
+    _emit(
+        {
+            "case": str(path),
+            "left": asdict(outcome.left),
+            "right": asdict(outcome.right),
+            "duration_ms": outcome.duration_ms,
+        }
+    )
+    return 0
+
+
+def command_relation_reproduce(args: argparse.Namespace) -> int:
+    artifact = _load_relation(args.case)
+    try:
+        result = reproduce_relational_isolated(artifact, args.attempts, args.timeout_s)
+    except ArtifactError as exc:
+        raise SystemExit(f"cannot reproduce relational artifact: {exc}") from exc
+    _emit(result)
+    expected = artifact.expected_classification
+    return 0 if result["reproduced"] and result["classification"] == expected else 1
+
+
+def command_relation_report(args: argparse.Namespace) -> int:
+    artifact = _load_relation(args.case)
+    comparison = run_relational_comparison(artifact)
+    json_path, markdown_path = write_relational_report(args.output, artifact, comparison)
+    _emit(
+        {
+            "json": str(json_path),
+            "markdown": str(markdown_path),
+            "classification": comparison.classification.value,
+        }
+    )
+    return 0
 
 
 def command_matrix_run(args: argparse.Namespace) -> int:
@@ -851,6 +939,11 @@ def parser() -> argparse.ArgumentParser:
     campaign_parser.add_argument(
         "--case-timeout-s", type=float, default=60.0, help="per-case timeout with --isolate"
     )
+    campaign_parser.add_argument(
+        "--case-memory-mb",
+        type=int,
+        help="per-case resident-memory limit with --isolate (16–65536 MiB)",
+    )
     campaign_parser.set_defaults(func=command_campaign)
     property_parser = commands.add_parser(
         "property", help="inspect or run reviewed declarative metamorphic properties"
@@ -875,6 +968,50 @@ def parser() -> argparse.ArgumentParser:
     )
     property_run.add_argument("--output", help="JSON evidence path")
     property_run.set_defaults(func=command_property_run)
+    relation_parser = commands.add_parser(
+        "relation", help="create, minimize, reproduce, and report relational case artifacts"
+    )
+    relation_commands = relation_parser.add_subparsers(dest="relation_command", required=True)
+    relation_create = relation_commands.add_parser(
+        "create", help="materialize a curated property as a portable relational artifact"
+    )
+    relation_create.add_argument(
+        "--property",
+        required=True,
+        choices=tuple(
+            property_definition.identifier for property_definition in curated_properties()
+        ),
+    )
+    relation_create.add_argument("--seed", type=int, default=0)
+    relation_create.add_argument(
+        "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
+    )
+    relation_create.add_argument("--output", required=True)
+    relation_create.set_defaults(func=command_relation_create)
+    relation_run = relation_commands.add_parser("run", help="execute a relational artifact")
+    relation_run.add_argument("--case", required=True)
+    relation_run.add_argument("--output")
+    relation_run.set_defaults(func=command_relation_run)
+    relation_minimize = relation_commands.add_parser(
+        "minimize", help="failure-preserving minimization of both relation sides"
+    )
+    relation_minimize.add_argument("--case", required=True)
+    relation_minimize.add_argument("--output", required=True)
+    relation_minimize.add_argument("--max-evaluations", type=int, default=64)
+    relation_minimize.set_defaults(func=command_relation_minimize)
+    relation_reproduce = relation_commands.add_parser(
+        "reproduce", help="reexecute a relational artifact in fresh processes"
+    )
+    relation_reproduce.add_argument("--case", required=True)
+    relation_reproduce.add_argument("--attempts", type=int, default=2)
+    relation_reproduce.add_argument("--timeout-s", type=float, default=60.0)
+    relation_reproduce.set_defaults(func=command_relation_reproduce)
+    relation_report = relation_commands.add_parser(
+        "report", help="write JSON and Markdown evidence for a relational artifact"
+    )
+    relation_report.add_argument("--case", required=True)
+    relation_report.add_argument("--output", required=True)
+    relation_report.set_defaults(func=command_relation_report)
     matrix_parser = commands.add_parser("matrix", help="run isolated JAX version matrices")
     matrix_commands = matrix_parser.add_subparsers(dest="matrix_command", required=True)
     matrix_run = matrix_commands.add_parser("run")

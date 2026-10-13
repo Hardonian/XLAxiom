@@ -10,7 +10,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from .historical_matrix import validate_version
 from .regression import classify_versions
 from .storage import load_case, save_json
 
@@ -39,13 +38,11 @@ def load_config(path: str | Path) -> tuple[MatrixEnvironment, ...]:
     environments = tuple(MatrixEnvironment(**item) for item in data["environments"])
     if not environments or len({env.name for env in environments}) != len(environments):
         raise ValueError("matrix requires uniquely named environments")
-    for env in environments:
-        validate_version(env.jax)
     return environments
 
 
 def _run_environment(environment: MatrixEnvironment, case: Path) -> dict[str, Any]:
-    validate_version(environment.jax)
+    validate_jax_version(environment.jax)
     command = [
         "uv",
         "run",
