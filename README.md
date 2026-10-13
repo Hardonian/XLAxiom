@@ -57,6 +57,7 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `benchmark` | Run a bounded warmup plus timing sample. |
 | `historical` | Replay trusted adapters for documented historical regressions. |
 | `gradient` / `gradient-campaign` | Run one or a bounded set of analytic-gradient checks. |
+| `gradient-compare` | Compare two self-identifying gradient campaign artifacts. |
 | `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
 | `matrix run` | Execute one saved case in isolated pinned JAX environments. |
 | `bundle create` / `bundle validate` | Create and validate portable checksummed case bundles. |

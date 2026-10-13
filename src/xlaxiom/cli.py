@@ -14,6 +14,11 @@ from .comparison import Classification
 from .cuda import cuda_capability
 from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
+from .gradient_artifacts import (
+    GradientArtifactError,
+    compare_gradient_campaigns,
+    load_gradient_campaign,
+)
 from .gradients import generate_gradient_case, run_gradient_campaign, run_gradient_case
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
@@ -218,6 +223,19 @@ def command_gradient_campaign(args: argparse.Namespace) -> int:
     return 0 if not result["candidate_anomalies"] else 1
 
 
+def command_gradient_compare(args: argparse.Namespace) -> int:
+    try:
+        result = compare_gradient_campaigns(
+            load_gradient_campaign(args.baseline), load_gradient_campaign(args.comparison)
+        )
+    except GradientArtifactError as exc:
+        raise SystemExit(f"invalid gradient campaign artifact: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0
+
+
 def command_campaign(args: argparse.Namespace) -> int:
     try:
         record = run_cpu_campaign(CampaignConfig(args.cases, args.seed, args.max_duration_s))
@@ -339,6 +357,13 @@ def parser() -> argparse.ArgumentParser:
     gradient_campaign.add_argument("--seed", type=int, default=0)
     gradient_campaign.add_argument("--output")
     gradient_campaign.set_defaults(func=command_gradient_campaign)
+    gradient_compare = commands.add_parser(
+        "gradient-compare", help="compare two gradient-campaign evidence artifacts"
+    )
+    gradient_compare.add_argument("--baseline", required=True)
+    gradient_compare.add_argument("--comparison", required=True)
+    gradient_compare.add_argument("--output")
+    gradient_compare.set_defaults(func=command_gradient_compare)
     campaign_parser = commands.add_parser(
         "campaign", help="run a bounded trusted CPU NumPy/JAX differential campaign"
     )

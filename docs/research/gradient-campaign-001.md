@@ -20,6 +20,19 @@ relative-only comparison has no absolute-error budget at this scale.  Re-run
 the same campaign on EPYC/CUDA and compare the artifact before assigning a
 backend-specific classification.
 
+When the EPYC artifact is available, compare it without altering either source
+record:
+
+```console
+uv run xlaxiom gradient-compare \
+  --baseline docs/experiments/gradient-campaign-local.json \
+  --comparison results/gradient-campaign-epyc-cuda.json \
+  --output results/gradient-campaign-hx370-vs-epyc.json
+```
+
+The comparison requires the same campaign configuration before treating the
+case signatures as directly comparable, and retains both environment records.
+
 The `acosh` inputs are deliberately inside (not on) the singular boundary at
 one.  Analytic references use the float32-rounded input, which prevents
 mistaking normal representation rounding near that boundary for a compiler
