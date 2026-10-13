@@ -342,7 +342,13 @@ def command_relation_create(args: argparse.Namespace) -> int:
     except MetamorphicPropertyError as exc:
         raise SystemExit(f"invalid curated property: {exc}") from exc
     path = save_relational_case(args.output, artifact)
-    _emit({"case": str(path), "sha256": artifact.to_dict()["sha256"], "identifier": artifact.identifier})
+    _emit(
+        {
+            "case": str(path),
+            "sha256": artifact.to_dict()["sha256"],
+            "identifier": artifact.identifier,
+        }
+    )
     return 0
 
 

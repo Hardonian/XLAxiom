@@ -108,3 +108,35 @@ def test_property_corpus_cli_writes_replayable_evidence(tmp_path) -> None:
     evidence = json.loads(output.read_text(encoding="utf-8"))
     assert evidence["kind"] == "metamorphic-corpus-evidence"
     assert evidence["counts"]["pass"] == 4
+
+
+def test_relational_artifact_cli_round_trip(tmp_path) -> None:
+    relation = tmp_path / "relation.json"
+    created = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "relation",
+            "create",
+            "--property",
+            "add-commutativity-v1",
+            "--backend",
+            "numpy",
+            "--output",
+            str(relation),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    executed = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "relation", "run", "--case", str(relation)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert created.returncode == 0, created.stderr
+    assert executed.returncode == 0, executed.stderr
+    assert json.loads(executed.stdout)["classification"] == "pass"

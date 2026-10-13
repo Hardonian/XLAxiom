@@ -6,7 +6,8 @@ import pytest
 
 from xlaxiom.bundle import create_bundle, validate_bundle
 from xlaxiom.generation import synthetic_control
-from xlaxiom.storage import ArtifactError, CaseArtifact, save_case
+from xlaxiom.metamorphic import build_property_artifact
+from xlaxiom.storage import ArtifactError, CaseArtifact, save_case, save_relational_case
 
 
 def test_portable_bundle_round_trip(tmp_path) -> None:
@@ -61,3 +62,15 @@ def test_bundle_validation_rejects_undeclared_members(tmp_path) -> None:
         archive.writestr("notes.txt", "not an evidence artifact")
     with pytest.raises(ArtifactError, match="undeclared archive members"):
         validate_bundle(str(bundle))
+
+
+def test_bundle_accepts_portable_relational_artifacts(tmp_path) -> None:
+    relation = save_relational_case(
+        tmp_path / "relation.json",
+        build_property_artifact("add-commutativity-v1", seed=2, backend="numpy"),
+    )
+    bundle = tmp_path / "relation.zip"
+
+    create_bundle([str(relation)], str(bundle))
+
+    assert validate_bundle(str(bundle))["cases"][0]["path"] == "cases/relation.json"

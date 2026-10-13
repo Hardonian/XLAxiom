@@ -65,7 +65,9 @@ def minimize_relational(
     left_artifact = replace(artifact, left=left_result.workload)
 
     def right_predicate(candidate: Workload) -> str:
-        return run_relational_comparison(replace(left_artifact, right=candidate)).failure_signature()
+        return run_relational_comparison(
+            replace(left_artifact, right=candidate)
+        ).failure_signature()
 
     right_result = minimize(
         left_artifact.right,
