@@ -1,8 +1,22 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 - 2026-10-13
 
-No changes yet.
+- Removed dead code: the unused `DeviceVerdict` value object and `to_json` helper in
+  `hardware`, the unused `_materialize`/`_shape`/`api_reshape` helpers in `corpus`, the
+  unused `last_error` helper in `gpu_validation`, and the unused
+  `expected_hyperbolic_status` table in `historical`. Test-only references were removed
+  with them.
+- Hardened the isolated version matrix: `MatrixEnvironment` now validates its JAX
+  specifier at construction and `load_config` rejects unsafe specifiers before any
+  subprocess is spawned, closing an argument-injection path.
+- Optimized hot paths: `recommended_variant` selects a CUDA variant in a single pass
+  instead of re-enumerating devices per variant, and `_apply` resolves operations from a
+  module-level map instead of rebuilding a function dictionary per node.
+- Added unit coverage for campaign configuration, isolated execution, memory limits, and
+  hardware discovery and capability gating.
+- Consolidated the outstanding agent branches into main; all previously open work is
+  landed.
 
 ## 0.5.3 - 2026-10-13
 
