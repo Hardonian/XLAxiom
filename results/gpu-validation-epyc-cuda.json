@@ -5,7 +5,7 @@
     "jax": "0.11.2",
     "jaxlib": "0.11.2",
     "kernel": "#38-Ubuntu SMP PREEMPT_DYNAMIC Fri Sep  4 09:10:14 UTC 2026",
-    "ld_library_path_present": false,
+    "ld_library_path_present": true,
     "machine": "x86_64",
     "numpy": "2.5.4",
     "nvidia_driver": "580.178.04",
@@ -86,7 +86,7 @@
           "cuda:0"
         ],
         "jaxlib": "0.11.2",
-        "ld_library_path_removed": false,
+        "ld_library_path_removed": true,
         "ordinal": 0,
         "selected_device": "cuda:0",
         "selection_reason": "SM 7.0 >= 5.2; CUDA 13 requires SM >= 7.5, so CUDA 12 applies",
@@ -131,6 +131,93 @@
       ],
       "device": {
         "active_processes": [
+          "pid7651:python",
+          "pid27223:ptyxis",
+          "pid27956:chrome"
+        ],
+        "compute_capability": "8.6",
+        "cuda_version": "13.0",
+        "driver_version": "580.178.04",
+        "free_vram_mib": 11371,
+        "name": "NVIDIA GeForce RTX 3060",
+        "ordinal": 1,
+        "sm": [
+          8,
+          6
+        ],
+        "smi_index": 2,
+        "total_vram_mib": 12288,
+        "used_vram_mib": 537,
+        "utilization_percent": 2.0,
+        "uuid_redacted": "dev-d7fdffa13d18"
+      },
+      "diagnostics": {},
+      "environment": {
+        "command": "python -c <bounded-probe>",
+        "cuda_visible_devices": "1",
+        "exit_code": 0,
+        "idleness": {
+          "active_processes": [
+            "pid7651:python",
+            "pid27223:ptyxis",
+            "pid27956:chrome"
+          ],
+          "external_workload": true,
+          "free_vram_mib": 11371,
+          "operator_override": true,
+          "used_vram_mib": 537,
+          "utilization_percent": 2.0
+        },
+        "jax": "0.11.2",
+        "jax_devices": [
+          "cuda:0"
+        ],
+        "jaxlib": "0.11.2",
+        "ld_library_path_removed": true,
+        "ordinal": 1,
+        "selected_device": "cuda:0",
+        "selection_reason": "SM 8.6 >= 7.5 and driver 580.178.04 >= 580",
+        "variant": "cuda13"
+      },
+      "measurements": {
+        "eager_checksum": 524800.0,
+        "eager_device": "cuda:0",
+        "jit_device": "cuda:0",
+        "jit_value": 8696111104.0
+      },
+      "reason": "4 bounded checks passed on NVIDIA GeForce RTX 3060 under jax[cuda13]",
+      "state": "PASS",
+      "variant": "cuda13"
+    },
+    {
+      "checks": [
+        {
+          "detail": "[CudaDevice(id=0)]",
+          "device": null,
+          "name": "jax_devices_gpu",
+          "status": "pass"
+        },
+        {
+          "detail": "shape=(32, 32)",
+          "device": "cuda:0",
+          "name": "eager_execution",
+          "status": "pass"
+        },
+        {
+          "detail": "value=8696111104.0",
+          "device": "cuda:0",
+          "name": "jit_execution",
+          "status": "pass"
+        },
+        {
+          "detail": "cuda:0",
+          "device": null,
+          "name": "explicit_placement",
+          "status": "pass"
+        }
+      ],
+      "device": {
+        "active_processes": [
           "pid18214:python"
         ],
         "compute_capability": "6.1",
@@ -138,7 +225,7 @@
         "driver_version": "580.178.04",
         "free_vram_mib": 22752,
         "name": "Tesla P40",
-        "ordinal": 1,
+        "ordinal": 2,
         "sm": [
           6,
           1
@@ -152,7 +239,7 @@
       "diagnostics": {},
       "environment": {
         "command": "python -c <bounded-probe>",
-        "cuda_visible_devices": "1",
+        "cuda_visible_devices": "2",
         "exit_code": 0,
         "idleness": {
           "active_processes": [
@@ -169,8 +256,8 @@
           "cuda:0"
         ],
         "jaxlib": "0.11.2",
-        "ld_library_path_removed": false,
-        "ordinal": 1,
+        "ld_library_path_removed": true,
+        "ordinal": 2,
         "selected_device": "cuda:0",
         "selection_reason": "SM 6.1 >= 5.2; CUDA 13 requires SM >= 7.5, so CUDA 12 applies",
         "variant": "cuda12"
@@ -184,101 +271,12 @@
       "reason": "4 bounded checks passed on Tesla P40 under jax[cuda12]",
       "state": "PASS",
       "variant": "cuda12"
-    },
-    {
-      "checks": [
-        {
-          "detail": "[CudaDevice(id=0)]",
-          "device": null,
-          "name": "jax_devices_gpu",
-          "status": "pass"
-        },
-        {
-          "detail": "JaxRuntimeError('UNIMPLEMENTED: /home/scott/.cache/xlaxiom-gpu/cuda13-probe/lib/python3.12/site-packages/nvidia/cu13/bin/ptxas ptxas too old. Falling back to the driver to compile.')",
-          "device": null,
-          "name": "eager_execution",
-          "status": "fail"
-        },
-        {
-          "detail": "NameError(\"name 'values' is not defined\")",
-          "device": null,
-          "name": "jit_execution",
-          "status": "fail"
-        },
-        {
-          "detail": "JaxRuntimeError('UNIMPLEMENTED: /home/scott/.cache/xlaxiom-gpu/cuda13-probe/lib/python3.12/site-packages/nvidia/cu13/bin/ptxas ptxas too old. Falling back to the driver to compile.')",
-          "device": null,
-          "name": "explicit_placement",
-          "status": "fail"
-        }
-      ],
-      "device": {
-        "active_processes": [
-          "pid7651:python",
-          "pid27223:ptyxis",
-          "pid27956:chrome"
-        ],
-        "compute_capability": "8.6",
-        "cuda_version": "13.0",
-        "driver_version": "580.178.04",
-        "free_vram_mib": 11371,
-        "name": "NVIDIA GeForce RTX 3060",
-        "ordinal": 2,
-        "sm": [
-          8,
-          6
-        ],
-        "smi_index": 2,
-        "total_vram_mib": 12288,
-        "used_vram_mib": 536,
-        "utilization_percent": 2.0,
-        "uuid_redacted": "dev-d7fdffa13d18"
-      },
-      "diagnostics": {
-        "failed_checks": [
-          "eager_execution",
-          "jit_execution",
-          "explicit_placement"
-        ],
-        "stderr": "W1012 20:52:26.334493  165098 subprocess_compilation.cc:242] Falling back to the CUDA driver for PTX compilation; ptxas does not support CC 6.1\nW1012 20:52:26.334527  165098 subprocess_compilation.cc:245] Used ptxas at /home/scott/.cache/xlaxiom-gpu/cuda13-probe/lib/python3.12/site-packages/nvidia/cu13/bin/ptxas\n"
-      },
-      "environment": {
-        "command": "python -c <bounded-probe>",
-        "cuda_visible_devices": "2",
-        "exit_code": 0,
-        "idleness": {
-          "active_processes": [
-            "pid7651:python",
-            "pid27223:ptyxis",
-            "pid27956:chrome"
-          ],
-          "external_workload": true,
-          "free_vram_mib": 11371,
-          "operator_override": true,
-          "used_vram_mib": 536,
-          "utilization_percent": 2.0
-        },
-        "jax": "0.11.2",
-        "jax_devices": [
-          "cuda:0"
-        ],
-        "jaxlib": "0.11.2",
-        "ld_library_path_removed": false,
-        "ordinal": 2,
-        "selected_device": "cuda:0",
-        "selection_reason": "SM 8.6 >= 7.5 and driver 580.178.04 >= 580",
-        "variant": "cuda13"
-      },
-      "measurements": {},
-      "reason": "eager_execution failed: JaxRuntimeError('UNIMPLEMENTED: /home/scott/.cache/xlaxiom-gpu/cuda13-probe/lib/python3.12/site-packages/nvidia/cu13/bin/ptxas ptxas too old. Falling back to the driver to compile.')",
-      "state": "UNSUPPORTED",
-      "variant": "cuda13"
     }
   ],
   "summary": {
     "blocked": 0,
     "inconclusive": 0,
-    "pass": 2,
-    "unsupported": 1
+    "pass": 3,
+    "unsupported": 0
   }
 }
