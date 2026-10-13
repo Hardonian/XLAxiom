@@ -26,7 +26,7 @@ uv run xlaxiom bundle validate --bundle handoff.zip
 uv run xlaxiom bundle run --bundle handoff.zip --output results/handoff-evidence.json
 ```
 
-Bundle validation rejects unsafe archive paths, duplicate names, oversized uncompressed content, and checksum mismatches. Running a bundle produces a new evidence record; it does not mutate the archive.
+Bundle validation rejects unsafe archive paths, duplicate names, oversized uncompressed content, checksum mismatches, and malformed case schemas. Bundle archives are deterministic for identical ordered inputs, which makes them suitable for content-addressed retention and review. Running a bundle produces a new evidence record; it does not mutate the archive.
 
 ## Interpretation rules
 

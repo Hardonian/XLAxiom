@@ -44,6 +44,7 @@ class ExecutionResult:
             "duration_ms": round(self.duration_ms, 4),
             "device": self.device,
             "error": self.error,
+            "environment": self.environment,
             "outputs": [
                 {
                     "shape": list(value.shape),
