@@ -46,6 +46,17 @@ Each handoff can include the minimized declarative case, numerical policy, envir
 
 Before filing an upstream JAX/OpenXLA issue, use a real (non-synthetic) case and verify it in a fresh process, record versions and device settings, minimize the predicate, and attach the generated report or validated bundle. A discrepancy is evidence to investigate, never an automatic root-cause or correctness claim.
 
+## When to use it
+
+| Situation | What XLAxiom adds |
+| --- | --- |
+| A model’s output differs between JAX eager and JIT | A structured comparison, explicit numerical policy, and a minimized predicate. |
+| A result changes after a JAX/XLA upgrade | Isolated version-matrix execution and conservative transition classification. |
+| A CI or production symptom needs escalation | Portable case, fresh-process verdict, human-readable report, and checksummed bundle. |
+| A GPU environment is uncertain or shared | Capability-first validation that reports unsupported or blocked devices instead of silently falling back. |
+
+XLAxiom is **not** a general correctness oracle, performance benchmark suite, or automatic root-cause analyzer. It is the evidence layer between a suspicious numerical result and a focused engineering investigation.
+
 ## At a glance
 
 | Need | XLAxiom capability |
@@ -56,11 +67,16 @@ Before filing an upstream JAX/OpenXLA issue, use a real (non-synthetic) case and
 | Shrink a repeatable mismatch | `xlaxiom minimize` |
 | Create a portable evidence record | `xlaxiom report` or `xlaxiom bundle create` |
 
+Read the [artifact guide](docs/artifacts.md) for the recommended handoff package and how to validate or rerun it safely.
+
 ## Contents
 
 - [What it does](#what-it-does)
 - [Commands](#commands)
 - [Cross-version matrix](#cross-version-matrix)
+- [Artifact lifecycle](docs/artifacts.md)
+- [Architecture](docs/architecture/overview.md)
+- [Reproducibility methodology](docs/architecture/reproducibility.md)
 - [Backends and precision](#backends-and-precision)
 - [Limits and interpretation](#limits-and-interpretation)
 - [Development](#development)
@@ -118,9 +134,12 @@ uv run xlaxiom matrix run --config configs/matrix-cpu-0.11.json \
   --case examples/synthetic-control-reduced.json --output results/matrix.json
 uv run xlaxiom bundle create --case examples/synthetic-control-reduced.json --output control.zip
 uv run xlaxiom bundle validate --bundle control.zip
+uv run xlaxiom bundle run --bundle control.zip --output results/bundle-evidence.json
 ```
 
 The matrix report captures environment requests, stdout/stderr, exit status, timeout outcome, and a conservative version classification. On this Windows CPU host, both versions reproduced the explicitly synthetic control; that is a `STABLE_FAILURE`, not a compiler finding. CUDA discovery is capability-gated (`xlaxiom matrix doctor`) and reported unsupported locally.
+
+The bundle workflow validates checksums before execution and runs cases directly from the archive without extraction. That gives reviewers a compact handoff they can validate before running, while keeping the original case identity intact.
 
 All commands expose `--help`. `reproduce` runs the workload again; it does not merely display saved output.
 
