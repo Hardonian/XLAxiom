@@ -201,7 +201,7 @@ def replay_jax_40634_on_gpu() -> dict[str, Any]:
     import jax
     import jax.numpy as jnp
 
-    x64_enabled = bool(jax.config.jax_enable_x64)
+    x64_enabled = bool(getattr(jax.config, "jax_enable_x64", False))
     gpu_devices = [str(device) for device in jax.devices("gpu")]
     device = jax.devices("gpu")[0]
     cases = (("arcsinh", 1e22), ("arcsinh", -1e22), ("acosh", 1e22))

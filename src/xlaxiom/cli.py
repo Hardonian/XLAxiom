@@ -224,6 +224,7 @@ def command_gradient(args: argparse.Namespace) -> int:
 
 
 def command_gradient_campaign(args: argparse.Namespace) -> int:
+    _ensure_gpu_runtime()
     try:
         result = run_gradient_campaign(args.cases, args.seed)
     except ValueError as exc:
@@ -366,7 +367,7 @@ def _ensure_gpu_runtime() -> None:
     environment["XLAXIOM_GPU_REEXEC"] = "1"
     environment["CUDA_VISIBLE_DEVICES"] = str(ordinal)
     result = subprocess.run(
-        [interpreter, "-m", "xlaxiom.cli", *sys.argv[1:]],
+        [interpreter, "-m", "xlaxiom", *sys.argv[1:]],
         env=environment,
         check=False,
     )
@@ -663,3 +664,10 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     return int(args.func(args))
+
+
+if __name__ == "__main__":
+    # ``python -m xlaxiom.cli`` must behave exactly like ``python -m xlaxiom``. Without
+    # this guard the module imports and exits 0 without doing anything, which looks like
+    # success and silently produces no evidence.
+    raise SystemExit(main())
