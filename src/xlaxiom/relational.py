@@ -167,7 +167,10 @@ def build_relational_report(
         ),
         "upstream_candidate": comparison.classification == Classification.NUMERICAL_DISCREPANCY,
         "issue_draft": {
-            "title": f"Relational observation: {comparison.classification.value} for {artifact.identifier}",
+            "title": (
+                f"Relational observation: {comparison.classification.value} for "
+                f"{artifact.identifier}"
+            ),
             "reproduction": "xlaxiom relation reproduce --case <relation.json>",
             "do_not_file_automatically": True,
         },
