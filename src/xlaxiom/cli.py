@@ -30,7 +30,12 @@ from .gradient_artifacts import (
     load_gradient_campaign,
 )
 from .gradients import generate_gradient_case, run_gradient_campaign, run_gradient_case
-from .hardware import enumerate_physical_gpus, select_variant
+from .hardware import (
+    enumerate_physical_gpus,
+    library_path_risk,
+    ordinal_ordering_risk,
+    select_variant,
+)
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .matrix import run_matrix
@@ -250,7 +255,15 @@ def command_gradient_compare(args: argparse.Namespace) -> int:
 
 def command_campaign(args: argparse.Namespace) -> int:
     try:
-        record = run_cpu_campaign(CampaignConfig(args.cases, args.seed, args.max_duration_s))
+        record = run_cpu_campaign(
+            CampaignConfig(
+                cases=args.cases,
+                seed=args.seed,
+                max_duration_s=args.max_duration_s,
+                isolate=args.isolate,
+                case_timeout_s=args.case_timeout_s,
+            )
+        )
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     if args.output:
@@ -271,11 +284,16 @@ def command_matrix_doctor(_: argparse.Namespace) -> int:
 
 def command_gpu_doctor(_: argparse.Namespace) -> int:
     """Report real hardware capability without executing anything on a GPU."""
+    devices = enumerate_physical_gpus()
     _emit(
         {
             "driver": driver_capability(),
             "runtime": cuda_capability(),
             "recommended_variant": recommended_variant(),
+            "environment_risks": {
+                "ld_library_path": library_path_risk(),
+                "ordinal_ordering": ordinal_ordering_risk(devices),
+            },
         }
     )
     return 0
@@ -380,8 +398,8 @@ def command_gpu_campaign(args: argparse.Namespace) -> int:
     devices = enumerate_physical_gpus()
     report = validate_all(devices, allow_busy=args.allow_busy)
     passed = [
-        device
-        for device, result in zip(devices, report["results"], strict=True)
+        (position, device)
+        for position, (device, result) in enumerate(zip(devices, report["results"], strict=True))
         if result["state"] == DeviceState.PASS.value
     ]
     if not passed:
@@ -393,11 +411,47 @@ def command_gpu_campaign(args: argparse.Namespace) -> int:
             }
         )
         return 2
-    device = passed[args.device] if args.device is not None else passed[0]
-    variant = report["results"][devices.index(device)]["variant"]
+    if args.device is not None and args.device >= len(passed):
+        _emit(
+            {
+                "campaign": "skipped",
+                "reason": (
+                    f"device index {args.device} is out of range; {len(passed)} device(s) "
+                    "passed every bounded probe in this process"
+                ),
+                "available": [
+                    {
+                        "index": index,
+                        "name": device.name,
+                        "ordinal": device.ordinal,
+                        "nvidia_smi_index": device.smi_index,
+                    }
+                    for index, (_, device) in enumerate(passed)
+                ],
+                "hint": (
+                    "A GPU re-exec pins CUDA_VISIBLE_DEVICES to one ordinal, so only that "
+                    "device is visible. Re-run with CUDA_VISIBLE_DEVICES set to the "
+                    "ordinal you want, or omit --device to use the visible device."
+                ),
+            }
+        )
+        return 2
+    position, device = passed[args.device] if args.device is not None else passed[0]
+    variant = report["results"][position]["variant"]
+    # Record which device this run actually targeted. Under CUDA_VISIBLE_DEVICES the
+    # runtime remaps the selected GPU to ordinal 0, so the campaign must state the
+    # device it was asked to validate rather than inferring it from the visible set.
     campaign = run_gpu_campaign(
         device, variant or "cuda12", CampaignBudget(args.cases, args.seed, args.measurements)
     )
+    campaign["requested_device"] = {
+        "name": device.name,
+        "ordinal": device.ordinal,
+        "nvidia_smi_index": device.smi_index,
+        "compute_capability": device.compute_capability,
+        "uuid_redacted": device.uuid_redacted,
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+    }
     if args.output:
         save_json(args.output, campaign)
     _emit(campaign)
@@ -595,6 +649,17 @@ def parser() -> argparse.ArgumentParser:
     campaign_parser.add_argument("--seed", type=int, default=0)
     campaign_parser.add_argument("--max-duration-s", type=float, default=180.0)
     campaign_parser.add_argument("--output")
+    campaign_parser.add_argument(
+        "--isolate",
+        action="store_true",
+        help=(
+            "run each case in a spawned child under a hard timeout, so a hung kernel or "
+            "an out-of-memory failure contains one case instead of the whole campaign"
+        ),
+    )
+    campaign_parser.add_argument(
+        "--case-timeout-s", type=float, default=60.0, help="per-case timeout with --isolate"
+    )
     campaign_parser.set_defaults(func=command_campaign)
     matrix_parser = commands.add_parser("matrix", help="run isolated JAX version matrices")
     matrix_commands = matrix_parser.add_subparsers(dest="matrix_command", required=True)

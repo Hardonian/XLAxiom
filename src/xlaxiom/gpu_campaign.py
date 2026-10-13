@@ -202,6 +202,31 @@ def workload_families() -> list[dict[str, Any]]:
     ]
 
 
+def campaign_cases(budget: CampaignBudget) -> list[dict[str, Any]]:
+    """Expand the bounded families to the requested case count.
+
+    ``--cases`` is a real budget, not decoration: extra cases cycle the families with
+    distinct seeds so the campaign exercises more than the four base motifs while
+    staying inside the bounded workload generator.
+    """
+    families = workload_families()
+    if not 1 <= budget.cases <= MAX_CASES:
+        raise ValueError(f"cases must be between 1 and {MAX_CASES}")
+    cases: list[dict[str, Any]] = []
+    for index in range(budget.cases):
+        base = families[index % len(families)]
+        cases.append(
+            {
+                "family": base["family"],
+                "description": base["description"],
+                # Keep the base seed for the first pass so results stay comparable, then
+                # derive distinct seeds for every additional case.
+                "seed": base["seed"] if index < len(families) else base["seed"] + index,
+            }
+        )
+    return cases
+
+
 def run_gpu_campaign(
     device: PhysicalGpu,
     variant: str,
@@ -216,16 +241,17 @@ def run_gpu_campaign(
     budget.validate()
     import time
 
+    entries = campaign_cases(budget)
     started = time.perf_counter()
     cases: list[dict[str, Any]] = []
-    for entry in workload_families():
+    for entry in entries:
         if time.perf_counter() - started > MAX_DURATION_S:
             break
         record = cpu_vs_gpu(entry["seed"], device, variant, budget.measurements)
         record["family"] = entry["family"]
         record["description"] = entry["description"]
         cases.append(record)
-    eager_jit = [gpu_eager_vs_jit(entry["seed"], device, variant) for entry in workload_families()]
+    eager_jit = [gpu_eager_vs_jit(entry["seed"], device, variant) for entry in entries]
     classifications = [case["numpy_vs_gpu_jit"]["classification"] for case in cases]
     eager_classifications = [item["classification"] for item in eager_jit]
     pass_terms = {Classification.PASS.value, DeviceState.PASS.value}

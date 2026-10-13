@@ -21,7 +21,11 @@ from xlaxiom.hardware import (
     CUDA13_MIN_SM,
     CudaVariant,
     PhysicalGpu,
+    _visible_gpu_name,
     driver_supported,
+    is_idle,
+    library_path_risk,
+    ordinal_ordering_risk,
     redact_uuid,
     select_variant,
     sm_supported,
@@ -35,10 +39,12 @@ def make_device(
     used: int = 10,
     utilization: float = 0.0,
     processes: tuple[str, ...] = (),
+    ordinal: int = 0,
+    smi_index: int | None = None,
 ) -> PhysicalGpu:
     major, minor = (int(part) for part in sm.split("."))
     return PhysicalGpu(
-        ordinal=0,
+        ordinal=ordinal,
         name=name,
         uuid_redacted=redact_uuid(f"GPU-{name}"),
         compute_capability=sm,
@@ -50,7 +56,7 @@ def make_device(
         free_vram_mib=16384 - used,
         utilization_percent=utilization,
         active_processes=processes,
-        smi_index=0,
+        smi_index=ordinal if smi_index is None else smi_index,
     )
 
 
@@ -233,6 +239,55 @@ class TestCpuBaselineFallback:
         assert str(result["device"]).startswith("cpu")
 
 
+class TestEnvironmentTraps:
+    """The two EPYC environment traps must be reported, not silently rediscovered."""
+
+    def test_library_path_risk_flags_a_cuda_directory(self, monkeypatch) -> None:
+        monkeypatch.setenv("LD_LIBRARY_PATH", "/usr/local/cuda-12.6/lib64:/opt/lib")
+        risk = library_path_risk()
+        assert risk["shadowing_risk"] is True
+        assert risk["cuda_entries"] == ["/usr/local/cuda-12.6/lib64"]
+        assert "env -u LD_LIBRARY_PATH" in risk["guidance"]
+        assert "Do not change the host driver" in risk["guidance"]
+
+    def test_library_path_risk_is_quiet_without_cuda(self, monkeypatch) -> None:
+        monkeypatch.setenv("LD_LIBRARY_PATH", "/opt/somelib")
+        risk = library_path_risk()
+        assert risk["shadowing_risk"] is False
+        assert risk["cuda_entries"] == []
+
+    def test_library_path_risk_when_unset(self, monkeypatch) -> None:
+        monkeypatch.delenv("LD_LIBRARY_PATH", raising=False)
+        risk = library_path_risk()
+        assert risk["shadowing_risk"] is False
+
+    def test_ordinal_ordering_risk_detects_mismatch(self) -> None:
+        devices = [
+            make_device("GPU-A", "7.0", ordinal=0, smi_index=0),
+            make_device("GPU-B", "8.6", ordinal=1, smi_index=2),
+            make_device("GPU-C", "6.1", ordinal=2, smi_index=1),
+        ]
+        risk = ordinal_ordering_risk(devices)
+        assert risk["differs"] is True
+        assert risk["cuda_ordinals"] == [0, 1, 2]
+        assert risk["nvidia_smi_indices"] == [0, 2, 1]
+        assert "CUDA_VISIBLE_DEVICES uses the ordinal" in risk["note"]
+
+    def test_ordinal_ordering_risk_quiet_when_aligned(self) -> None:
+        devices = [
+            make_device("GPU-A", "7.0", ordinal=0, smi_index=0),
+            make_device("GPU-B", "8.6", ordinal=1, smi_index=1),
+        ]
+        risk = ordinal_ordering_risk(devices)
+        assert risk["differs"] is False
+        assert "matches" in risk["note"]
+
+    def test_ordinal_ordering_risk_single_device(self) -> None:
+        risk = ordinal_ordering_risk([make_device("GPU-A", "7.0")])
+        assert risk["differs"] is False
+        assert "unambiguous" in risk["note"]
+
+
 class TestCapabilityReporting:
     """Capability reporting must be honest about the installed runtime."""
 
@@ -258,3 +313,20 @@ class TestCapabilityReporting:
         assert DeviceState.UNSUPPORTED.value == "UNSUPPORTED"
         assert DeviceState.BLOCKED.value == "BLOCKED"
         assert DeviceState.INCONCLUSIVE.value == "INCONCLUSIVE"
+
+
+class TestVisibleDeviceAttribution:
+    """A pinned CUDA_VISIBLE_DEVICES must attribute evidence to the right physical GPU."""
+
+    def test_single_visible_name_is_used_for_attribution(self) -> None:
+        assert _visible_gpu_name(["Tesla P40"]) == "Tesla P40"
+        assert _visible_gpu_name(["Tesla P40", "Tesla V100-SXM2-16GB"]) is None
+        assert _visible_gpu_name([]) is None
+
+    def test_idle_gate_blocks_a_busy_device(self) -> None:
+        busy = make_device("RTX 3060", "8.6", utilization=6.0, used=377)
+        assert is_idle(busy) is False
+
+    def test_idle_gate_allows_a_quiet_device(self) -> None:
+        quiet = make_device("Tesla V100", "7.0", utilization=0.0, used=10)
+        assert is_idle(quiet) is True
