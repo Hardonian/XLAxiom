@@ -11,6 +11,16 @@ verify an OpenSSL detached evidence signature with `xlaxiom attest sign` and
 `xlaxiom attest verify`; private-key handling remains external and no unsigned artifact
 is represented as publisher-signed.
 
+The `Release verification` workflow runs on `v*` tags and manual dispatch. It repeats
+lint, format, typing, and test gates, verifies that a tag equals the packaged version,
+installs the wheel into a fresh environment, exercises package data through the CLI,
+and retains both wheel and source distribution as workflow artifacts. It deliberately
+does not publish to PyPI or create a GitHub release without maintainer credentials.
+
+Version 0.5.0 met the source, wheel, CPU, Windows/Linux, and available CUDA hardware
+criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
+boundaries, not release blockers or implied claims; see [`support.md`](support.md).
+
 ## Schema compatibility
 
 Case, relational-case, bundle, corpus, metamorphic evidence/comparison, environment,

@@ -1,6 +1,21 @@
 import json
 import subprocess
 import sys
+from importlib.metadata import version
+
+from xlaxiom import __version__
+
+
+def test_package_and_cli_versions_match_distribution_metadata() -> None:
+    assert __version__ == version("xlaxiom")
+
+    for invocation in (
+        [sys.executable, "-m", "xlaxiom", "--version"],
+        [sys.executable, "-m", "xlaxiom.cli", "--version"],
+    ):
+        result = subprocess.run(invocation, capture_output=True, text=True, check=False)
+        assert result.returncode == 0, result.stderr
+        assert result.stdout.strip() == f"xlaxiom {__version__}"
 
 
 def test_module_invocation_forms_are_equivalent(tmp_path) -> None:

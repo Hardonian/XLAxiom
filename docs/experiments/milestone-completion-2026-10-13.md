@@ -27,3 +27,17 @@ claim most of a shared GPU's memory.
 TPU eager/JIT property backends are implemented and tested to fail closed without CPU
 fallback, but no physical TPU was available. macOS remains a portable but unverified
 platform. These are external verification boundaries, not hidden success claims.
+
+## Release acceptance
+
+The 0.5.0 closure was exercised on every declared Python version (3.11, 3.12,
+and 3.13): each run completed 256 tests with two expected no-GPU skips. Ruff lint
+and format checks, mypy, lockfile consistency, local Markdown-link validation, and
+the source/wheel build also passed.
+
+The wheel was installed into a fresh Python 3.12 environment and invoked outside the
+source checkout. Its `--version`, thirteen-property registry, fourteen-entry corpus
+validation, and packaged `corpus/curated-v1.json` resource all passed. GitHub reported
+no open issues or pull requests at closure time; the pre-closure `main` CI revision was
+green. The tag-triggered release workflow independently repeats source gates and the
+wheel smoke test, and retains both distributions without claiming package publication.

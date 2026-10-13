@@ -1,16 +1,18 @@
-# 🧪 [testing improvement] Add unit test suite for gpu_campaign.py
+# XLAxiom 0.5.0 product closure
 
-### 🎯 What: The testing gap addressed
-Added a comprehensive test suite in `tests/unit/test_gpu_campaign.py` targeting `src/xlaxiom/gpu_campaign.py`, which previously had no dedicated unit tests.
+## Scope
 
-### 📊 Coverage: What scenarios are now tested
-- **`CampaignBudget` validation:** Enforces bounds on `cases` (1..24) and `measurements` (1..20).
-- **`campaign_cases` generation:** Verifies workload family rotation and seed derivation for various budgets.
-- **`cpu_vs_gpu` comparisons:** Verifies schema structure, timing records, and graceful handling of missing CPU baselines under isolated CUDA runtimes.
-- **`gpu_eager_vs_jit` observations:** Validates comparison dictionary schema and explicit device index placement.
-- **`run_gpu_campaign` entrypoint:** Tests full campaign workflow, anomaly detection across cases, default/custom budget overrides, and max duration time limit guards.
-- **`replay_jax_40634_on_gpu` study:** Tests hardware execution / fallback behavior and mocked JAX gradient calculations for the JAX #40634 issue replay.
+- Completes all fifty software priorities in the holistic delivery plan.
+- Retains independent Windows HX370 and Linux EPYC evidence plus V100, P40, and RTX 3060 capability evidence.
+- Adds reviewed metamorphic properties, bounded campaigns, minimization, fresh-process replay, schemas, attestation, and fail-closed accelerator selection.
+- Closes release metadata and verifies the installed wheel, including packaged corpus data.
 
-### ✨ Result: The improvement in test coverage
-- Added 16 new unit tests covering all functions and edge cases in `src/xlaxiom/gpu_campaign.py`.
-- Ensured deterministic execution using `pytest.MonkeyPatch` doubles without needing a live GPU host.
+## Verification
+
+- Formatting, lint, typing, complete tests, lockfile consistency, and distribution builds pass.
+- The wheel is installed into a fresh environment and its version, property registry, and checked-in corpus are exercised through the installed CLI.
+- GitHub reports no open issues or pull requests; current `main` CI is green.
+
+## Evidence boundary
+
+Physical TPU execution and macOS execution were unavailable. Those paths are implemented and fail closed, but remain explicitly hardware/platform-unverified. No PyPI publication, GitHub release, or publisher signature is claimed without maintainer credentials.

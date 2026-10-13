@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.5.0 - Unreleased
+## Unreleased
+
+No changes yet.
+
+## 0.5.0 - 2026-10-13
 
 - Added failure-preserving minimization to reproduced-finding corpus admission.
 - Added identity-checked property comparison across CPU, GPU, and TPU evidence backends.
@@ -17,23 +21,23 @@
 - Added issue-readiness assessment, versioned schema documents, release criteria, support
   matrix, quickstart, and holistic delivery documentation.
 
-## 0.4.0 - Unreleased
+## 0.4.0 - 2026-10-12
 
 - Added per-operation, analytic-oracle #40634 historical studies and isolated version execution.
 - Added validated execution of portable case bundles without archive extraction.
 
-## 0.3.0 - Unreleased
+## 0.3.0 - 2026-10-12
 
 - Added isolated uv-backed JAX version matrix execution and conservative version classification.
 - Added checksummed portable ZIP case bundles and explicit CUDA capability discovery.
 
-## 0.2.0 - Unreleased
+## 0.2.0 - 2026-10-12
 
 - Enforced JAX device placement and graph-wide symbolic allocation limits.
 - Added spawned worker isolation, timeout handling, reusable JIT benchmarking, and failure signatures.
 - Added a trusted replay adapter and corpus record for JAX issue #40634.
 
-## 0.1.0 - Unreleased
+## 0.1.0 - 2026-10-12
 
 - CPU-first NumPy/JAX differential execution and explicit numerical classification.
 - Versioned JSON workloads with deterministic reconstruction and checksums.

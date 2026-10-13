@@ -13,6 +13,7 @@ from statistics import median
 from time import perf_counter
 from typing import Any
 
+from . import __version__
 from .attestation import (
     load_attestation,
     save_attestation,
@@ -1170,6 +1171,7 @@ def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         prog="xlaxiom", description="Evidence-first numerical differential testing for JAX/OpenXLA."
     )
+    root.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = root.add_subparsers(dest="command", required=True)
     doctor_parser = commands.add_parser("doctor", help="inspect JAX/backend capabilities")
     doctor_parser.set_defaults(func=command_doctor)
