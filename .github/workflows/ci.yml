@@ -51,6 +51,7 @@ jobs:
           - mixed-dtype-add-commutativity-v1
           - signed-zero-negation-involution-v1
           - nonfinite-absolute-idempotence-v1
+          - extreme-finite-absolute-idempotence-v1
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5

@@ -39,6 +39,7 @@ review, minimize, and reproduce; it does not diagnose a compiler defect.
 | `mixed-dtype-add-commutativity-v1` | `int32 x + float32 y` equals the reversed operands. |
 | `signed-zero-negation-involution-v1` | Double negation preserves both zero signs. |
 | `nonfinite-absolute-idempotence-v1` | `abs(x)` equals `abs(abs(x))` for NaN and infinities. |
+| `extreme-finite-absolute-idempotence-v1` | `abs(x)` equals `abs(abs(x))` at normal/subnormal finite extremes. |
 
 The corpus manifest is [`src/xlaxiom/corpus/curated-v1.json`](../src/xlaxiom/corpus/curated-v1.json).
 It carries no executable payload and has no general `builder` or import field.

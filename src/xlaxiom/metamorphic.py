@@ -357,6 +357,29 @@ def _nonfinite_absolute_idempotence(seed: int) -> PropertyWorkloads:
     )
 
 
+def _extreme_finite_absolute_idempotence(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns), value_mode="extreme_finite"),)
+    return PropertyWorkloads(
+        _workload(
+            "extreme-finite-absolute-idempotence-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "extreme-finite-absolute-idempotence-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "first"), Node("abs", ("first",), "out")),
+            ("out",),
+            "right",
+        ),
+    )
+
+
 _BUILDERS: dict[str, PropertyBuilder] = {
     "add-commutativity-v1": _add_commutativity,
     "transpose-involution-v1": _transpose_involution,
@@ -370,6 +393,7 @@ _BUILDERS: dict[str, PropertyBuilder] = {
     "mixed-dtype-add-commutativity-v1": _mixed_dtype_add_commutativity,
     "signed-zero-negation-involution-v1": _signed_zero_negation_involution,
     "nonfinite-absolute-idempotence-v1": _nonfinite_absolute_idempotence,
+    "extreme-finite-absolute-idempotence-v1": _extreme_finite_absolute_idempotence,
 }
 
 

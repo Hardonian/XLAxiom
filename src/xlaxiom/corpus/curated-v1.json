@@ -85,6 +85,12 @@
       "title": "Absolute value is idempotent for non-finite inputs",
       "description": "abs(x) and abs(abs(x)) agree for NaN, infinities, and signed zero under the explicit policy.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "extreme-finite-absolute-idempotence-v1",
+      "title": "Absolute value is idempotent for finite extremes",
+      "description": "abs(x) and abs(abs(x)) agree for finite values spanning normal and subnormal boundaries.",
+      "relation": "outputs_equal"
     }
   ]
 }
