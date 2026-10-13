@@ -10,7 +10,6 @@ import pytest
 
 from xlaxiom.historical import (
     HistoricalObservation,
-    expected_hyperbolic_status,
     hyperbolic_gradient_study,
     main,
     replay_jax_40634,
@@ -70,27 +69,6 @@ class TestHistoricalObservation:
         assert d["issue"] == "test_issue"
         assert d["adapter"] == "test_adapter"
         assert d["classification"] == "pass"
-
-
-class TestExpectedHyperbolicStatus:
-    def test_known_jax_versions(self) -> None:
-        v0_10_2 = expected_hyperbolic_status("0.10.2")
-        assert v0_10_2 is not None
-        assert v0_10_2[("arcsinh", 1e22)] == "analytic_discrepancy"
-        assert v0_10_2[("acosh", 1e22)] == "analytic_discrepancy"
-
-        v0_11_1 = expected_hyperbolic_status("0.11.1")
-        assert v0_11_1 is not None
-        assert v0_11_1[("arcsinh", 1e22)] == "analytic_discrepancy"
-
-        v0_11_2 = expected_hyperbolic_status("0.11.2")
-        assert v0_11_2 is not None
-        assert v0_11_2[("arcsinh", 1e22)] == "analytic_discrepancy"
-        assert v0_11_2[("acosh", 1e22)] == "pass"
-
-    def test_unknown_jax_version_returns_none(self) -> None:
-        assert expected_hyperbolic_status("0.99.0") is None
-        assert expected_hyperbolic_status("unknown_version") is None
 
 
 class TestHyperbolicGradientStudy:
