@@ -20,3 +20,7 @@ SKIPPED [1] tests/unit/test_gpu_cuda.py:219: no GPU in the primary environment
 ## uv build
 Successfully built dist/xlaxiom-0.5.0.tar.gz
 Successfully built dist/xlaxiom-0.5.0-py3-none-any.whl
+
+## CUDA gradient campaign
+devices: ['cuda:0'] (Tesla V100-SXM2-16GB via jax[cuda12])
+counts: {"candidate_discrepancy": 4, "known_historical_discrepancy": 2, "pass": 34}

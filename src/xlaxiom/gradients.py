@@ -103,6 +103,9 @@ def run_gradient_campaign(cases: int, seed: int = 0) -> dict[str, Any]:
         if result["classification"] == "pass":
             counts["pass"] += 1
         elif operation == "arcsinh" and abs(float(case["value"])) >= 1e20:
+            # Documented upstream behavior from JAX issue #40634: arcsinh gradients at
+            # extreme float32 magnitudes remain discrepant across released versions.
+            # Segregated as known, never reported as a new XLAxiom finding.
             counts["known_historical_discrepancy"] += 1
             known.append(result)
         else:
