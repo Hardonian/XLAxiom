@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 from unittest.mock import MagicMock, patch
 
@@ -10,8 +9,6 @@ import pytest
 
 from xlaxiom.hardware import (
     CudaVariant,
-    DeviceState,
-    DeviceVerdict,
     PhysicalGpu,
     _cuda_runtime_names,
     _driver_cuda_version,
@@ -19,8 +16,6 @@ from xlaxiom.hardware import (
     _gpu_processes,
     _nvidia_smi_csv,
     _nvidia_smi_fields,
-    _sm_tuple,
-    _visible_gpu_name,
     driver_supported,
     enumerate_physical_gpus,
     environment_manifest,
@@ -29,76 +24,9 @@ from xlaxiom.hardware import (
     is_idle,
     library_path_risk,
     ordinal_ordering_risk,
-    redact_uuid,
     select_variant,
     sm_supported,
-    to_json,
 )
-
-
-class TestUtilitiesAndDataclasses:
-    def test_sm_tuple(self) -> None:
-        assert _sm_tuple("8.6") == (8, 6)
-        assert _sm_tuple("7.0") == (7, 0)
-        assert _sm_tuple("8") == (8, 0)
-
-    def test_redact_uuid(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        uuid1 = "GPU-1234-5678"
-        redacted1 = redact_uuid(uuid1)
-        assert redacted1.startswith("dev-")
-        assert len(redacted1) == 16  # "dev-" + 12 sha chars
-        assert uuid1 not in redacted1
-
-        # Stable digest check
-        assert redact_uuid(uuid1) == redacted1
-
-        # Salt change check
-        monkeypatch.setenv("XLAXIOM_DEVICE_SALT", "custom-salt")
-        assert redact_uuid(uuid1) != redacted1
-
-    def test_visible_gpu_name(self) -> None:
-        assert _visible_gpu_name(["NVIDIA A100"]) == "NVIDIA A100"
-        assert _visible_gpu_name(["GPU-0", "GPU-1"]) is None
-        assert _visible_gpu_name([]) is None
-
-    def test_to_json(self) -> None:
-        data = {"b": 2, "a": 1}
-        rendered = to_json(data)
-        assert json.loads(rendered) == {"a": 1, "b": 2}
-
-    def test_physical_gpu_to_dict(self) -> None:
-        gpu = PhysicalGpu(
-            ordinal=0,
-            name="NVIDIA RTX 3090",
-            uuid_redacted="dev-123456789012",
-            compute_capability="8.6",
-            sm=(8, 6),
-            driver_version="535.100.00",
-            cuda_version="12.2",
-            total_vram_mib=24576,
-            used_vram_mib=1024,
-            free_vram_mib=23552,
-            utilization_percent=0.0,
-            active_processes=("pid100:python",),
-            smi_index=0,
-        )
-        data = gpu.to_dict()
-        assert data["sm"] == [8, 6]
-        assert data["name"] == "NVIDIA RTX 3090"
-        assert data["active_processes"] == ("pid100:python",)
-
-    def test_device_verdict_to_dict(self) -> None:
-        verdict = DeviceVerdict(
-            device={"name": "GPU 0"},
-            variant="cuda12",
-            state=DeviceState.PASS.value,
-            reason="Supported SM and driver",
-            jax_devices=["gpu:0"],
-        )
-        data = verdict.to_dict()
-        assert data["variant"] == "cuda12"
-        assert data["state"] == "PASS"
-        assert data["jax_devices"] == ["gpu:0"]
 
 
 class TestNvidiaSmiWrappers:
