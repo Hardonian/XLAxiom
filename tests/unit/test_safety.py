@@ -1,6 +1,14 @@
+import os
+
 from xlaxiom.generation import synthetic_control
 from xlaxiom.pipeline import FaultInjection
-from xlaxiom.safety import compare_isolated
+from xlaxiom.safety import _resident_memory_bytes, compare_isolated
+
+
+def test_current_process_memory_is_sampled_on_supported_hosts() -> None:
+    sample = _resident_memory_bytes(os.getpid())
+    if os.name in {"nt", "posix"}:
+        assert sample is not None and sample > 0
 
 
 def test_worker_timeout_terminates_child() -> None:

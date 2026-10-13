@@ -72,19 +72,22 @@ def _resident_memory_bytes(pid: int | None) -> int | None:
                     ("PeakPagefileUsage", ctypes.c_size_t),
                 ]
 
-            process = ctypes.windll.kernel32.OpenProcess(0x0400 | 0x0010, False, pid)
+            windll = getattr(ctypes, "windll", None)
+            if windll is None:
+                return None
+            process = windll.kernel32.OpenProcess(0x0400 | 0x0010, False, pid)
             if not process:
                 return None
             try:
                 counters = ProcessMemoryCounters()
                 counters.cb = ctypes.sizeof(counters)
-                if not ctypes.windll.psapi.GetProcessMemoryInfo(
+                if not windll.psapi.GetProcessMemoryInfo(
                     process, ctypes.byref(counters), counters.cb
                 ):
                     return None
                 return int(counters.WorkingSetSize)
             finally:
-                ctypes.windll.kernel32.CloseHandle(process)
+                windll.kernel32.CloseHandle(process)
         except (AttributeError, OSError):
             return None
     try:
