@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
 from dataclasses import asdict, dataclass
@@ -12,12 +13,24 @@ from typing import Any
 from .regression import classify_versions
 from .storage import load_case, save_json
 
+_VERSION_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._\-+]*$")
+
+
+def validate_jax_version(version: str) -> str:
+    """Validate that a JAX version specifier is safe and free from argument injection."""
+    if not isinstance(version, str) or not version or not _VERSION_PATTERN.fullmatch(version):
+        raise ValueError(f"Invalid or unsafe JAX version specifier: {version!r}")
+    return version
+
 
 @dataclass(frozen=True)
 class MatrixEnvironment:
     name: str
     jax: str
     timeout_s: float = 90.0
+
+    def __post_init__(self) -> None:
+        validate_jax_version(self.jax)
 
 
 def load_config(path: str | Path) -> tuple[MatrixEnvironment, ...]:

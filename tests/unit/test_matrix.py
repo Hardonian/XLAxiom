@@ -203,3 +203,25 @@ def test_main_invalid_invocation() -> None:
 
     with pytest.raises(SystemExit, match="matrix module is invoked by xlaxiom matrix"):
         main(["invalid_arg"])
+
+
+def test_matrix_environment_version_validation_valid() -> None:
+    env = MatrixEnvironment(name="valid_env", jax="0.4.30")
+    assert env.jax == "0.4.30"
+    env2 = MatrixEnvironment(name="valid_env2", jax="0.4.35-dev1")
+    assert env2.jax == "0.4.35-dev1"
+
+
+def test_matrix_environment_version_validation_invalid() -> None:
+    invalid_versions = [
+        "--version",
+        "0.4.30; rm -rf /",
+        "0.4.30 --help",
+        " 0.4.30",
+        "-jax",
+        "0.4.30\n",
+        "",
+    ]
+    for version in invalid_versions:
+        with pytest.raises(ValueError, match="Invalid or unsafe JAX version specifier"):
+            MatrixEnvironment(name="bad_env", jax=version)

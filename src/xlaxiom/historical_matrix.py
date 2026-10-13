@@ -7,12 +7,14 @@ import subprocess
 import time
 from typing import Any
 
+from .matrix import validate_jax_version
 from .storage import save_json
 
 
 def run_hyperbolic_matrix(versions: list[str], output: str) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     for version in versions:
+        validate_jax_version(version)
         started = time.perf_counter()
         command = [
             "uv",

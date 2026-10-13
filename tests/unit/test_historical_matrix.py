@@ -2,6 +2,8 @@ import json
 import subprocess
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from xlaxiom.historical_matrix import run_hyperbolic_matrix
 
 
@@ -54,3 +56,9 @@ def test_run_hyperbolic_matrix_failure(tmp_path) -> None:
     assert result["exit_code"] == 1
     assert result["stderr"] == "Error: package not found"
     assert "study" not in result
+
+
+def test_run_hyperbolic_matrix_invalid_version(tmp_path) -> None:
+    output_path = str(tmp_path / "matrix_report.json")
+    with pytest.raises(ValueError, match="Invalid or unsafe JAX version specifier"):
+        run_hyperbolic_matrix(["--invalid-arg"], output_path)
