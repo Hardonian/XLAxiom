@@ -351,12 +351,6 @@ def check_metamorphic_property(prop: MetamorphicProperty) -> dict[str, Any]:
     return record
 
 
-def _materialize(workload: Workload, api: Any) -> Any:
-    from .model import materialize_inputs
-
-    return materialize_inputs(workload)["x"]
-
-
 def _property_program(prop: MetamorphicProperty) -> Any:
     """The JIT-compiled form of a property's relation."""
 
@@ -403,13 +397,6 @@ def _relation(prop: MetamorphicProperty, first: Any) -> Any:
     raise ValueError(f"unknown metamorphic operation {prop.operation!r}")
 
 
-def _shape(value: Any) -> tuple[int, ...]:
-    try:
-        return tuple(int(dim) for dim in value.shape)
-    except AttributeError:
-        return ()
-
-
 def api_slice(value: Any, selection: Any) -> Any:
     try:
         return value[selection]
@@ -444,15 +431,6 @@ def api_add(left: Any, right: Any) -> Any:
         import numpy as np_mod
 
         return np_mod.add(left, right)
-
-
-def api_reshape(value: Any, shape: tuple[int, ...]) -> Any:
-    try:
-        return value.reshape(shape)
-    except AttributeError:
-        import numpy as np_mod
-
-        return np_mod.reshape(value, shape)
 
 
 def run_metamorphic_suite() -> dict[str, Any]:
