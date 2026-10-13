@@ -14,6 +14,7 @@ from .comparison import Classification
 from .cuda import cuda_capability
 from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
+from .gradients import generate_gradient_case, run_gradient_case
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .matrix import run_matrix
@@ -200,6 +201,12 @@ def command_historical_matrix(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_gradient(args: argparse.Namespace) -> int:
+    result = run_gradient_case(generate_gradient_case(args.seed))
+    _emit(result)
+    return 0 if result["classification"] == "pass" else 1
+
+
 def command_campaign(args: argparse.Namespace) -> int:
     try:
         record = run_cpu_campaign(CampaignConfig(args.cases, args.seed, args.max_duration_s))
@@ -309,6 +316,11 @@ def parser() -> argparse.ArgumentParser:
     historical_matrix.add_argument("--version", action="append", required=True)
     historical_matrix.add_argument("--output", required=True)
     historical_matrix.set_defaults(func=command_historical_matrix)
+    gradient_parser = commands.add_parser(
+        "gradient", help="run a bounded declarative analytic-gradient case"
+    )
+    gradient_parser.add_argument("--seed", type=int, default=0)
+    gradient_parser.set_defaults(func=command_gradient)
     campaign_parser = commands.add_parser(
         "campaign", help="run a bounded trusted CPU NumPy/JAX differential campaign"
     )
