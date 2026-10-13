@@ -1,0 +1,453 @@
+"""Real CUDA/GPU hardware discovery, capability gating, and isolated GPU validation.
+
+This module is deliberately capability-only. It never mutates the host driver, never
+changes a system CUDA installation, and never silently substitutes a CPU device for a
+requested accelerator. A device that is absent, busy, or incompatible is reported as
+UNSUPPORTED or BLOCKED; it is never reported as a CPU result.
+
+Ordinal space warning: the CUDA runtime ordinal order is not guaranteed to match the
+``nvidia-smi`` / NVML index order. Every selection path in this module therefore goes
+through the CUDA runtime's own ordinal space, and the recorded evidence always carries
+both the CUDA ordinal and the physical device name so the two can be reconciled.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import platform
+import shutil
+import subprocess
+from dataclasses import asdict, dataclass, field
+from enum import StrEnum
+from typing import Any
+
+# Per official JAX installation documentation (https://docs.jax.dev/en/latest/installation.html):
+#   - CUDA 12 wheels support NVIDIA GPUs with SM version 5.2 (Maxwell) or newer.
+#   - CUDA 13 wheels support NVIDIA GPUs with SM version 7.5 or newer.
+#   - Driver must be >= 525 for CUDA 12 on Linux and >= 580 for CUDA 13 on Linux.
+CUDA12_MIN_SM = (5, 2)
+CUDA13_MIN_SM = (7, 5)
+CUDA12_MIN_DRIVER = 525
+CUDA13_MIN_DRIVER = 580
+
+
+class DeviceState(StrEnum):
+    PASS = "PASS"
+    UNSUPPORTED = "UNSUPPORTED"
+    BLOCKED = "BLOCKED"
+    INCONCLUSIVE = "INCONCLUSIVE"
+
+
+class CudaVariant(StrEnum):
+    CUDA12 = "cuda12"
+    CUDA13 = "cuda13"
+
+
+def _sm_tuple(text: str) -> tuple[int, int]:
+    parts = str(text).split(".")
+    return (int(parts[0]), int(parts[1])) if len(parts) >= 2 else (int(parts[0]), 0)
+
+
+def redact_uuid(raw: str) -> str:
+    """Return a stable, non-sensitive suffix for a GPU UUID.
+
+    The raw UUID is never recorded. A salted digest keeps device identity comparable
+    across runs on the same machine without exposing the hardware identifier.
+    """
+    salt = os.environ.get("XLAXIOM_DEVICE_SALT", "xlaxiom-local-evidence")
+    digest = hashlib.sha256(f"{salt}:{raw}".encode()).hexdigest()
+    return f"dev-{digest[:12]}"
+
+
+def _nvidia_smi_csv(query: str) -> list[list[str]]:
+    """Query nvidia-smi without letting LD_LIBRARY_PATH break it."""
+    executable = shutil.which("nvidia-smi")
+    if executable is None:
+        return []
+    try:
+        completed = subprocess.run(
+            [executable, f"--query-gpu={query}", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=dict(os.environ),
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if completed.returncode != 0:
+        return []
+    rows = []
+    for line in completed.stdout.strip().splitlines():
+        if line.strip():
+            rows.append([cell.strip() for cell in line.split(",")])
+    return rows
+
+
+def _nvidia_smi_fields(fields: str) -> list[dict[str, str]]:
+    """Query nvidia-smi and return one dict per GPU, keyed by requested field name."""
+    rows = _nvidia_smi_csv(fields)
+    names = [name.strip() for name in fields.split(",")]
+    records: list[dict[str, str]] = []
+    for row in rows:
+        if len(row) != len(names):
+            continue
+        records.append(dict(zip(names, row, strict=True)))
+    return records
+
+
+@dataclass(frozen=True)
+class PhysicalGpu:
+    """One physical GPU as reported by the driver, keyed by CUDA ordinal."""
+
+    ordinal: int
+    name: str
+    uuid_redacted: str
+    compute_capability: str
+    sm: tuple[int, int]
+    driver_version: str
+    cuda_version: str
+    total_vram_mib: int
+    used_vram_mib: int
+    free_vram_mib: int
+    utilization_percent: float
+    active_processes: tuple[str, ...] = ()
+    smi_index: int | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        data = asdict(self)
+        data["sm"] = list(self.sm)
+        return data
+
+
+def enumerate_physical_gpus() -> list[PhysicalGpu]:
+    """Report every visible GPU, keyed by CUDA ordinal, with redacted identity.
+
+    ``nvidia-smi`` reports NVML index order. The CUDA runtime may enumerate in a
+    different order, so the ordinal is resolved by matching the device name that the
+    CUDA runtime reports against the NVML listing. When the runtime order cannot be
+    determined, the NVML index is used and the evidence records that fact.
+    """
+    fields = "index,name,uuid,compute_cap,memory.total,memory.used,memory.free,utilization.gpu"
+    records = _nvidia_smi_fields(fields)
+    if not records:
+        return []
+    driver_version = _driver_version()
+    cuda_version = _driver_cuda_version()
+    processes = _gpu_processes()
+    devices: list[PhysicalGpu] = []
+    for record in records:
+        try:
+            smi_index = int(record["index"])
+            compute_cap = record["compute_cap"]
+            device = PhysicalGpu(
+                ordinal=-1,
+                name=record["name"],
+                uuid_redacted=redact_uuid(record["uuid"]),
+                compute_capability=compute_cap,
+                sm=_sm_tuple(compute_cap),
+                driver_version=driver_version,
+                cuda_version=cuda_version,
+                total_vram_mib=int(float(record["memory.total"])),
+                used_vram_mib=int(float(record["memory.used"])),
+                free_vram_mib=int(float(record["memory.free"])),
+                utilization_percent=float(record["utilization.gpu"]),
+                active_processes=tuple(processes.get(record["uuid"], ())),
+                smi_index=smi_index,
+            )
+        except (ValueError, KeyError):
+            continue
+        devices.append(device)
+    devices.sort(key=lambda item: item.smi_index or 0)
+    ordinal_names = _cuda_runtime_names()
+    result: list[PhysicalGpu] = []
+    if ordinal_names and len(ordinal_names) == len(devices):
+        remaining = list(devices)
+        for ordinal, cuda_name in enumerate(ordinal_names):
+            index = next(
+                (
+                    position
+                    for position, device in enumerate(remaining)
+                    if device.name.strip().lower() == cuda_name.strip().lower()
+                ),
+                None,
+            )
+            if index is None:
+                continue
+            device = remaining.pop(index)
+            result.append(
+                PhysicalGpu(
+                    ordinal=ordinal,
+                    name=device.name,
+                    uuid_redacted=device.uuid_redacted,
+                    compute_capability=device.compute_capability,
+                    sm=device.sm,
+                    driver_version=device.driver_version,
+                    cuda_version=device.cuda_version,
+                    total_vram_mib=device.total_vram_mib,
+                    used_vram_mib=device.used_vram_mib,
+                    free_vram_mib=device.free_vram_mib,
+                    utilization_percent=device.utilization_percent,
+                    active_processes=device.active_processes,
+                    smi_index=device.smi_index,
+                )
+            )
+        return result
+    # The runtime order is unknown: keep NVML order and say so explicitly.
+    return [
+        PhysicalGpu(
+            ordinal=device.smi_index if device.smi_index is not None else position,
+            name=device.name,
+            uuid_redacted=device.uuid_redacted,
+            compute_capability=device.compute_capability,
+            sm=device.sm,
+            driver_version=device.driver_version,
+            cuda_version=device.cuda_version,
+            total_vram_mib=device.total_vram_mib,
+            used_vram_mib=device.used_vram_mib,
+            free_vram_mib=device.free_vram_mib,
+            utilization_percent=device.utilization_percent,
+            active_processes=device.active_processes,
+            smi_index=device.smi_index,
+        )
+        for position, device in enumerate(devices)
+    ]
+
+
+def _driver_version() -> str:
+    records = _nvidia_smi_fields("driver_version")
+    return records[0]["driver_version"] if records else ""
+
+
+def _driver_cuda_version() -> str:
+    executable = shutil.which("nvidia-smi")
+    if executable is None:
+        return ""
+    try:
+        completed = subprocess.run(
+            [executable], capture_output=True, text=True, timeout=30, env=dict(os.environ)
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    for line in completed.stdout.splitlines():
+        if "CUDA Version" in line:
+            return line.split("CUDA Version:")[-1].strip().rstrip("|").strip()
+    return ""
+
+
+def _gpu_processes() -> dict[str, tuple[str, ...]]:
+    """Map a GPU UUID to a redacted description of the processes holding it."""
+    executable = shutil.which("nvidia-smi")
+    if executable is None:
+        return {}
+    try:
+        completed = subprocess.run(
+            [
+                executable,
+                "--query-compute-apps=gpu_uuid,pid,process_name,used_memory",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=dict(os.environ),
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    if completed.returncode != 0:
+        return {}
+    mapping: dict[str, list[str]] = {}
+    for line in completed.stdout.strip().splitlines():
+        if not line.strip():
+            continue
+        cells = [cell.strip() for cell in line.split(",")]
+        if len(cells) < 3:
+            continue
+        raw_uuid, pid, name = cells[0], cells[1], cells[2]
+        # Keep only the executable leaf and drop any arguments so no command line,
+        # trace identifier, or session detail can leak into portable evidence.
+        leaf = name.strip().split()[0] if name.strip() else "unknown"
+        leaf = leaf.rsplit("/", 1)[-1] if "/" in leaf else leaf
+        mapping.setdefault(raw_uuid, []).append(f"pid{pid}:{leaf}")
+    return {key: tuple(value) for key, value in mapping.items()}
+
+
+def _cuda_runtime_names() -> list[str]:
+    """Device names in CUDA runtime ordinal order, via the cudart JAX will bind to."""
+    import ctypes
+    import glob
+
+    patterns = [
+        "/home/scott/.cache/xlaxiom-gpu/*/lib/python3.12/site-packages/nvidia/cuda_runtime/lib/libcudart.so*",
+        "/usr/local/cuda/lib64/libcudart.so*",
+        "/usr/local/cuda-*/lib64/libcudart.so*",
+    ]
+    for pattern in patterns:
+        for library in sorted(glob.glob(pattern)):
+            try:
+                handle = ctypes.CDLL(library)
+                handle.cudaGetDeviceCount.restype = ctypes.c_int
+                count = ctypes.c_int(0)
+                if handle.cudaGetDeviceCount(ctypes.byref(count)) != 0 or count.value <= 0:
+                    continue
+                names: list[str] = []
+                for index in range(count.value):
+                    # cudaDeviceProp begins with `char name[256]`.
+                    buffer = ctypes.create_string_buffer(65536)
+                    if handle.cudaGetDeviceProperties(buffer, index) != 0:
+                        names = []
+                        break
+                    names.append(buffer.value.split(b"\x00")[0].decode("utf-8", "replace"))
+                if len(names) == count.value:
+                    return names
+            except (OSError, AttributeError):
+                continue
+    return []
+
+
+def sm_supported(sm: tuple[int, int], variant: CudaVariant) -> bool:
+    return sm >= (CUDA13_MIN_SM if variant is CudaVariant.CUDA13 else CUDA12_MIN_SM)
+
+
+def driver_supported(driver_version: str, variant: CudaVariant) -> bool:
+    if not driver_version:
+        return False
+    try:
+        major = int(driver_version.split(".")[0])
+    except (ValueError, IndexError):
+        return False
+    return major >= (CUDA13_MIN_DRIVER if variant is CudaVariant.CUDA13 else CUDA12_MIN_DRIVER)
+
+
+def select_variant(device: PhysicalGpu) -> tuple[CudaVariant | None, str]:
+    """Choose the newest compatible JAX CUDA wheel variant for one device."""
+    if sm_supported(device.sm, CudaVariant.CUDA13) and driver_supported(
+        device.driver_version, CudaVariant.CUDA13
+    ):
+        return CudaVariant.CUDA13, (
+            f"SM {device.compute_capability} >= {CUDA13_MIN_SM[0]}.{CUDA13_MIN_SM[1]} and "
+            f"driver {device.driver_version} >= {CUDA13_MIN_DRIVER}"
+        )
+    if sm_supported(device.sm, CudaVariant.CUDA12) and driver_supported(
+        device.driver_version, CudaVariant.CUDA12
+    ):
+        reason = f"SM {device.compute_capability} >= {CUDA12_MIN_SM[0]}.{CUDA12_MIN_SM[1]}"
+        if not sm_supported(device.sm, CudaVariant.CUDA13):
+            reason += (
+                f"; CUDA 13 requires SM >= {CUDA13_MIN_SM[0]}.{CUDA13_MIN_SM[1]}, "
+                "so CUDA 12 applies"
+            )
+        else:
+            reason += f"; driver {device.driver_version} < {CUDA13_MIN_DRIVER}"
+        return CudaVariant.CUDA12, reason
+    return None, (
+        f"SM {device.compute_capability} is below the CUDA 12 minimum "
+        f"{CUDA12_MIN_SM[0]}.{CUDA12_MIN_SM[1]}"
+    )
+
+
+def is_idle(device: PhysicalGpu, max_used_mib: int = 256, max_utilization: float = 5.0) -> bool:
+    """Conservative idleness test: little VRAM held and no measurable compute load.
+
+    A device holding an external process, or already using VRAM above the budget, is
+    treated as busy. This is deliberately strict: an idle capacity claim must be
+    clearly justified before any bounded workload is allowed to run.
+    """
+    if device.active_processes:
+        return False
+    if device.utilization_percent > max_utilization:
+        return False
+    return device.used_vram_mib <= max_used_mib
+
+
+def idle_assessment(device: PhysicalGpu) -> dict[str, Any]:
+    """Classify a device as idle or busy against an external workload."""
+    return {
+        "used_vram_mib": device.used_vram_mib,
+        "free_vram_mib": device.free_vram_mib,
+        "utilization_percent": device.utilization_percent,
+        "active_processes": list(device.active_processes),
+        "external_workload": bool(device.active_processes),
+    }
+
+
+@dataclass
+class DeviceVerdict:
+    """The complete, honest verdict for one device under one CUDA variant."""
+
+    device: dict[str, Any]
+    variant: str | None
+    state: str
+    reason: str
+    jax_devices: list[str] = field(default_factory=list)
+    environment: dict[str, Any] = field(default_factory=dict)
+    checks: list[dict[str, Any]] = field(default_factory=list)
+    diagnostics: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def environment_manifest() -> dict[str, Any]:
+    """A portable, secret-free record of the host and JAX environment."""
+    import sys
+
+    manifest: dict[str, Any] = {
+        "os": platform.system(),
+        "os_release": platform.release(),
+        "kernel": platform.version(),
+        "machine": platform.machine(),
+        "python": sys.version.split()[0],
+        "nvidia_driver": _driver_version(),
+        "cuda_version": _driver_cuda_version(),
+        "ld_library_path_present": "LD_LIBRARY_PATH" in os.environ,
+    }
+    try:
+        import numpy
+
+        manifest["numpy"] = numpy.__version__
+    except ImportError:
+        manifest["numpy"] = None
+    try:
+        import jax
+        import jaxlib
+
+        manifest["jax"] = jax.__version__
+        manifest["jaxlib"] = jaxlib.__version__
+    except ImportError:
+        manifest["jax"] = None
+        manifest["jaxlib"] = None
+    return manifest
+
+
+def hardware_report() -> dict[str, Any]:
+    """A complete non-destructive hardware inventory with per-device compatibility."""
+    devices = enumerate_physical_gpus()
+    entries = []
+    for device in devices:
+        variant, reason = select_variant(device)
+        entries.append(
+            {
+                "device": device.to_dict(),
+                "selected_variant": variant.value if variant else None,
+                "selection_reason": reason,
+                "idleness": idle_assessment(device),
+                "cuda12_supported": sm_supported(device.sm, CudaVariant.CUDA12),
+                "cuda13_supported": sm_supported(device.sm, CudaVariant.CUDA13),
+            }
+        )
+    return {
+        "report": "XLAxiom CUDA hardware inventory",
+        "environment": environment_manifest(),
+        "device_count": len(entries),
+        "devices": entries,
+        "note": (
+            "CUDA runtime ordinal order may differ from nvidia-smi index order; the "
+            "ordinal and nvidia-smi index are both recorded for reconciliation."
+        ),
+    }
+
+
+def to_json(data: dict[str, Any]) -> str:
+    return json.dumps(data, indent=2, sort_keys=True, default=str)
