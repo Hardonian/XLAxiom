@@ -11,6 +11,7 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from importlib.resources import files
+from pathlib import Path
 from typing import Any
 
 from .comparison import Classification, ComparisonResult, compare
@@ -20,10 +21,15 @@ from .storage import RelationalArtifact
 
 CORPUS_VERSION = "1.0"
 RELATION_OUTPUTS_EQUAL = "outputs_equal"
+PROPERTY_BACKENDS = ("numpy", "jax-eager", "jax-jit", "jax-gpu-eager", "jax-gpu-jit")
 
 
 class MetamorphicPropertyError(ValueError):
     """The curated property corpus or a requested property is invalid."""
+
+
+class MetamorphicEvidenceError(ValueError):
+    """A property evidence artifact cannot be validated or compared safely."""
 
 
 @dataclass(frozen=True)
@@ -479,6 +485,10 @@ def _execute(workload: Workload, backend: str) -> ExecutionResult:
         return execute_jax(workload, requested_platform="cpu")
     if backend == "jax-jit":
         return execute_jax(workload, jit=True, requested_platform="cpu")
+    if backend == "jax-gpu-eager":
+        return execute_jax(workload, requested_platform="gpu")
+    if backend == "jax-gpu-jit":
+        return execute_jax(workload, jit=True, requested_platform="gpu")
     raise MetamorphicPropertyError(f"unsupported property backend {backend!r}")
 
 
@@ -642,5 +652,136 @@ def property_coverage(seed: int = 0) -> dict[str, Any]:
         "edge_value_strategy": (
             "reviewed properties explicitly select finite, extreme-finite, signed-zero, "
             "and non-finite deterministic inputs"
+        ),
+    }
+
+
+def validate_property_evidence(data: object) -> dict[str, Any]:
+    """Validate the identity-bearing fields required for cross-backend comparison."""
+    if not isinstance(data, dict):
+        raise MetamorphicEvidenceError("property evidence must be a JSON object")
+    if data.get("evidence_version") != "1.0" or data.get("corpus_version") != CORPUS_VERSION:
+        raise MetamorphicEvidenceError("unsupported property evidence version")
+    if data.get("kind") != "metamorphic-corpus-evidence":
+        raise MetamorphicEvidenceError("artifact is not metamorphic corpus evidence")
+    if not isinstance(data.get("seed"), int):
+        raise MetamorphicEvidenceError("property evidence seed must be an integer")
+    if data.get("backend") not in PROPERTY_BACKENDS:
+        raise MetamorphicEvidenceError("property evidence has an unsupported backend")
+    requested = data.get("requested_properties")
+    records = data.get("properties")
+    counts = data.get("counts")
+    if not isinstance(requested, list) or not all(isinstance(item, str) for item in requested):
+        raise MetamorphicEvidenceError("requested properties must be a string list")
+    if len(requested) != len(set(requested)):
+        raise MetamorphicEvidenceError("requested properties contain duplicates")
+    if not isinstance(records, list) or not isinstance(counts, dict):
+        raise MetamorphicEvidenceError("property evidence has invalid records or counts")
+    by_identifier: dict[str, dict[str, Any]] = {}
+    for record in records:
+        if not isinstance(record, dict):
+            raise MetamorphicEvidenceError("property evidence record must be an object")
+        definition = record.get("property")
+        comparison = record.get("comparison")
+        if not isinstance(definition, dict) or not isinstance(comparison, dict):
+            raise MetamorphicEvidenceError("property evidence record is incomplete")
+        identifier = definition.get("identifier")
+        if not isinstance(identifier, str) or not identifier:
+            raise MetamorphicEvidenceError("property evidence record has no identifier")
+        if identifier in by_identifier:
+            raise MetamorphicEvidenceError(f"duplicate property evidence for {identifier!r}")
+        if not isinstance(comparison.get("classification"), str):
+            raise MetamorphicEvidenceError(f"property {identifier!r} has no classification")
+        for field in ("left_workload_sha256", "right_workload_sha256"):
+            value = record.get(field)
+            if not isinstance(value, str) or len(value) != 64:
+                raise MetamorphicEvidenceError(f"property {identifier!r} has invalid {field}")
+        if record.get("seed") != data["seed"] or record.get("backend") != data["backend"]:
+            raise MetamorphicEvidenceError(
+                f"property {identifier!r} does not match its artifact configuration"
+            )
+        by_identifier[identifier] = record
+    if set(by_identifier) != set(requested):
+        raise MetamorphicEvidenceError("property records do not match requested properties")
+    return data
+
+
+def load_property_evidence(path: str | Path) -> dict[str, Any]:
+    """Load a validated metamorphic corpus evidence artifact."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MetamorphicEvidenceError(f"cannot read property evidence: {exc}") from exc
+    return validate_property_evidence(data)
+
+
+def compare_property_evidence(
+    baseline: dict[str, Any], comparison: dict[str, Any]
+) -> dict[str, Any]:
+    """Compare the same property inputs across two explicit execution backends."""
+    baseline = validate_property_evidence(baseline)
+    comparison = validate_property_evidence(comparison)
+    if baseline["seed"] != comparison["seed"]:
+        raise MetamorphicEvidenceError("property evidence seeds do not match")
+    if baseline["requested_properties"] != comparison["requested_properties"]:
+        raise MetamorphicEvidenceError("requested property sets or ordering do not match")
+
+    baseline_records = {
+        record["property"]["identifier"]: record for record in baseline["properties"]
+    }
+    comparison_records = {
+        record["property"]["identifier"]: record for record in comparison["properties"]
+    }
+    records: list[dict[str, Any]] = []
+    changed: list[str] = []
+    for identifier in baseline["requested_properties"]:
+        left = baseline_records[identifier]
+        right = comparison_records[identifier]
+        identity = (
+            left["left_workload_sha256"],
+            left["right_workload_sha256"],
+        )
+        if identity != (
+            right["left_workload_sha256"],
+            right["right_workload_sha256"],
+        ):
+            raise MetamorphicEvidenceError(
+                f"property workload identity mismatch for {identifier!r}"
+            )
+        baseline_classification = left["comparison"]["classification"]
+        comparison_classification = right["comparison"]["classification"]
+        matches = baseline_classification == comparison_classification
+        if not matches:
+            changed.append(identifier)
+        records.append(
+            {
+                "identifier": identifier,
+                "left_workload_sha256": identity[0],
+                "right_workload_sha256": identity[1],
+                "baseline_classification": baseline_classification,
+                "comparison_classification": comparison_classification,
+                "classification_match": matches,
+            }
+        )
+    return {
+        "comparison_version": "metamorphic-cross-backend-v1",
+        "corpus_version": CORPUS_VERSION,
+        "seed": baseline["seed"],
+        "baseline": {"backend": baseline["backend"], "counts": baseline["counts"]},
+        "comparison": {
+            "backend": comparison["backend"],
+            "counts": comparison["counts"],
+        },
+        "properties": records,
+        "summary": {
+            "property_count": len(records),
+            "classification_matches": len(records) - len(changed),
+            "classification_changes": len(changed),
+            "changed_properties": changed,
+            "equivalent": not changed,
+        },
+        "interpretation": (
+            "Equivalent classifications apply only to the checksummed workloads, seed, "
+            "policies, and backends recorded by these two artifacts."
         ),
     }

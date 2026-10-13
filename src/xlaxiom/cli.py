@@ -54,9 +54,13 @@ from .historical_matrix import run_hyperbolic_matrix
 from .ledger import completed_shard, load_ledger, save_shard
 from .matrix import run_matrix, run_relation_matrix
 from .metamorphic import (
+    PROPERTY_BACKENDS,
+    MetamorphicEvidenceError,
     MetamorphicPropertyError,
     build_property_artifact,
+    compare_property_evidence,
     curated_properties,
+    load_property_evidence,
     property_coverage,
     run_curated_properties,
     run_property_campaign,
@@ -426,6 +430,8 @@ def _property_policy(args: argparse.Namespace) -> ComparisonPolicy | None:
 
 
 def command_property_run(args: argparse.Namespace) -> int:
+    if args.backend.startswith("jax-gpu"):
+        _ensure_gpu_runtime()
     try:
         result = run_curated_properties(
             seed=args.seed,
@@ -442,6 +448,8 @@ def command_property_run(args: argparse.Namespace) -> int:
 
 
 def command_property_campaign(args: argparse.Namespace) -> int:
+    if args.backend.startswith("jax-gpu"):
+        _ensure_gpu_runtime()
     try:
         result = run_property_campaign(
             cases=args.cases,
@@ -456,6 +464,20 @@ def command_property_campaign(args: argparse.Namespace) -> int:
         save_json(args.output, result)
     _emit(result)
     return 0 if not result["candidate_observations"] else 1
+
+
+def command_property_compare(args: argparse.Namespace) -> int:
+    """Compare identical curated-property workloads across two backends."""
+    try:
+        result = compare_property_evidence(
+            load_property_evidence(args.baseline), load_property_evidence(args.comparison)
+        )
+    except MetamorphicEvidenceError as exc:
+        raise SystemExit(f"invalid property evidence comparison: {exc}") from exc
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0
 
 
 def command_property_coverage(args: argparse.Namespace) -> int:
@@ -971,8 +993,8 @@ def command_corpus_build(args: argparse.Namespace) -> int:
     from .corpus import (
         CorpusEntry,
         build_entry,
+        minimize_finding_for_admission,
         reproduce_isolated,
-        run_metamorphic_suite,
         save_corpus,
     )
     from .generation import GenerationConfig, generate
@@ -984,23 +1006,27 @@ def command_corpus_build(args: argparse.Namespace) -> int:
     if known is not None:
         entries.append(known)
 
-    # Metamorphic properties are checked, and the check record is admitted only when it
-    # actually ran to a conclusion.
-    suite = run_metamorphic_suite()
-    for result in suite["results"]:
-        if result["state"] == "INCONCLUSIVE":
+    if args.backend.startswith("jax-gpu"):
+        _ensure_gpu_runtime()
+
+    # Use the same complete reviewed registry as ``property run``. Execution or
+    # environment failures remain evidence but are not admitted as property results.
+    suite = run_curated_properties(seed=args.seed, backend=args.backend)
+    for result in suite["properties"]:
+        if result["triage"] == "execution_or_environment_failure":
             continue
+        definition = result["property"]
         entries.append(
             build_entry(
                 CorpusEntry(
-                    identifier=f"metamorphic-{result['identifier']}",
+                    identifier=f"metamorphic-{definition['identifier']}",
                     category="metamorphic-property",
-                    title=result["identifier"],
-                    summary=result["description"],
-                    classification=result["classification"],
+                    title=definition["title"],
+                    summary=definition["description"],
+                    classification=result["comparison"]["classification"],
                     reproductions=1,
                     property_check=result,
-                    environment={"platform": suite["platform"]},
+                    environment={"platform": _platform_string(), "backend": args.backend},
                     caveats=(
                         "A violation is an observation about the relation, not a "
                         "root-cause claim about any single backend.",
@@ -1018,22 +1044,36 @@ def command_corpus_build(args: argparse.Namespace) -> int:
         observation = run_comparison(workload, "jax-jit")
         if observation.classification == Classification.PASS:
             continue
-        reproduction = reproduce_isolated(workload, attempts=args.reproductions)
-        if not reproduction["reproduced"]:
+        minimization = minimize_finding_for_admission(
+            workload,
+            observation.classification,
+            max_evaluations=args.minimize_evaluations,
+        )
+        reduced = minimization.workload
+        reproduction = reproduce_isolated(reduced, attempts=args.reproductions)
+        if (
+            not reproduction["reproduced"]
+            or reproduction["classification"] != observation.classification.value
+        ):
             continue
         entries.append(
             build_entry(
                 CorpusEntry(
-                    identifier=f"finding-{workload.identifier}",
+                    identifier=f"finding-{reduced.identifier}",
                     category="reproduced-finding",
                     title=f"Reproduced {observation.classification.value}",
                     summary=observation.explanation,
-                    workload=workload.canonical_dict(),
-                    workload_sha256=workload.digest(),
+                    workload=reduced.canonical_dict(),
+                    workload_sha256=reduced.digest(),
                     classification=observation.classification.value,
-                    policy=workload.policy.identifier,
+                    policy=reduced.policy.identifier,
                     reproductions=reproduction["attempts"],
-                    minimization={"reproduction": reproduction},
+                    minimization={
+                        "original_workload_sha256": workload.digest(),
+                        "reduced_workload_sha256": reduced.digest(),
+                        "stats": asdict(minimization.stats),
+                        "reproduction": reproduction,
+                    },
                     environment={"platform": _platform_string()},
                     caveats=(
                         "Differential evidence only; requires independent "
@@ -1064,14 +1104,14 @@ def command_corpus_validate(args: argparse.Namespace) -> int:
 
 
 def command_corpus_metamorphic(args: argparse.Namespace) -> int:
-    """Check every registered metamorphic property against an independent oracle."""
-    from .corpus import run_metamorphic_suite
-
-    suite = run_metamorphic_suite()
+    """Check every reviewed declarative property on the selected backend."""
+    if args.backend.startswith("jax-gpu"):
+        _ensure_gpu_runtime()
+    suite = run_curated_properties(seed=args.seed, backend=args.backend)
     if args.output:
         save_json(args.output, suite)
     _emit(suite)
-    return 0 if suite["summary"]["violated"] == 0 else 1
+    return 0 if suite["counts"][Classification.PASS.value] == len(suite["properties"]) else 1
 
 
 def _load_known_historical() -> dict[str, Any] | None:
@@ -1372,9 +1412,7 @@ def parser() -> argparse.ArgumentParser:
         help="property identifier; repeat to select more than one (default: all)",
     )
     property_run.add_argument("--seed", type=int, default=0)
-    property_run.add_argument(
-        "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
-    )
+    property_run.add_argument("--backend", choices=PROPERTY_BACKENDS, default="jax-jit")
     property_run.add_argument("--rtol", type=float, help="explicit property relative tolerance")
     property_run.add_argument("--atol", type=float, help="explicit property absolute tolerance")
     property_run.add_argument("--x64", action="store_true", help="run in a clean JAX x64 process")
@@ -1396,9 +1434,7 @@ def parser() -> argparse.ArgumentParser:
     property_campaign.add_argument(
         "--x64", action="store_true", help="run in a clean JAX x64 process"
     )
-    property_campaign.add_argument(
-        "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
-    )
+    property_campaign.add_argument("--backend", choices=PROPERTY_BACKENDS, default="jax-jit")
     property_campaign.add_argument(
         "--rtol", type=float, help="explicit property relative tolerance"
     )
@@ -1407,6 +1443,13 @@ def parser() -> argparse.ArgumentParser:
     )
     property_campaign.add_argument("--output", help="JSON evidence path")
     property_campaign.set_defaults(func=command_property_campaign)
+    property_compare = property_commands.add_parser(
+        "compare", help="compare identical property workloads across two backends"
+    )
+    property_compare.add_argument("--baseline", required=True)
+    property_compare.add_argument("--comparison", required=True)
+    property_compare.add_argument("--output", help="JSON comparison evidence path")
+    property_compare.set_defaults(func=command_property_compare)
     property_coverage_parser = property_commands.add_parser(
         "coverage", help="report reviewed operations, dtypes, ranks, and edge-value coverage"
     )
@@ -1493,6 +1536,9 @@ def parser() -> argparse.ArgumentParser:
     corpus_build.add_argument("--cases", type=int, default=8)
     corpus_build.add_argument("--seed", type=int, default=0)
     corpus_build.add_argument("--reproductions", type=int, default=2)
+    corpus_build.add_argument("--minimize-evaluations", type=int, default=64)
+    corpus_build.add_argument("--backend", choices=PROPERTY_BACKENDS, default="jax-jit")
+    corpus_build.add_argument("--x64", action="store_true", help="enable JAX x64 before execution")
     corpus_build.add_argument("--output", default="corpus/findings.json")
     corpus_build.set_defaults(func=command_corpus_build)
     corpus_validate = corpus_commands.add_parser("validate", help="validate a corpus document")
@@ -1500,6 +1546,11 @@ def parser() -> argparse.ArgumentParser:
     corpus_validate.set_defaults(func=command_corpus_validate)
     corpus_metamorphic = corpus_commands.add_parser(
         "metamorphic", help="check every registered metamorphic property"
+    )
+    corpus_metamorphic.add_argument("--seed", type=int, default=0)
+    corpus_metamorphic.add_argument("--backend", choices=PROPERTY_BACKENDS, default="jax-jit")
+    corpus_metamorphic.add_argument(
+        "--x64", action="store_true", help="enable JAX x64 before execution"
     )
     corpus_metamorphic.add_argument("--output")
     corpus_metamorphic.set_defaults(func=command_corpus_metamorphic)

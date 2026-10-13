@@ -27,9 +27,11 @@ import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from collections.abc import Callable
 from typing import Any
 
 from .comparison import Classification
+from .minimization import MinimizationResult, minimize
 from .model import Workload
 
 CORPUS_VERSION = "1.0"
@@ -256,6 +258,24 @@ def reproduce_isolated(
             "device selection could carry the observation forward."
         ),
     }
+
+
+def minimize_finding_for_admission(
+    workload: Workload,
+    expected: Classification,
+    max_evaluations: int = 64,
+    evaluator: Callable[[Workload], Classification] | None = None,
+) -> MinimizationResult:
+    """Failure-preservingly minimize a non-pass observation before corpus admission."""
+    if expected == Classification.PASS:
+        raise ValueError("a passing observation cannot be minimized for finding admission")
+    if not 1 <= max_evaluations <= 10_000:
+        raise ValueError("minimization evaluations must be between 1 and 10000")
+    if evaluator is None:
+        from .pipeline import run_comparison
+
+        evaluator = lambda candidate: run_comparison(candidate, "jax-jit").classification
+    return minimize(workload, evaluator, expected, max_evaluations=max_evaluations)
 
 
 # Metamorphic relations. Each is a property of correct behavior, not of one backend:
