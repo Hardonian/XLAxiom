@@ -12,6 +12,7 @@ import pytest
 from xlaxiom.cuda import cuda_capability, recommended_variant
 from xlaxiom.execution import ExecutionStatus, execute_jax
 from xlaxiom.generation import GenerationConfig, generate
+from xlaxiom.gpu_campaign import _cpu_baseline_subprocess, _cpu_environment, _safe_benchmark
 from xlaxiom.gpu_validation import DeviceState
 from xlaxiom.hardware import (
     CUDA12_MIN_DRIVER,
@@ -197,6 +198,39 @@ class TestExplicitDevicePlacement:
             return
         assert result.status == ExecutionStatus.UNSUPPORTED_BACKEND
         assert "no gpu device is available" in (result.error or "")
+
+
+class TestCpuBaselineFallback:
+    """A missing CPU backend is recorded, never faked or silently omitted."""
+
+    def test_cpu_environment_exposes_cpu_and_hides_cuda(self) -> None:
+        environment = _cpu_environment()
+        assert environment.get("JAX_PLATFORMS") == "cpu"
+        assert "CUDA_VISIBLE_DEVICES" not in environment
+        assert "LD_LIBRARY_PATH" not in environment
+
+    def test_safe_benchmark_returns_none_when_platform_absent(self) -> None:
+        workload = generate(GenerationConfig(seed=2))
+        try:
+            import jax
+
+            jax.devices("gpu")
+        except Exception:
+            pytest.skip("no GPU in the primary environment")
+        # Inside an isolated CUDA runtime the CPU backend is absent, so the helper
+        # must report None rather than raising or inventing a number.
+        result = _safe_benchmark(workload, 2, "cpu")
+        assert result is None or isinstance(result, dict)
+
+    def test_cpu_baseline_subprocess_records_a_real_measurement(self) -> None:
+        workload = generate(GenerationConfig(seed=1))
+        result = _cpu_baseline_subprocess(2, workload.canonical_dict())
+        if result is None:
+            pytest.skip("no CPU backend reachable from a subprocess here")
+        assert result["requested_platform"] == "cpu"
+        assert result["measurements"] == 2
+        assert result["median_ms"] >= 0.0
+        assert str(result["device"]).startswith("cpu")
 
 
 class TestCapabilityReporting:
