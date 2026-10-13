@@ -14,7 +14,6 @@ both the CUDA ordinal and the physical device name so the two can be reconciled.
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import platform
 import shutil
@@ -542,7 +541,3 @@ def hardware_report() -> dict[str, Any]:
             "ordinal and nvidia-smi index are both recorded for reconciliation."
         ),
     }
-
-
-def to_json(data: dict[str, Any]) -> str:
-    return json.dumps(data, indent=2, sort_keys=True, default=str)
