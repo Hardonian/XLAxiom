@@ -535,6 +535,149 @@ def write_gpu_report(path: str, report: dict[str, Any]) -> Path:
     return destination
 
 
+def _platform_string() -> str:
+    """The host platform string, recorded for portable corpus evidence."""
+    import platform as platform_module
+
+    return platform_module.platform()
+
+
+def command_corpus_build(args: argparse.Namespace) -> int:
+    """Build the curated corpus from reproduced findings and metamorphic properties."""
+    from .corpus import (
+        CorpusEntry,
+        build_entry,
+        reproduce_isolated,
+        run_metamorphic_suite,
+        save_corpus,
+    )
+    from .generation import GenerationConfig, generate
+
+    entries: list[dict[str, Any]] = []
+
+    # Known historical behavior is admitted as known-historical, never as a new finding.
+    known = _load_known_historical()
+    if known is not None:
+        entries.append(known)
+
+    # Metamorphic properties are checked, and the check record is admitted only when it
+    # actually ran to a conclusion.
+    suite = run_metamorphic_suite()
+    for result in suite["results"]:
+        if result["state"] == "INCONCLUSIVE":
+            continue
+        entries.append(
+            build_entry(
+                CorpusEntry(
+                    identifier=f"metamorphic-{result['identifier']}",
+                    category="metamorphic-property",
+                    title=result["identifier"],
+                    summary=result["description"],
+                    classification=result["classification"],
+                    reproductions=1,
+                    property_check=result,
+                    environment={"platform": suite["platform"]},
+                    caveats=(
+                        "A violation is an observation about the relation, not a "
+                        "root-cause claim about any single backend.",
+                    ),
+                )
+            )
+        )
+
+    # Reproduced findings require independent reproduction in fresh processes. Without
+    # that evidence nothing is admitted, so a short run may yield no findings at all.
+    for seed in range(args.cases):
+        workload = generate(GenerationConfig(seed=args.seed + seed, max_dim=6))
+        from .pipeline import run_comparison
+
+        observation = run_comparison(workload, "jax-jit")
+        if observation.classification == Classification.PASS:
+            continue
+        reproduction = reproduce_isolated(workload, attempts=args.reproductions)
+        if not reproduction["reproduced"]:
+            continue
+        entries.append(
+            build_entry(
+                CorpusEntry(
+                    identifier=f"finding-{workload.identifier}",
+                    category="reproduced-finding",
+                    title=f"Reproduced {observation.classification.value}",
+                    summary=observation.explanation,
+                    workload=workload.canonical_dict(),
+                    workload_sha256=workload.digest(),
+                    classification=observation.classification.value,
+                    policy=workload.policy.identifier,
+                    reproductions=reproduction["attempts"],
+                    minimization={"reproduction": reproduction},
+                    environment={"platform": _platform_string()},
+                    caveats=(
+                        "Differential evidence only; requires independent "
+                        "reproduction before any root-cause claim.",
+                    ),
+                )
+            )
+        )
+
+    path = save_corpus(args.output, entries)
+    _emit({"corpus": str(path), "entry_count": len(entries)})
+    return 0
+
+
+def command_corpus_validate(args: argparse.Namespace) -> int:
+    """Validate a corpus document and report its composition."""
+    from .corpus import load_corpus
+
+    document = load_corpus(args.corpus)
+    _emit(
+        {
+            "corpus": str(args.corpus),
+            "entry_count": document["entry_count"],
+            "categories": document["categories"],
+        }
+    )
+    return 0
+
+
+def command_corpus_metamorphic(args: argparse.Namespace) -> int:
+    """Check every registered metamorphic property against an independent oracle."""
+    from .corpus import run_metamorphic_suite
+
+    suite = run_metamorphic_suite()
+    if args.output:
+        save_json(args.output, suite)
+    _emit(suite)
+    return 0 if suite["summary"]["violated"] == 0 else 1
+
+
+def _load_known_historical() -> dict[str, Any] | None:
+    """Admit a documented historical regression as known-historical."""
+    from .corpus import CorpusEntry, build_entry
+
+    source = Path("corpus/historical/jax-40634.json")
+    if not source.is_file():
+        return None
+    try:
+        payload = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return build_entry(
+        CorpusEntry(
+            identifier=str(payload.get("identifier", "jax-40634")),
+            category="known-historical",
+            title="JAX issue #40634 large-float32 gradient",
+            summary=(
+                "Documented upstream behavior. Reproduced locally and explicitly not "
+                "reported as a new XLAxiom finding."
+            ),
+            references=(str(payload.get("issue", "")),),
+            reproductions=0,
+            environment={"recorded_from": source.as_posix()},
+            caveats=("Known upstream behavior; never represented as a new defect.",),
+        )
+    )
+
+
 def command_bundle_create(args: argparse.Namespace) -> int:
     try:
         _emit(create_bundle(args.case, args.output))
@@ -692,6 +835,24 @@ def parser() -> argparse.ArgumentParser:
     bundle_run.add_argument("--bundle", required=True)
     bundle_run.add_argument("--output", required=True)
     bundle_run.set_defaults(func=command_bundle_run)
+    corpus_parser = commands.add_parser(
+        "corpus", help="build and validate the curated reproducible corpus"
+    )
+    corpus_commands = corpus_parser.add_subparsers(dest="corpus_command", required=True)
+    corpus_build = corpus_commands.add_parser("build", help="build the curated corpus")
+    corpus_build.add_argument("--cases", type=int, default=8)
+    corpus_build.add_argument("--seed", type=int, default=0)
+    corpus_build.add_argument("--reproductions", type=int, default=2)
+    corpus_build.add_argument("--output", default="corpus/findings.json")
+    corpus_build.set_defaults(func=command_corpus_build)
+    corpus_validate = corpus_commands.add_parser("validate", help="validate a corpus document")
+    corpus_validate.add_argument("--corpus", required=True)
+    corpus_validate.set_defaults(func=command_corpus_validate)
+    corpus_metamorphic = corpus_commands.add_parser(
+        "metamorphic", help="check every registered metamorphic property"
+    )
+    corpus_metamorphic.add_argument("--output")
+    corpus_metamorphic.set_defaults(func=command_corpus_metamorphic)
     gpu_parser = commands.add_parser(
         "gpu", help="real CUDA hardware validation and bounded GPU campaigns"
     )
