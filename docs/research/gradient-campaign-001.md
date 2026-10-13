@@ -9,6 +9,10 @@ The deterministic forty-case campaign covers `tanh`, `exp`, `arcsinh`, and
 previously documented large-magnitude `arcsinh` observations, and four
 candidate observations.
 
+Every campaign artifact records the Python/JAX/jaxlib versions, platform, and
+enumerated JAX devices. This makes an EPYC/CUDA run directly comparable to the
+local CPU record without inferring its backend from the filename.
+
 The candidates are all `float32 tanh(10)`: eager and JIT reverse-mode return
 zero while the analytic derivative is approximately `8.2446e-09`.  They are
 retained as candidates rather than silently tolerated because the current

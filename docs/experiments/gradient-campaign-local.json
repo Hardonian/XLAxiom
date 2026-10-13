@@ -76,6 +76,16 @@
     "known_historical_discrepancy": 2,
     "pass": 34
   },
+  "environment": {
+    "cpu_probe": "ok",
+    "devices": [
+      "cpu:0"
+    ],
+    "jax": "0.11.2",
+    "jaxlib": "0.11.2",
+    "platform": "Windows-11-10.0.29683-SP0",
+    "python": "3.12.10"
+  },
   "known_historical_observations": [
     {
       "case": {

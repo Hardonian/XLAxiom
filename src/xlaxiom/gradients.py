@@ -8,6 +8,8 @@ from typing import Any, Literal
 
 import numpy as np
 
+from .execution import doctor
+
 GradientOperation = Literal["tanh", "exp", "arcsinh", "acosh"]
 
 
@@ -109,6 +111,7 @@ def run_gradient_campaign(cases: int, seed: int = 0) -> dict[str, Any]:
     return {
         "campaign_version": "gradient-v1",
         "configuration": {"cases": cases, "seed": seed, "oracle": "analytic-v1"},
+        "environment": doctor(),
         "operation_coverage": coverage,
         "counts": counts,
         "known_historical_observations": known,
