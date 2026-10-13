@@ -8,8 +8,11 @@ silently enabling a new property.
 from __future__ import annotations
 
 import json
+import os
+import platform
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
@@ -21,7 +24,15 @@ from .storage import RelationalArtifact
 
 CORPUS_VERSION = "1.0"
 RELATION_OUTPUTS_EQUAL = "outputs_equal"
-PROPERTY_BACKENDS = ("numpy", "jax-eager", "jax-jit", "jax-gpu-eager", "jax-gpu-jit")
+PROPERTY_BACKENDS = (
+    "numpy",
+    "jax-eager",
+    "jax-jit",
+    "jax-gpu-eager",
+    "jax-gpu-jit",
+    "jax-tpu-eager",
+    "jax-tpu-jit",
+)
 
 
 class MetamorphicPropertyError(ValueError):
@@ -489,6 +500,10 @@ def _execute(workload: Workload, backend: str) -> ExecutionResult:
         return execute_jax(workload, requested_platform="gpu")
     if backend == "jax-gpu-jit":
         return execute_jax(workload, jit=True, requested_platform="gpu")
+    if backend == "jax-tpu-eager":
+        return execute_jax(workload, requested_platform="tpu")
+    if backend == "jax-tpu-jit":
+        return execute_jax(workload, jit=True, requested_platform="tpu")
     raise MetamorphicPropertyError(f"unsupported property backend {backend!r}")
 
 
@@ -498,6 +513,52 @@ def _triage(comparison: Any) -> str:
     if comparison.classification == Classification.NUMERICAL_DISCREPANCY:
         return "candidate_metamorphic_violation"
     return "execution_or_environment_failure"
+
+
+def _execution_context(backend: str) -> dict[str, Any]:
+    return _execution_context_for(backend, os.environ.get("CUDA_VISIBLE_DEVICES"))
+
+
+@lru_cache(maxsize=16)
+def _execution_context_for(backend: str, visible_devices: str | None) -> dict[str, Any]:
+    """Capture stable, redacted provenance for a property evidence artifact."""
+    context: dict[str, Any] = {"platform": platform.platform()}
+    if not backend.startswith("jax-gpu"):
+        if backend.startswith("jax-tpu"):
+            context["requested_platform"] = "tpu"
+        else:
+            context["requested_platform"] = "cpu" if backend != "numpy" else "numpy"
+        return context
+    context.update(
+        {
+            "requested_platform": "gpu",
+            "cuda_visible_devices": visible_devices,
+        }
+    )
+    try:
+        from .hardware import enumerate_physical_gpus
+
+        devices = enumerate_physical_gpus()
+        selected_ordinal = int(visible_devices.split(",", 1)[0]) if visible_devices else 0
+        selected = (
+            devices[0]
+            if len(devices) == 1
+            else next((device for device in devices if device.ordinal == selected_ordinal), None)
+        )
+        if selected is not None:
+            context["physical_device"] = {
+                "name": selected.name,
+                "cuda_ordinal": selected_ordinal,
+                "runtime_ordinal": selected.ordinal,
+                "nvidia_smi_index": selected.smi_index,
+                "compute_capability": selected.compute_capability,
+                "uuid_redacted": selected.uuid_redacted,
+                "driver_version": selected.driver_version,
+                "cuda_version": selected.cuda_version,
+            }
+    except (OSError, ValueError):
+        context["physical_device"] = None
+    return context
 
 
 def _x64_enabled(result: ExecutionResult) -> bool:
@@ -551,6 +612,7 @@ def run_property(
         },
         "seed": seed,
         "backend": backend,
+        "execution": _execution_context(backend),
         "requires_x64": property_definition.requires_x64,
         "left_workload_sha256": workloads.left.digest(),
         "right_workload_sha256": workloads.right.digest(),
@@ -583,6 +645,7 @@ def run_curated_properties(
         "kind": "metamorphic-corpus-evidence",
         "seed": seed,
         "backend": backend,
+        "execution": records[0]["execution"] if records else _execution_context(backend),
         "requested_properties": list(selected),
         "counts": counts,
         "properties": records,
@@ -677,7 +740,10 @@ def validate_property_evidence(data: object) -> dict[str, Any]:
         raise MetamorphicEvidenceError("requested properties contain duplicates")
     if not isinstance(records, list) or not isinstance(counts, dict):
         raise MetamorphicEvidenceError("property evidence has invalid records or counts")
+    if "execution" in data and not isinstance(data["execution"], dict):
+        raise MetamorphicEvidenceError("property evidence execution context must be an object")
     by_identifier: dict[str, dict[str, Any]] = {}
+    observed_counts = {classification.value: 0 for classification in Classification}
     for record in records:
         if not isinstance(record, dict):
             raise MetamorphicEvidenceError("property evidence record must be an object")
@@ -690,8 +756,10 @@ def validate_property_evidence(data: object) -> dict[str, Any]:
             raise MetamorphicEvidenceError("property evidence record has no identifier")
         if identifier in by_identifier:
             raise MetamorphicEvidenceError(f"duplicate property evidence for {identifier!r}")
-        if not isinstance(comparison.get("classification"), str):
+        classification = comparison.get("classification")
+        if classification not in observed_counts:
             raise MetamorphicEvidenceError(f"property {identifier!r} has no classification")
+        observed_counts[classification] += 1
         for field in ("left_workload_sha256", "right_workload_sha256"):
             value = record.get(field)
             if not isinstance(value, str) or len(value) != 64:
@@ -703,6 +771,8 @@ def validate_property_evidence(data: object) -> dict[str, Any]:
         by_identifier[identifier] = record
     if set(by_identifier) != set(requested):
         raise MetamorphicEvidenceError("property records do not match requested properties")
+    if counts != observed_counts:
+        raise MetamorphicEvidenceError("property evidence counts do not match its records")
     return data
 
 
@@ -767,10 +837,15 @@ def compare_property_evidence(
         "comparison_version": "metamorphic-cross-backend-v1",
         "corpus_version": CORPUS_VERSION,
         "seed": baseline["seed"],
-        "baseline": {"backend": baseline["backend"], "counts": baseline["counts"]},
+        "baseline": {
+            "backend": baseline["backend"],
+            "counts": baseline["counts"],
+            "execution": baseline.get("execution", {}),
+        },
         "comparison": {
             "backend": comparison["backend"],
             "counts": comparison["counts"],
+            "execution": comparison.get("execution", {}),
         },
         "properties": records,
         "summary": {

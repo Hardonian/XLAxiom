@@ -1,0 +1,15 @@
+{
+  "assessment_version": "1.0",
+  "distinct_labels": true,
+  "host_differences": [
+    "system",
+    "release",
+    "machine",
+    "python",
+    "executable"
+  ],
+  "independent": true,
+  "primary_sha256": "3f2bb094e1c9a8849f23698076f9f472c057a103234d6292c216a4a4552c84a0",
+  "reason": "records have distinct labels and independently varying host identity",
+  "secondary_sha256": "9ebc86f86d53bda1548c66f3ef4994f0c71e50aad620383f65489e2247940911"
+}

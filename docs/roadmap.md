@@ -1,9 +1,9 @@
 # Holistic delivery plan
 
 This document maps the fifty-priority program to the repository. “Implemented” means
-there is code plus automated coverage. “Prepared” means the repository has a safe,
-capability-gated workflow but this host cannot truthfully claim external or physical
-verification. It is deliberately not a substitute for hardware evidence.
+there is code plus automated coverage. “Verified” additionally means retained evidence
+exists from the required independent host or physical accelerator. Hardware verification
+is deliberately narrower than software completion.
 
 | # | Priority | Status | Delivery |
 | --- | --- | --- | --- |
@@ -13,14 +13,14 @@ verification. It is deliberately not a substitute for hardware evidence.
 | 4 | Relational artifacts | Implemented | Checksummed, data-only paired artifacts. |
 | 5 | Fresh-process relational replay | Implemented | `relation reproduce` uses separate interpreters. |
 | 6 | Relational reports and bundles | Implemented | JSON/Markdown reports and portable bundle support. |
-| 7 | Corpus admission workflow | Implemented | Checksum and reproduction gates reject weak entries. |
-| 8 | Independent-environment metadata | Prepared | Checksummed capture/compare commands are implemented; a second host must supply evidence. |
+| 7 | Corpus admission workflow | Implemented | Findings are failure-preservingly minimized, reproduced in fresh processes, checksummed, and rejected if any gate fails. |
+| 8 | Independent-environment metadata | Verified | Checksummed HX370 Windows and EPYC Linux records establish independent host identity. |
 | 9 | Corpus review/status | Implemented | Corpus validation reports composition and evidence status. |
 | 10 | Corpus regression CI | Implemented | Property shards and scheduled campaigns run in CI. |
 | 11 | More metamorphic relations | Implemented | Thirteen reviewed declarative relations. |
 | 12 | Dtype-specific properties | Implemented | `float32`, `int32`, mixed `int32`/`float32`, and explicit-process `float64` relations. |
 | 13 | Non-finite and signed-zero cases | Implemented | Dedicated signed-zero and NaN/infinity relations use explicit input modes. |
-| 14 | Randomized property campaigns | Implemented | Bounded deterministic property campaign command. |
+| 14 | Randomized property campaigns | Verified | The bounded command is covered and a retained 100-seed/1,300-comparison JAX x64 campaign passed. |
 | 15 | Property failure triage | Implemented | Pass, candidate violation, and execution/environment triage. |
 | 16 | Retain failing seeds/digests | Implemented | Results record seed and both workload SHA-256 values. |
 | 17 | Property version matrix | Implemented | `matrix relation` executes checksummed relation artifacts in isolated JAX versions. |
@@ -38,13 +38,13 @@ verification. It is deliberately not a substitute for hardware evidence.
 | 29 | Nondeterminism detection | Implemented | `xlaxiom stability` records repeated executions and pairwise comparisons. |
 | 30 | Performance baselines | Implemented | Benchmark records compare matching workload identities conservatively. |
 | 31 | Isolated accelerator campaigns | Implemented | CUDA validation uses isolated interpreters and no CPU fallback. |
-| 32 | TPU validation | Prepared | Requested TPU runs fail closed; real validation requires TPU access. |
-| 33 | Multi-GPU consistency | Prepared | Identity is recorded; cross-device execution needs idle compatible hardware. |
-| 34 | CUDA/JAX compatibility matrix | Partial | CUDA 12/13 selection exists; matrix execution needs target hosts. |
-| 35 | GPU provenance | Implemented | Driver, variant, ordinal, mapping, and bounded-memory data are captured. |
+| 32 | TPU validation | Implemented | Explicit TPU eager/JIT property backends fail closed without CPU fallback. Physical TPU evidence remains unavailable. |
+| 33 | Multi-GPU consistency | Verified | All 13 checksummed relations match on V100 and P40, with physical identity and placement retained. |
+| 34 | CUDA/JAX compatibility matrix | Verified | CUDA 12/13 was physically probed across V100, P40, and RTX 3060; supported and rejected SM combinations are retained. |
+| 35 | GPU provenance | Verified | Driver, CUDA variant, host/runtime ordinals, redacted UUID, compute capability, and bounded-memory policy are retained. |
 | 36 | x64 testing | Implemented | `--x64` creates a clean JAX x64 interpreter and CI runs every property shard there. |
 | 37 | Thread/runtime variants | Implemented | Reviewed single/four-thread fresh-process profiles are executable and recorded. |
-| 38 | Cross-platform evidence | Prepared | Commands are portable; each platform needs a retained result. |
+| 38 | Cross-platform evidence | Verified | Checksummed Windows HX370 and Linux EPYC records compare as independent; macOS remains portable but unverified. |
 | 39 | Hardware redaction | Implemented | GPU UUIDs are salted/redacted and process details minimized. |
 | 40 | GPU resume/sharding | Implemented | GPU shards have exact identity-bound, checksummed resumable ledgers. |
 | 41 | CLI profiles | Implemented | `campaign --profile` exposes budgets, with explicit flags as overrides. |
@@ -58,5 +58,15 @@ verification. It is deliberately not a substitute for hardware evidence.
 | 49 | Issue readiness command | Implemented | `xlaxiom readiness` fails closed on missing external evidence. |
 | 50 | Documentation index | Implemented | Documentation index links operational evidence surfaces. |
 
-The **Pending** and **Prepared** rows are real boundaries, not deferred claims: closing
-them requires new reviewed semantics, physical accelerator access, or release authority.
+All fifty software priorities are implemented. Retained evidence closes the available
+Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, and independent-host milestones. TPU
+execution and macOS portability remain explicitly unverified external hardware/platform
+claims; the implemented paths fail closed and do not convert CPU execution into evidence.
+
+Key completion artifacts:
+
+- [`environment-hx370-epyc-comparison-2026-10-13.json`](experiments/environment-hx370-epyc-comparison-2026-10-13.json)
+- [`metamorphic-campaign-hx370-x64-100-2026-10-13.json`](experiments/metamorphic-campaign-hx370-x64-100-2026-10-13.json)
+- [`metamorphic-crossbackend-hx370-v100-2026-10-13.json`](experiments/metamorphic-crossbackend-hx370-v100-2026-10-13.json)
+- [`metamorphic-crossdevice-v100-p40-2026-10-13.json`](experiments/metamorphic-crossdevice-v100-p40-2026-10-13.json)
+- [`epyc-cuda13-compatibility.json`](experiments/epyc-cuda13-compatibility.json)

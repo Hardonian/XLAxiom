@@ -25,9 +25,9 @@ import json
 import platform
 import subprocess
 import sys
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from collections.abc import Callable
 from typing import Any
 
 from .comparison import Classification
@@ -274,7 +274,10 @@ def minimize_finding_for_admission(
     if evaluator is None:
         from .pipeline import run_comparison
 
-        evaluator = lambda candidate: run_comparison(candidate, "jax-jit").classification
+        def evaluate(candidate: Workload) -> Classification:
+            return run_comparison(candidate, "jax-jit").classification
+
+        evaluator = evaluate
     return minimize(workload, evaluator, expected, max_evaluations=max_evaluations)
 
 

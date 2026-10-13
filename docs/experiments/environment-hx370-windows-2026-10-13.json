@@ -1,0 +1,23 @@
+{
+  "environment_evidence_version": "1.0",
+  "host": {
+    "executable": "python.exe",
+    "implementation": "CPython",
+    "machine": "AMD64",
+    "python": "3.12.10",
+    "release": "11",
+    "system": "Windows"
+  },
+  "jax": {
+    "available": true,
+    "devices": [
+      "cpu:0"
+    ],
+    "jaxlib": "0.11.2",
+    "version": "0.11.2",
+    "x64_enabled": false
+  },
+  "label": "hx370-windows-2026-10-13",
+  "redaction": "No host name, user name, paths, GPU UUIDs, or environment variables are stored.",
+  "sha256": "3f2bb094e1c9a8849f23698076f9f472c057a103234d6292c216a4a4552c84a0"
+}

@@ -2,6 +2,12 @@
 
 ## 0.5.0 - Unreleased
 
+- Added failure-preserving minimization to reproduced-finding corpus admission.
+- Added identity-checked property comparison across CPU, GPU, and TPU evidence backends.
+- Added redacted physical GPU provenance, host/runtime ordinal attribution, and bounded
+  JAX GPU-memory behavior to property evidence.
+- Retained independent Windows/Linux environment evidence, a 1,300-comparison JAX x64
+  campaign, and full thirteen-property HX370/V100/P40 comparisons.
 - Added a checked-in curated metamorphic-property corpus with safe closed-registry validation.
 - Added bounded property campaigns, coverage reporting, policy overrides, and CI shards.
 - Added checksummed relational artifacts with paired minimization, fresh-process replay,

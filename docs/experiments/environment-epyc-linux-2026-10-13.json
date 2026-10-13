@@ -1,0 +1,23 @@
+{
+  "environment_evidence_version": "1.0",
+  "host": {
+    "executable": "python",
+    "implementation": "CPython",
+    "machine": "x86_64",
+    "python": "3.12.13",
+    "release": "7.0.0-38-generic",
+    "system": "Linux"
+  },
+  "jax": {
+    "available": true,
+    "devices": [
+      "cpu:0"
+    ],
+    "jaxlib": "0.11.2",
+    "version": "0.11.2",
+    "x64_enabled": false
+  },
+  "label": "epyc-linux-2026-10-13",
+  "redaction": "No host name, user name, paths, GPU UUIDs, or environment variables are stored.",
+  "sha256": "9ebc86f86d53bda1548c66f3ef4994f0c71e50aad620383f65489e2247940911"
+}

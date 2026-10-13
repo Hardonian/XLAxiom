@@ -1,12 +1,17 @@
+import copy
+
 import numpy as np
 import pytest
 
 from xlaxiom.metamorphic import (
+    MetamorphicEvidenceError,
     MetamorphicPropertyError,
     build_property,
+    compare_property_evidence,
     curated_properties,
     run_curated_properties,
     run_property,
+    validate_property_evidence,
 )
 from xlaxiom.model import materialize_inputs
 
@@ -74,3 +79,42 @@ def test_property_campaign_and_coverage_are_bounded_and_explicit() -> None:
         coverage["operations"]
     )
     assert coverage["dtypes"] == ["float32", "float64", "int32"]
+
+
+def test_cross_backend_comparison_requires_identical_workload_identity() -> None:
+    baseline = run_curated_properties(seed=12, backend="numpy")
+    comparison = copy.deepcopy(baseline)
+    comparison["backend"] = "jax-jit"
+    for record in comparison["properties"]:
+        record["backend"] = "jax-jit"
+
+    result = compare_property_evidence(baseline, comparison)
+
+    assert result["baseline"]["backend"] == "numpy"
+    assert result["comparison"]["backend"] == "jax-jit"
+    assert result["summary"]["property_count"] == 13
+    assert result["summary"]["equivalent"] is True
+
+    comparison["properties"][0]["left_workload_sha256"] = "0" * 64
+    with pytest.raises(MetamorphicEvidenceError, match="workload identity mismatch"):
+        compare_property_evidence(baseline, comparison)
+
+
+def test_property_evidence_validation_rejects_drifted_counts() -> None:
+    evidence = run_curated_properties(seed=4, backend="numpy")
+    evidence["counts"]["pass"] -= 1
+
+    with pytest.raises(MetamorphicEvidenceError, match="counts do not match"):
+        validate_property_evidence(evidence)
+
+
+def test_tpu_property_backend_never_falls_back_to_cpu() -> None:
+    record = run_property("add-commutativity-v1", seed=3, backend="jax-tpu-jit")
+
+    for side in ("left", "right"):
+        observation = record["comparison"][side]
+        if observation["status"] == "ok":
+            assert observation["device"].startswith("tpu")
+        else:
+            assert observation["status"] == "unsupported_backend"
+            assert "CPU fallback was not performed" in observation["error"]

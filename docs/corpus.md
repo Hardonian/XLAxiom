@@ -14,6 +14,7 @@ uv run xlaxiom property run --seed 42 --backend jax-jit --x64 --output results/p
 uv run xlaxiom property campaign --cases 20 --backend jax-jit --x64
 uv run xlaxiom property coverage
 uv run xlaxiom property run --property matmul-transpose-v1 --backend numpy
+uv run xlaxiom property compare --baseline cpu.json --comparison gpu.json --output comparison.json
 uv run xlaxiom relation create --property matmul-transpose-v1 --output relation.json
 uv run xlaxiom relation reproduce --case relation.json
 ```
@@ -22,6 +23,11 @@ Each result records both generated workload checksums, the execution backend, nu
 policy, and the ordinary XLAxiom comparison classification. A passing relation only
 confirms the recorded bounded input and backend. A discrepancy is an observation to
 review, minimize, and reproduce; it does not diagnose a compiler defect.
+
+Property execution supports NumPy, JAX CPU eager/JIT, JAX GPU eager/JIT, and JAX TPU
+eager/JIT backends. Accelerator requests are mandatory placement requests: an absent
+GPU or TPU is `unsupported_backend`, never a CPU fallback. Cross-backend comparison
+requires matching seeds, property sets, ordering, and both workload SHA-256 identities.
 
 ## v1 metamorphic properties
 
@@ -62,3 +68,12 @@ validated `bundle`—before proposing an entry. A failed property can be materia
 a relational artifact, minimized on both sides, reproduced in fresh processes, reported,
 and bundled without executable payloads. This preserves the distinction between an
 observed discrepancy and a supported root-cause claim.
+
+`xlaxiom corpus build` applies failure-preserving minimization before its independent
+fresh-process reproduction gate. The checked-in corpus currently contains all thirteen
+reviewed properties, one labelled historical record, and no newly discovered finding.
+
+The retained 100-seed HX370 JAX x64 campaign executed 1,300 property comparisons with
+1,300 passes and no candidates. Separate seed-0 artifacts retain identical results on
+the HX370 CPU, Tesla V100, and Tesla P40, plus identity-checked CPU↔GPU and V100↔P40
+comparisons in [`experiments/`](experiments/).

@@ -1,7 +1,7 @@
 {
   "categories": {
     "known-historical": 1,
-    "metamorphic-property": 4,
+    "metamorphic-property": 13,
     "reproduced-finding": 0
   },
   "corpus_version": "1.0",
@@ -38,31 +38,112 @@
       "classification": "pass",
       "corpus_version": "1.0",
       "environment": {
-        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
       },
-      "identifier": "metamorphic-reduction-commutes-with-transpose",
+      "identifier": "metamorphic-add-commutativity-v1",
       "minimization": null,
       "policy": null,
       "property_check": {
-        "atol": 2e-06,
-        "classification": "pass",
-        "description": "sum(M) equals sum(M^T): a reduction must not depend on layout",
-        "eager": 0.0,
-        "eager_device": "cpu:0",
-        "eager_matches_oracle": true,
-        "identifier": "reduction-commutes-with-transpose",
-        "jit": 0.0,
-        "jit_matches_oracle": true,
-        "operation": "reduction-transpose",
-        "oracle": 0.0,
-        "rtol": 2e-05,
-        "state": "holds"
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 754.752,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 22.0865,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "f30c6ca7efc657284b4c2bfc9b19bdfe2529f1cb4c7f2e86f8fe051d5b3f5117",
+        "property": {
+          "description": "x + y and y + x produce equivalent elementwise outputs.",
+          "identifier": "add-commutativity-v1",
+          "relation": "outputs_equal",
+          "title": "Elementwise addition commutes"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "f7bdc9ef963786c129acff40051891b4e4307f127e2b9a81219be2e56c76a923",
+        "seed": 0,
+        "triage": "pass"
       },
       "references": [],
       "reproductions": 1,
-      "sha256": "4227d98976e9be8536ec27e217a6d52443f92a497a95264dbfa8d99fc3b3630c",
-      "summary": "sum(M) equals sum(M^T): a reduction must not depend on layout",
-      "title": "reduction-commutes-with-transpose",
+      "sha256": "9f7e311368af4a73cfaf3bb76f82be419d332e96aa7c37bc5422058d7544cf4f",
+      "summary": "x + y and y + x produce equivalent elementwise outputs.",
+      "title": "Elementwise addition commutes",
       "workload": null,
       "workload_sha256": null
     },
@@ -74,31 +155,112 @@
       "classification": "pass",
       "corpus_version": "1.0",
       "environment": {
-        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
       },
-      "identifier": "metamorphic-matmul-associativity",
+      "identifier": "metamorphic-transpose-involution-v1",
       "minimization": null,
       "policy": null,
       "property_check": {
-        "atol": 2e-06,
-        "classification": "pass",
-        "description": "(A@B)@C equals A@(B@C) within a bounded tolerance",
-        "eager": 0.0,
-        "eager_device": "cpu:0",
-        "eager_matches_oracle": true,
-        "identifier": "matmul-associativity",
-        "jit": 0.0,
-        "jit_matches_oracle": true,
-        "operation": "matmul-assoc",
-        "oracle": 0.0,
-        "rtol": 2e-05,
-        "state": "holds"
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 6.5276,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 5.6587,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "d1154fa844d5a82189845e52cbf1681f66c84c0538632243c42f1f862d4e1e72",
+        "property": {
+          "description": "Transposing a rank-two tensor twice restores the original tensor.",
+          "identifier": "transpose-involution-v1",
+          "relation": "outputs_equal",
+          "title": "Double transpose is identity"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "13deba9a38ba92f1dc2b7048d49d796b8187f7305dacddb2adb01fb491c8d1a4",
+        "seed": 0,
+        "triage": "pass"
       },
       "references": [],
       "reproductions": 1,
-      "sha256": "bb2583d2eea4cad691458f93346e7e200e5f3636a3e75d0777049171dc4fd08e",
-      "summary": "(A@B)@C equals A@(B@C) within a bounded tolerance",
-      "title": "matmul-associativity",
+      "sha256": "6868a7fb7fd0e04ec30ad0076a74ac2be6320e6d7c674513f1f90c9b0f04f882",
+      "summary": "Transposing a rank-two tensor twice restores the original tensor.",
+      "title": "Double transpose is identity",
       "workload": null,
       "workload_sha256": null
     },
@@ -110,31 +272,112 @@
       "classification": "pass",
       "corpus_version": "1.0",
       "environment": {
-        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
       },
-      "identifier": "metamorphic-broadcast-distributes-over-add",
+      "identifier": "metamorphic-reshape-roundtrip-v1",
       "minimization": null,
       "policy": null,
       "property_check": {
-        "atol": 2e-06,
-        "classification": "pass",
-        "description": "adding a row and a column broadcast equals adding them separately",
-        "eager": 0.0,
-        "eager_device": "cpu:0",
-        "eager_matches_oracle": true,
-        "identifier": "broadcast-distributes-over-add",
-        "jit": 0.0,
-        "jit_matches_oracle": true,
-        "operation": "broadcast-distributive",
-        "oracle": 0.0,
-        "rtol": 2e-05,
-        "state": "holds"
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 5.1124,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 6.1165,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "8d68c21cf55434a56ce4a8077de8bc03bb5b3084c994f923acd29a05b0569fc5",
+        "property": {
+          "description": "Flattening and restoring a rank-two tensor preserves every element.",
+          "identifier": "reshape-roundtrip-v1",
+          "relation": "outputs_equal",
+          "title": "Reshape round trip is identity"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "811fd9752155cece7b9307e8e1b34b56a3340b83bbff5a9231383b1532db53e7",
+        "seed": 0,
+        "triage": "pass"
       },
       "references": [],
       "reproductions": 1,
-      "sha256": "d2aa0d3d374445e0d8eaf4335d949ac76b136a4a2bd56f0ad7c125f906e2d35b",
-      "summary": "adding a row and a column broadcast equals adding them separately",
-      "title": "broadcast-distributes-over-add",
+      "sha256": "8d1653d5df53082fda52bd558a47ca1a34e63444acd50168162b389c8f0c279c",
+      "summary": "Flattening and restoring a rank-two tensor preserves every element.",
+      "title": "Reshape round trip is identity",
       "workload": null,
       "workload_sha256": null
     },
@@ -146,36 +389,1170 @@
       "classification": "pass",
       "corpus_version": "1.0",
       "environment": {
-        "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43"
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
       },
-      "identifier": "metamorphic-reduction-splits-over-blocks",
+      "identifier": "metamorphic-matmul-transpose-v1",
       "minimization": null,
       "policy": null,
       "property_check": {
-        "atol": 2e-06,
-        "classification": "pass",
-        "description": "summing a matrix equals the sum of its row sums",
-        "eager": -2.384185791015625e-07,
-        "eager_device": "cpu:0",
-        "eager_matches_oracle": true,
-        "identifier": "reduction-splits-over-blocks",
-        "jit": 0.0,
-        "jit_matches_oracle": true,
-        "operation": "reduction-split",
-        "oracle": -2.384185791015625e-07,
-        "rtol": 2e-05,
-        "state": "holds"
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 13.47,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 11.7807,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "abd2c2b1dc31d74e4b91a9890ab379a486b1cd2bfbcf1845806560843eecb3b1",
+        "property": {
+          "description": "(x @ y).T and y.T @ x.T produce equivalent outputs.",
+          "identifier": "matmul-transpose-v1",
+          "relation": "outputs_equal",
+          "title": "Matrix product transpose rule"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "53dc2f56593ac9628f77c3116ba4d277adecaeb651135467a96c4e8f93526b74",
+        "seed": 0,
+        "triage": "pass"
       },
       "references": [],
       "reproductions": 1,
-      "sha256": "955da5f6086b820b7613dc65bf748ee5ed78b36e8f68a3887da1401a540db759",
-      "summary": "summing a matrix equals the sum of its row sums",
-      "title": "reduction-splits-over-blocks",
+      "sha256": "5de5c44ce4331c49eab8946e4623323f922d96564a33086bdcabf1353f9c842c",
+      "summary": "(x @ y).T and y.T @ x.T produce equivalent outputs.",
+      "title": "Matrix product transpose rule",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-negation-involution-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 6.0294,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 6.4745,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "942886dc3179927780a832fbb7b69f36c3e0c052f2b85c150942ac62fe16892f",
+        "property": {
+          "description": "Negating a tensor twice preserves values and signed zero.",
+          "identifier": "negation-involution-v1",
+          "relation": "outputs_equal",
+          "title": "Double negation is identity"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "0f43e35c7ea628ed597b9ea54dec0c88f3358a79580c3a2db09c997148f62382",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "d5a5402be372dd5eafcfab8c0b72f316ce2d20b32d4083ed23986f7628c4e13f",
+      "summary": "Negating a tensor twice preserves values and signed zero.",
+      "title": "Double negation is identity",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-subtraction-as-addition-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 21.3917,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 24.4266,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "825d19ba1463510dae57ec27c5972937e60fedc26344d3390c1a28036205c53e",
+        "property": {
+          "description": "x - y and x + (-y) produce equivalent elementwise outputs.",
+          "identifier": "subtraction-as-addition-v1",
+          "relation": "outputs_equal",
+          "title": "Subtraction is addition of negation"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "b20c0680cd6b85d9e76126f432112f5f71f2795be41b69c5bbd16847950786ba",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "a855d588e92aa32e96de0ca01f43e50cd8e5098df31dd2802fec0bf4e9ba0fda",
+      "summary": "x - y and x + (-y) produce equivalent elementwise outputs.",
+      "title": "Subtraction is addition of negation",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-absolute-idempotence-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 20.9733,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 20.3222,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "238f19267665682ff1601a56e7f953f49b253ce93ef03bee20d13389360b3709",
+        "property": {
+          "description": "abs(x) and abs(abs(x)) produce equivalent outputs.",
+          "identifier": "absolute-idempotence-v1",
+          "relation": "outputs_equal",
+          "title": "Absolute value is idempotent"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "111e9ff91cbaa4538c6b44992fa7f9efa364df038dd54099f5d83ce50e0fb1d5",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "69fd635904ca57c2fd738cecfc325b49b0a4014bf029dab1f8f3b4da7aed0a7e",
+      "summary": "abs(x) and abs(abs(x)) produce equivalent outputs.",
+      "title": "Absolute value is idempotent",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-integer-add-commutativity-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 22.0472,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "int32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "int32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 22.6654,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "int32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "1d2050aea44a098a6fada73dca4521b6e1ea4defe9a773b64f30d0c40b1281d9",
+        "property": {
+          "description": "int32 x + y and y + x produce equivalent elementwise outputs.",
+          "identifier": "integer-add-commutativity-v1",
+          "relation": "outputs_equal",
+          "title": "Integer elementwise addition commutes"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "8c95fc161d3082f0ed14f0b74646eb5e6a65c4edcc7a2ea0e50971eb33e800e0",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "7283b1d0f6d2f567e4ff1043eb92f25c745e8b66a0b8db70fd97327f18483e5d",
+      "summary": "int32 x + y and y + x produce equivalent elementwise outputs.",
+      "title": "Integer elementwise addition commutes",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-float64-add-commutativity-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 21.5735,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float64",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float64",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 20.9726,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float64",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "71f51f56bfe65ef9c4baae4df2bb2f817757d4cb1b9323085436b968e1638e5f",
+        "property": {
+          "description": "float64 x + y and y + x produce equivalent outputs in an explicit JAX x64 process.",
+          "identifier": "float64-add-commutativity-v1",
+          "relation": "outputs_equal",
+          "title": "Float64 elementwise addition commutes"
+        },
+        "requires_x64": true,
+        "right_workload_sha256": "6ceaed4e1570d3a67a3c095b321eba15468a49231b0bb3a614224006bd3a244b",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "51b5ad48f202f64a5d720d8166071596a9942cc9dd05f718c9684a0a0c55fa2a",
+      "summary": "float64 x + y and y + x produce equivalent outputs in an explicit JAX x64 process.",
+      "title": "Float64 elementwise addition commutes",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-mixed-dtype-add-commutativity-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 22.7218,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 21.5701,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "24d3573056dbcb1b7f43900cc7e637f4686178ddef724868202a41b3ccfe42d2",
+        "property": {
+          "description": "int32 x + float32 y and float32 y + int32 x use same-operation promotion semantics consistently.",
+          "identifier": "mixed-dtype-add-commutativity-v1",
+          "relation": "outputs_equal",
+          "title": "Mixed int32/float32 addition commutes"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "ef147cdb1b20adfc40ba95329cb51c1fc281398adbd2c679b8700ebce107b6e2",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "11249a04b7eca9bc912ecc58df774844c94214261933acd703d18770a14025e9",
+      "summary": "int32 x + float32 y and float32 y + int32 x use same-operation promotion semantics consistently.",
+      "title": "Mixed int32/float32 addition commutes",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-signed-zero-negation-involution-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 5.8242,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 5.6721,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "3b9be5a5eed677d1a0ef35bc48bc09fa311a946c27afae6265eb4e0ff19e623c",
+        "property": {
+          "description": "Negating signed-zero inputs twice preserves both values and zero signs.",
+          "identifier": "signed-zero-negation-involution-v1",
+          "relation": "outputs_equal",
+          "title": "Double negation preserves signed zero"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "dcfcaf0ebb9f5116ed2112d78e362333632872c88f89b7cbef91ac436fe2fc09",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "49fd9ab1211ca25037e459281f11c067acea184032e8a7a6e70bc67ec5f00406",
+      "summary": "Negating signed-zero inputs twice preserves both values and zero signs.",
+      "title": "Double negation preserves signed zero",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-nonfinite-absolute-idempotence-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 23.9244,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 1,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 21.9031,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 1,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "ca548c11295c89b846da74f8a04420a97277370ae05b32d241f2d2a5fc5c4557",
+        "property": {
+          "description": "abs(x) and abs(abs(x)) agree for NaN, infinities, and signed zero under the explicit policy.",
+          "identifier": "nonfinite-absolute-idempotence-v1",
+          "relation": "outputs_equal",
+          "title": "Absolute value is idempotent for non-finite inputs"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "0f31b361ff73201b26adadd92d4e07b529148d2bc87e90a037405db576d34c58",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "0f5f73974fd22456281546aa1192fff1c8f2f4788b2d35be1d3217f175abf024",
+      "summary": "abs(x) and abs(abs(x)) agree for NaN, infinities, and signed zero under the explicit policy.",
+      "title": "Absolute value is idempotent for non-finite inputs",
+      "workload": null,
+      "workload_sha256": null
+    },
+    {
+      "category": "metamorphic-property",
+      "caveats": [
+        "A violation is an observation about the relation, not a root-cause claim about any single backend."
+      ],
+      "classification": "pass",
+      "corpus_version": "1.0",
+      "environment": {
+        "backend": "jax-jit",
+        "platform": "Windows-11-10.0.29683-SP0"
+      },
+      "identifier": "metamorphic-extreme-finite-absolute-idempotence-v1",
+      "minimization": null,
+      "policy": null,
+      "property_check": {
+        "backend": "jax-jit",
+        "comparison": {
+          "classification": "pass",
+          "explanation": "outputs agree under the configured policy",
+          "left": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 22.374,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          },
+          "metrics": [
+            {
+              "dtype": "float32",
+              "finite_mismatches": 0,
+              "max_absolute_error": 0.0,
+              "max_relative_error": 0.0,
+              "nonfinite_mismatches": 0,
+              "shape": [
+                2,
+                2
+              ],
+              "signed_zero_mismatches": 0
+            }
+          ],
+          "policy": {
+            "atol": 2e-06,
+            "check_signed_zero": true,
+            "equal_nan": true,
+            "identifier": "dtype-aware-v1",
+            "rtol": 2e-05
+          },
+          "right": {
+            "backend": "jax-cpu",
+            "device": "cpu:0",
+            "duration_ms": 21.2811,
+            "environment": {
+              "actual_devices": "cpu:0",
+              "device_index": "",
+              "jax": "0.11.2",
+              "jax_enable_x64": "true",
+              "platform": "Windows-11-10.0.29683-SP0",
+              "requested_platform": "cpu"
+            },
+            "error": null,
+            "mode": "jit",
+            "outputs": [
+              {
+                "dtype": "float32",
+                "finite": 4,
+                "shape": [
+                  2,
+                  2
+                ]
+              }
+            ],
+            "status": "ok"
+          }
+        },
+        "corpus_version": "1.0",
+        "evidence_version": "1.0",
+        "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+        "kind": "metamorphic-property-evidence",
+        "left_workload_sha256": "bb4c89b76d496900c1482d397b2932d2da18c493e62986afefb8ee5bd14a43d9",
+        "property": {
+          "description": "abs(x) and abs(abs(x)) agree for finite values spanning normal and subnormal boundaries.",
+          "identifier": "extreme-finite-absolute-idempotence-v1",
+          "relation": "outputs_equal",
+          "title": "Absolute value is idempotent for finite extremes"
+        },
+        "requires_x64": false,
+        "right_workload_sha256": "800eb9b3a2344dc232252cb2ecc57457eed9dfe5e7164712537ff9202e3aca69",
+        "seed": 0,
+        "triage": "pass"
+      },
+      "references": [],
+      "reproductions": 1,
+      "sha256": "34f65a31b7ae0469572e03c737167a3e2afdfbf01df562469e0242dc56e9d06c",
+      "summary": "abs(x) and abs(abs(x)) agree for finite values spanning normal and subnormal boundaries.",
+      "title": "Absolute value is idempotent for finite extremes",
       "workload": null,
       "workload_sha256": null
     }
   ],
-  "entry_count": 5,
+  "entry_count": 14,
   "notes": [
     "Every reproduced finding was observed in a fresh process, independently of the process that first flagged it.",
     "A discrepancy is an observation, not a root-cause claim.",

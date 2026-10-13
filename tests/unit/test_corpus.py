@@ -20,6 +20,7 @@ from xlaxiom.corpus import (
     check_metamorphic_property,
     digest,
     load_corpus,
+    minimize_finding_for_admission,
     reproduce_isolated,
     run_metamorphic_suite,
     save_corpus,
@@ -166,3 +167,24 @@ class TestIsolatedReproduction:
         workload = generate(GenerationConfig(seed=2))
         record = reproduce_isolated(workload, attempts=2, timeout_s=90.0)
         assert "fresh interpreter" in record["note"]
+
+
+class TestFindingMinimization:
+    """Corpus admission minimizes the same classification before reproduction."""
+
+    def test_non_pass_observation_is_minimized_with_recorded_stats(self) -> None:
+        workload = generate(GenerationConfig(seed=8, max_nodes=6, max_dim=6))
+        result = minimize_finding_for_admission(
+            workload,
+            Classification.NUMERICAL_DISCREPANCY,
+            evaluator=lambda _: Classification.NUMERICAL_DISCREPANCY,
+        )
+
+        assert result.stats.preserved_classification == "numerical_discrepancy"
+        assert result.stats.reduced_nodes <= result.stats.original_nodes
+        assert result.stats.reduced_elements <= result.stats.original_elements
+
+    def test_passing_observation_cannot_be_admitted_as_a_finding(self) -> None:
+        workload = generate(GenerationConfig(seed=1))
+        with pytest.raises(ValueError, match="passing observation"):
+            minimize_finding_for_admission(workload, Classification.PASS)

@@ -103,6 +103,9 @@ The host is an AMD EPYC 7452 (1 socket, 32 cores, 64 threads, 168 GiB, Ubuntu 26
 - JAX #40634 historical study on the V100: `arcsinh(±1e22)` gradients are 0.0 against an analytic reference of 1e-22 (eager and JIT), reproducing known upstream behavior; `acosh(1e22)` passes. Explicitly not a new finding.
 - Cross-device consistency (4 checksummed workloads, V100 vs P40): all 4 values identical, placement verified on both devices.
 - Metamorphic property corpus on GPU: all 4 properties hold on both GPUs, matching the CPU x64 control within the recorded 2e-06 tolerance.
+- Full reviewed property corpus: all 13 checksummed relations pass on HX370 CPU x64,
+  V100, and P40. Identity-checked CPU↔V100 and V100↔P40 comparisons report 13/13
+  matching classifications with redacted physical-device provenance.
 - CUDA 13 remains unsupported for SM 6.1 and 7.0: the CUDA 13 wheel's `ptxas` has no kernels for those architectures, so `jax[cuda13]` fails with "ptxas too old". This is recorded honestly, not worked around.
 
 **GPU launcher behavior.** `xlaxiom gpu campaign` verifies the active JAX runtime before
@@ -167,6 +170,7 @@ The initial safe operation registry includes elementwise arithmetic, `matmul`, r
 | `gradient-compare` | Compare two self-identifying gradient campaign artifacts. |
 | `campaign` | Run a duration-bounded trusted CPU discovery campaign. |
 | `property list` / `property run` | Inspect and execute curated declarative metamorphic properties. |
+| `property compare` | Compare identical checksummed property workloads across execution backends. |
 | `matrix run` | Execute one saved case in isolated pinned JAX environments. |
 | `bundle create` / `bundle validate` | Create and validate portable checksummed case bundles. |
 | `campaign --isolate` | Run a bounded campaign with each case in a spawned child under a hard timeout. |
@@ -193,13 +197,20 @@ All commands expose `--help`. `reproduce` runs the workload again; it does not m
 
 ## Backends and precision
 
-NumPy and JAX CPU are the supported initial backends. JAX’s CPU wheel is supported on Windows, but native Windows GPU support is not; accelerator support is a runtime capability question on a target host, not a claim made by this project. The active execution device is included in observations.
+NumPy and JAX CPU are supported backends. Curated properties also expose explicit JAX
+GPU and TPU eager/JIT backends. Accelerator selection is mandatory: an unavailable GPU
+or TPU returns `unsupported_backend` and never falls back to CPU. Native Windows GPU
+support remains unavailable in JAX, so CUDA evidence is produced on the EPYC Linux host.
+GPU artifacts retain redacted physical identity and host/runtime ordinal mapping.
 
 JAX defaults to 32-bit types unless its x64 option is enabled. XLAxiom therefore records dtype and applies the case policy explicitly. Its default policy uses both relative and absolute tolerances, compares NaN location and infinity sign, and detects signed-zero differences. It does not use a hidden universal tolerance or silently relax a failing case.
 
 ## Limits and interpretation
 
-The generator limits graph size, input count, and tensor elements. The minimizer has a bounded candidate budget and reexecutes every accepted transformation. Current in-process execution is appropriate for bounded local workloads; future releases should use subprocess timeouts for untrusted or resource-intensive campaigns.
+The generator limits graph size, input count, and tensor elements. The minimizer has a
+bounded candidate budget and reexecutes every accepted transformation. Trusted bounded
+workloads may run in-process; discovery campaigns support isolated subprocess workers,
+hard per-case timeouts, resident-memory limits, and cleanup escalation.
 
 NumPy is useful but is not an independent correctness oracle for every JAX semantic, dtype-promotion rule, compiler setting, or hardware implementation. A discrepancy is an observation, not a root-cause claim. Before filing upstream, reproduce it in a fresh process and independently configured environment, eliminate synthetic controls, record versions/devices/settings, and minimize it.
 
@@ -234,12 +245,16 @@ Completed:
 
 1. Isolated subprocess workers with per-case timeout enforcement — `xlaxiom campaign --isolate --case-timeout-s N`. A hung kernel or out-of-memory failure now contains one case instead of the whole campaign, and contained failures are recorded rather than silently dropped.
 2. CUDA adapter validation on compatible hardware with captured device evidence — `xlaxiom gpu doctor`, `gpu validate`, `gpu campaign`, `gpu historical`. Validated on an AMD EPYC host with a V100 (SM 7.0), an RTX 3060 (SM 8.6), and a P40 (SM 6.1). See [the multi-GPU campaign evidence](docs/experiments/epyc-multi-gpu-campaign.md). TPU remains unvalidated because no TPU hardware is available here; it is reported unsupported rather than assumed.
-3. A curated corpus of independently reproduced findings and metamorphic properties — `xlaxiom corpus build`, `corpus validate`, `corpus metamorphic`. A finding is admitted only after it reproduces in at least two fresh processes, and the admission bar rejects an entry whose reproduction evidence is missing or whose checksum no longer matches.
-4. Metamorphic properties on CUDA. The property suite now runs on explicitly selected CUDA GPUs. On 2026-10-13 all four properties held identically on a Tesla V100 (SM 7.0, `jax[cuda12]`) and a Tesla P40 (SM 6.1, `jax[cuda12]`), and matched a CPU x64 control within the recorded 2e-06 tolerance. Evidence: [`epyc-metamorphic-crossbackend-2026-10-13.json`](docs/experiments/epyc-metamorphic-crossbackend-2026-10-13.json). The RTX 3060 (SM 8.6, `jax[cuda13]`) is excluded from the comparison because it is the host display adapter with an external workload and a materially different configuration; comparing it would be inconclusive by design.
+3. A curated corpus of independently reproduced findings and metamorphic properties — `xlaxiom corpus build`, `corpus validate`, `corpus metamorphic`. A finding is failure-preservingly minimized before it must reproduce in at least two fresh processes; weak or checksum-drifted entries are rejected.
+4. Thirteen reviewed metamorphic relations across finite, extreme, signed-zero,
+   non-finite, integer, mixed, and explicit float64 cases.
+5. Identity-checked cross-backend comparison with `xlaxiom property compare`. The
+   retained HX370 CPU↔V100 and V100↔P40 records match all 13 classifications.
+6. A bounded 100-seed HX370 JAX x64 campaign: 1,300/1,300 comparisons passed with no
+   candidate observations.
+7. Checksummed independent-host evidence across HX370 Windows and EPYC Linux, plus the
+   empirically retained CUDA 12/13 compatibility matrix.
 
-Next:
-
-1. **Minimize admitted corpus findings automatically.** `corpus build` admits a reproduced finding with its reduced workload, but does not yet run the failure-preserving minimizer over the corpus end to end. Wiring `minimize` into the corpus pipeline would shrink admitted cases to their smallest reproducing form.
-2. **Cross-backend corpus comparison.** `gradient-compare` already compares two campaigns. Extending the same treatment to the corpus would let a CPU baseline and a CUDA run be diffed entry by entry, separating shared candidates from accelerator-specific ones automatically.
-3. **More metamorphic relations.** The suite holds four properties. Precision-sensitive relations, such as a reduction commuting with a dtype change, or `sin`/`cos` identities holding under argument reduction, would widen coverage.
-4. **Longer bounded corpus campaigns.** A wider seed sweep would raise the chance of admitting a genuinely new finding rather than confirming that known behavior still reproduces.
+All fifty software priorities in the [holistic delivery plan](docs/roadmap.md) are
+implemented. Physical TPU execution and macOS verification remain external evidence
+boundaries; their absence is reported explicitly and is never represented as support.

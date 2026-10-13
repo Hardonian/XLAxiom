@@ -149,6 +149,56 @@ def test_property_campaign_and_coverage_cli(tmp_path) -> None:
     assert json.loads(coverage_path.read_text(encoding="utf-8"))["property_count"] == 13
 
 
+def test_property_evidence_compare_cli(tmp_path) -> None:
+    baseline_path = tmp_path / "baseline.json"
+    comparison_path = tmp_path / "comparison.json"
+    output_path = tmp_path / "comparison-result.json"
+    for path in (baseline_path, comparison_path):
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlaxiom",
+                "property",
+                "run",
+                "--backend",
+                "numpy",
+                "--seed",
+                "9",
+                "--output",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+
+    compared = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "property",
+            "compare",
+            "--baseline",
+            str(baseline_path),
+            "--comparison",
+            str(comparison_path),
+            "--output",
+            str(output_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert compared.returncode == 0, compared.stderr
+    evidence = json.loads(output_path.read_text(encoding="utf-8"))
+    assert evidence["summary"]["property_count"] == 13
+    assert evidence["summary"]["equivalent"] is True
+
+
 def test_relational_artifact_cli_round_trip(tmp_path) -> None:
     relation = tmp_path / "relation.json"
     created = subprocess.run(
