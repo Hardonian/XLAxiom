@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Automated Physical TPU Evidence Collector for XLAxiom
+# Billed per second by Google Cloud; typical run is 3-5 minutes (< $0.20 total on v5e).
+# Automatically tears down the TPU VM in a trap/exit block to prevent idle costs.
+
+set -euo pipefail
+
+PROJECT_ID="${1:-$(gcloud config get-value project 2>/dev/null)}"
+ZONE="${2:-us-east1-c}"
+ACCELERATOR_TYPE="${3:-v5litepod-1}"
+VERSION="tpu-ubuntu2204-base"
+VM_NAME="${4:-xlaxiom-tpu-eval}"
+KEEP_VM="${5:-false}"
+
+if [ -z "${PROJECT_ID}" ]; then
+  echo "Error: No active GCP project. Run 'gcloud config set project <ID>' or pass PROJECT_ID as arg 1." >&2
+  exit 1
+fi
+
+echo "=========================================================="
+echo " XLAxiom Physical TPU Evidence Collector"
+echo "=========================================================="
+echo " Project:          ${PROJECT_ID}"
+echo " Zone:             ${ZONE}"
+echo " Accelerator:      ${ACCELERATOR_TYPE}"
+echo " VM Name:          ${VM_NAME}"
+echo " Estimated Cost:   < \$0.20 (billed per-second, destroyed on exit)"
+echo "=========================================================="
+
+# Ensure TPU API is enabled
+gcloud services enable tpu.googleapis.com --project="${PROJECT_ID}"
+
+VM_CREATED=0
+
+cleanup() {
+  if [ "${VM_CREATED}" -eq 1 ] && [ "${KEEP_VM}" != "true" ]; then
+    echo "Tearing down Cloud TPU VM '${VM_NAME}' to prevent idle billing..."
+    gcloud compute tpus tpu-vm delete "${VM_NAME}" --zone="${ZONE}" --project="${PROJECT_ID}" --quiet || true
+    echo "Cloud TPU VM successfully destroyed."
+  fi
+}
+trap cleanup EXIT
+
+echo "Creating Cloud TPU VM '${VM_NAME}'..."
+gcloud compute tpus tpu-vm create "${VM_NAME}" \
+    --zone="${ZONE}" \
+    --accelerator-type="${ACCELERATOR_TYPE}" \
+    --version="${VERSION}" \
+    --project="${PROJECT_ID}" \
+    --quiet
+VM_CREATED=1
+
+echo "Setting up JAX with libtpu and executing XLAxiom test suite on TPU..."
+gcloud compute tpus tpu-vm ssh "${VM_NAME}" --zone="${ZONE}" --project="${PROJECT_ID}" --command='
+set -euo pipefail
+
+sudo apt-get update -y && sudo apt-get install -y python3-pip python3-venv git curl
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+
+rm -rf XLAxiom
+git clone https://github.com/Hardonian/XLAxiom.git
+cd XLAxiom
+
+uv venv --python 3.12
+source .venv/bin/activate
+pip install -U "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+uv sync --extra dev --frozen
+
+echo "=== Verifying Physical TPU Silicon ==="
+python -c "import jax; print(\"JAX Devices:\", jax.devices()); assert any(d.platform == \"tpu\" for d in jax.devices())"
+
+mkdir -p evidence/tpu
+uv run xlaxiom doctor > evidence/tpu/doctor.json
+uv run xlaxiom environment capture --output evidence/tpu/environment.json
+uv run xlaxiom property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+uv run xlaxiom property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+uv run xlaxiom property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+uv run xlaxiom property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+uv run xlaxiom property compare \
+    --baseline evidence/tpu/cpu-jit-evidence.json \
+    --comparison evidence/tpu/tpu-jit-evidence.json \
+    --output evidence/tpu/tpu-vs-cpu-comparison.json
+'
+
+echo "Downloading evidence artifacts to ./evidence/tpu/..."
+mkdir -p evidence/tpu
+gcloud compute tpus tpu-vm scp --recurse "${VM_NAME}:~/XLAxiom/evidence/tpu/*" ./evidence/tpu/ --zone="${ZONE}" --project="${PROJECT_ID}"
+
+echo "Evidence artifacts collected successfully in ./evidence/tpu/"
