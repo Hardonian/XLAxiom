@@ -1,0 +1,211 @@
+{
+  "baseline": {
+    "backend": "jax-jit",
+    "counts": {
+      "compilation_failure": 0,
+      "dtype_mismatch": 0,
+      "environment_failure": 0,
+      "execution_failure": 0,
+      "inconclusive": 0,
+      "invalid_workload": 0,
+      "nondeterminism": 0,
+      "numerical_discrepancy": 0,
+      "pass": 19,
+      "performance_regression": 0,
+      "shape_mismatch": 0,
+      "timeout": 0,
+      "unsupported_backend": 0
+    },
+    "execution": {
+      "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+      "requested_platform": "cpu"
+    }
+  },
+  "comparison": {
+    "backend": "jax-tpu-jit",
+    "counts": {
+      "compilation_failure": 0,
+      "dtype_mismatch": 0,
+      "environment_failure": 0,
+      "execution_failure": 0,
+      "inconclusive": 0,
+      "invalid_workload": 0,
+      "nondeterminism": 0,
+      "numerical_discrepancy": 0,
+      "pass": 19,
+      "performance_regression": 0,
+      "shape_mismatch": 0,
+      "timeout": 0,
+      "unsupported_backend": 0
+    },
+    "execution": {
+      "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+      "requested_platform": "tpu"
+    }
+  },
+  "comparison_version": "metamorphic-cross-backend-v1",
+  "corpus_version": "1.0",
+  "interpretation": "Equivalent classifications apply only to the checksummed workloads, seed, policies, and backends recorded by these two artifacts.",
+  "properties": [
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "add-commutativity-v1",
+      "left_workload_sha256": "f30c6ca7efc657284b4c2bfc9b19bdfe2529f1cb4c7f2e86f8fe051d5b3f5117",
+      "right_workload_sha256": "f7bdc9ef963786c129acff40051891b4e4307f127e2b9a81219be2e56c76a923"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "transpose-involution-v1",
+      "left_workload_sha256": "d1154fa844d5a82189845e52cbf1681f66c84c0538632243c42f1f862d4e1e72",
+      "right_workload_sha256": "13deba9a38ba92f1dc2b7048d49d796b8187f7305dacddb2adb01fb491c8d1a4"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "reshape-roundtrip-v1",
+      "left_workload_sha256": "8d68c21cf55434a56ce4a8077de8bc03bb5b3084c994f923acd29a05b0569fc5",
+      "right_workload_sha256": "811fd9752155cece7b9307e8e1b34b56a3340b83bbff5a9231383b1532db53e7"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "matmul-transpose-v1",
+      "left_workload_sha256": "abd2c2b1dc31d74e4b91a9890ab379a486b1cd2bfbcf1845806560843eecb3b1",
+      "right_workload_sha256": "53dc2f56593ac9628f77c3116ba4d277adecaeb651135467a96c4e8f93526b74"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "negation-involution-v1",
+      "left_workload_sha256": "942886dc3179927780a832fbb7b69f36c3e0c052f2b85c150942ac62fe16892f",
+      "right_workload_sha256": "0f43e35c7ea628ed597b9ea54dec0c88f3358a79580c3a2db09c997148f62382"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "subtraction-as-addition-v1",
+      "left_workload_sha256": "825d19ba1463510dae57ec27c5972937e60fedc26344d3390c1a28036205c53e",
+      "right_workload_sha256": "b20c0680cd6b85d9e76126f432112f5f71f2795be41b69c5bbd16847950786ba"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "absolute-idempotence-v1",
+      "left_workload_sha256": "238f19267665682ff1601a56e7f953f49b253ce93ef03bee20d13389360b3709",
+      "right_workload_sha256": "111e9ff91cbaa4538c6b44992fa7f9efa364df038dd54099f5d83ce50e0fb1d5"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "integer-add-commutativity-v1",
+      "left_workload_sha256": "1d2050aea44a098a6fada73dca4521b6e1ea4defe9a773b64f30d0c40b1281d9",
+      "right_workload_sha256": "8c95fc161d3082f0ed14f0b74646eb5e6a65c4edcc7a2ea0e50971eb33e800e0"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "float64-add-commutativity-v1",
+      "left_workload_sha256": "71f51f56bfe65ef9c4baae4df2bb2f817757d4cb1b9323085436b968e1638e5f",
+      "right_workload_sha256": "6ceaed4e1570d3a67a3c095b321eba15468a49231b0bb3a614224006bd3a244b"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "mixed-dtype-add-commutativity-v1",
+      "left_workload_sha256": "24d3573056dbcb1b7f43900cc7e637f4686178ddef724868202a41b3ccfe42d2",
+      "right_workload_sha256": "ef147cdb1b20adfc40ba95329cb51c1fc281398adbd2c679b8700ebce107b6e2"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "signed-zero-negation-involution-v1",
+      "left_workload_sha256": "3b9be5a5eed677d1a0ef35bc48bc09fa311a946c27afae6265eb4e0ff19e623c",
+      "right_workload_sha256": "dcfcaf0ebb9f5116ed2112d78e362333632872c88f89b7cbef91ac436fe2fc09"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "nonfinite-absolute-idempotence-v1",
+      "left_workload_sha256": "ca548c11295c89b846da74f8a04420a97277370ae05b32d241f2d2a5fc5c4557",
+      "right_workload_sha256": "0f31b361ff73201b26adadd92d4e07b529148d2bc87e90a037405db576d34c58"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "extreme-finite-absolute-idempotence-v1",
+      "left_workload_sha256": "bb4c89b76d496900c1482d397b2932d2da18c493e62986afefb8ee5bd14a43d9",
+      "right_workload_sha256": "800eb9b3a2344dc232252cb2ecc57457eed9dfe5e7164712537ff9202e3aca69"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "maximum-commutativity-v1",
+      "left_workload_sha256": "466e0af6c39444dd5f1ca0f358ee128eda9c0681dc4ae20b41be957381d7f872",
+      "right_workload_sha256": "a5c703131c100c95d9f2c82378a4be8c06da93f39b2fc1c33bbc19f736bc2ab3"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "minimum-commutativity-v1",
+      "left_workload_sha256": "07ed83c6c0c56102340028fe94379c70950dd04e89b1f5996ccb1f2f9b234690",
+      "right_workload_sha256": "f829fda60ea744690cd5c6cefeeac66096d691f4566da2979a75941f66d83031"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "min-max-duality-v1",
+      "left_workload_sha256": "9b965d21c4f88ac78a0b859338aaf49a9b4ec36aa32cae9508edf024b73d3f1b",
+      "right_workload_sha256": "94e429d8b40483a0c6fb7507e833d2bfdaf3619d68412989477dd1d65175a6b7"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "square-as-multiplication-v1",
+      "left_workload_sha256": "0100713e82d4cfc30ca14340a77fa2dfa7451b755e0e81478f3e6339a4247429",
+      "right_workload_sha256": "13b7055a6374bf84c9c48831ca847a3f628434b0eee705d0a9d4520b7fc3333c"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "square-negation-involution-v1",
+      "left_workload_sha256": "078609b7f2b0cec3eb218e9034d00d485dee7df4e9488c75cb18665fd743d8c9",
+      "right_workload_sha256": "e0827ff5b81cf87f813bcdefd553e3a5cc17272913f8952f2a47133ebb8e406e"
+    },
+    {
+      "baseline_classification": "pass",
+      "classification_match": true,
+      "comparison_classification": "pass",
+      "identifier": "min-max-reduction-duality-v1",
+      "left_workload_sha256": "194780d9c33c6e6fa94e8810eb6b5c69a8bdee62a8604d56bcfe61d4f7daa15f",
+      "right_workload_sha256": "30db669f31f4a52df3a15db889477e03d505e4af06a7471a38d6b54fcd87ff29"
+    }
+  ],
+  "seed": 0,
+  "summary": {
+    "changed_properties": [],
+    "classification_changes": 0,
+    "classification_matches": 19,
+    "equivalent": true,
+    "property_count": 19
+  }
+}

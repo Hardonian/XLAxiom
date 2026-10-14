@@ -1,0 +1,1960 @@
+{
+  "backend": "jax-jit",
+  "corpus_version": "1.0",
+  "counts": {
+    "compilation_failure": 0,
+    "dtype_mismatch": 0,
+    "environment_failure": 0,
+    "execution_failure": 0,
+    "inconclusive": 0,
+    "invalid_workload": 0,
+    "nondeterminism": 0,
+    "numerical_discrepancy": 0,
+    "pass": 19,
+    "performance_regression": 0,
+    "shape_mismatch": 0,
+    "timeout": 0,
+    "unsupported_backend": 0
+  },
+  "evidence_version": "1.0",
+  "execution": {
+    "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+    "requested_platform": "cpu"
+  },
+  "kind": "metamorphic-corpus-evidence",
+  "properties": [
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 351.6169,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 30.0386,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "f30c6ca7efc657284b4c2bfc9b19bdfe2529f1cb4c7f2e86f8fe051d5b3f5117",
+      "property": {
+        "description": "x + y and y + x produce equivalent elementwise outputs.",
+        "identifier": "add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise addition commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "f7bdc9ef963786c129acff40051891b4e4307f127e2b9a81219be2e56c76a923",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 6.3472,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 6.2748,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "d1154fa844d5a82189845e52cbf1681f66c84c0538632243c42f1f862d4e1e72",
+      "property": {
+        "description": "Transposing a rank-two tensor twice restores the original tensor.",
+        "identifier": "transpose-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Double transpose is identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "13deba9a38ba92f1dc2b7048d49d796b8187f7305dacddb2adb01fb491c8d1a4",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 5.4457,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 6.1488,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "8d68c21cf55434a56ce4a8077de8bc03bb5b3084c994f923acd29a05b0569fc5",
+      "property": {
+        "description": "Flattening and restoring a rank-two tensor preserves every element.",
+        "identifier": "reshape-roundtrip-v1",
+        "relation": "outputs_equal",
+        "title": "Reshape round trip is identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "811fd9752155cece7b9307e8e1b34b56a3340b83bbff5a9231383b1532db53e7",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 11.636,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 10.8722,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "abd2c2b1dc31d74e4b91a9890ab379a486b1cd2bfbcf1845806560843eecb3b1",
+      "property": {
+        "description": "(x @ y).T and y.T @ x.T produce equivalent outputs.",
+        "identifier": "matmul-transpose-v1",
+        "relation": "outputs_equal",
+        "title": "Matrix product transpose rule"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "53dc2f56593ac9628f77c3116ba4d277adecaeb651135467a96c4e8f93526b74",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 5.4566,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 6.4036,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "942886dc3179927780a832fbb7b69f36c3e0c052f2b85c150942ac62fe16892f",
+      "property": {
+        "description": "Negating a tensor twice preserves values and signed zero.",
+        "identifier": "negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Double negation is identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "0f43e35c7ea628ed597b9ea54dec0c88f3358a79580c3a2db09c997148f62382",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 25.7761,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 29.1478,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "825d19ba1463510dae57ec27c5972937e60fedc26344d3390c1a28036205c53e",
+      "property": {
+        "description": "x - y and x + (-y) produce equivalent elementwise outputs.",
+        "identifier": "subtraction-as-addition-v1",
+        "relation": "outputs_equal",
+        "title": "Subtraction is addition of negation"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "b20c0680cd6b85d9e76126f432112f5f71f2795be41b69c5bbd16847950786ba",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 24.2571,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 23.8331,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "238f19267665682ff1601a56e7f953f49b253ce93ef03bee20d13389360b3709",
+      "property": {
+        "description": "abs(x) and abs(abs(x)) produce equivalent outputs.",
+        "identifier": "absolute-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value is idempotent"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "111e9ff91cbaa4538c6b44992fa7f9efa364df038dd54099f5d83ce50e0fb1d5",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.384,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "int32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "int32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 25.9547,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "int32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "1d2050aea44a098a6fada73dca4521b6e1ea4defe9a773b64f30d0c40b1281d9",
+      "property": {
+        "description": "int32 x + y and y + x produce equivalent elementwise outputs.",
+        "identifier": "integer-add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Integer elementwise addition commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "8c95fc161d3082f0ed14f0b74646eb5e6a65c4edcc7a2ea0e50971eb33e800e0",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.354,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float64",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float64",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 25.8992,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float64",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "71f51f56bfe65ef9c4baae4df2bb2f817757d4cb1b9323085436b968e1638e5f",
+      "property": {
+        "description": "float64 x + y and y + x produce equivalent outputs in an explicit JAX x64 process.",
+        "identifier": "float64-add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Float64 elementwise addition commutes"
+      },
+      "requires_x64": true,
+      "right_workload_sha256": "6ceaed4e1570d3a67a3c095b321eba15468a49231b0bb3a614224006bd3a244b",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.7429,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 28.2837,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "24d3573056dbcb1b7f43900cc7e637f4686178ddef724868202a41b3ccfe42d2",
+      "property": {
+        "description": "int32 x + float32 y and float32 y + int32 x use same-operation promotion semantics consistently.",
+        "identifier": "mixed-dtype-add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Mixed int32/float32 addition commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "ef147cdb1b20adfc40ba95329cb51c1fc281398adbd2c679b8700ebce107b6e2",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 5.7869,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 6.3522,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "3b9be5a5eed677d1a0ef35bc48bc09fa311a946c27afae6265eb4e0ff19e623c",
+      "property": {
+        "description": "Negating signed-zero inputs twice preserves both values and zero signs.",
+        "identifier": "signed-zero-negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Double negation preserves signed zero"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "dcfcaf0ebb9f5116ed2112d78e362333632872c88f89b7cbef91ac436fe2fc09",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.2268,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 24.0198,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "ca548c11295c89b846da74f8a04420a97277370ae05b32d241f2d2a5fc5c4557",
+      "property": {
+        "description": "abs(x) and abs(abs(x)) agree for NaN, infinities, and signed zero under the explicit policy.",
+        "identifier": "nonfinite-absolute-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value is idempotent for non-finite inputs"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "0f31b361ff73201b26adadd92d4e07b529148d2bc87e90a037405db576d34c58",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 23.7442,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 23.9273,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "bb4c89b76d496900c1482d397b2932d2da18c493e62986afefb8ee5bd14a43d9",
+      "property": {
+        "description": "abs(x) and abs(abs(x)) agree for finite values spanning normal and subnormal boundaries.",
+        "identifier": "extreme-finite-absolute-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value is idempotent for finite extremes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "800eb9b3a2344dc232252cb2ecc57457eed9dfe5e7164712537ff9202e3aca69",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.9434,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.6303,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "466e0af6c39444dd5f1ca0f358ee128eda9c0681dc4ae20b41be957381d7f872",
+      "property": {
+        "description": "maximum(x, y) and maximum(y, x) produce equivalent elementwise outputs.",
+        "identifier": "maximum-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise maximum commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "a5c703131c100c95d9f2c82378a4be8c06da93f39b2fc1c33bbc19f736bc2ab3",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.9159,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.1364,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "07ed83c6c0c56102340028fe94379c70950dd04e89b1f5996ccb1f2f9b234690",
+      "property": {
+        "description": "minimum(x, y) and minimum(y, x) produce equivalent elementwise outputs.",
+        "identifier": "minimum-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise minimum commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "f829fda60ea744690cd5c6cefeeac66096d691f4566da2979a75941f66d83031",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 26.4644,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 27.591,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "9b965d21c4f88ac78a0b859338aaf49a9b4ec36aa32cae9508edf024b73d3f1b",
+      "property": {
+        "description": "minimum(x, y) equals -maximum(-x, -y) elementwise.",
+        "identifier": "min-max-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Min-max duality relation"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "94e429d8b40483a0c6fb7507e833d2bfdaf3619d68412989477dd1d65175a6b7",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 24.0133,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 27.1154,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "0100713e82d4cfc30ca14340a77fa2dfa7451b755e0e81478f3e6339a4247429",
+      "property": {
+        "description": "square(x) and mul(x, x) produce equivalent elementwise outputs.",
+        "identifier": "square-as-multiplication-v1",
+        "relation": "outputs_equal",
+        "title": "Square is self-multiplication"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "13b7055a6374bf84c9c48831ca847a3f628434b0eee705d0a9d4520b7fc3333c",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 23.7237,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 24.0579,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "078609b7f2b0cec3eb218e9034d00d485dee7df4e9488c75cb18665fd743d8c9",
+      "property": {
+        "description": "square(x) and square(-x) produce equivalent elementwise outputs.",
+        "identifier": "square-negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Square of negation is identity with square"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "e0827ff5b81cf87f813bcdefd553e3a5cc17272913f8952f2a47133ebb8e406e",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 20.7474,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-cpu",
+          "device": "cpu:0",
+          "duration_ms": 21.3572,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.11.2",
+            "jax_enable_x64": "true",
+            "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+            "requested_platform": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
+        "requested_platform": "cpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "194780d9c33c6e6fa94e8810eb6b5c69a8bdee62a8604d56bcfe61d4f7daa15f",
+      "property": {
+        "description": "min(x) and -max(-x) produce equivalent reduction outputs.",
+        "identifier": "min-max-reduction-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Min-max global reduction duality"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "30db669f31f4a52df3a15db889477e03d505e4af06a7471a38d6b54fcd87ff29",
+      "seed": 0,
+      "triage": "pass"
+    }
+  ],
+  "requested_properties": [
+    "add-commutativity-v1",
+    "transpose-involution-v1",
+    "reshape-roundtrip-v1",
+    "matmul-transpose-v1",
+    "negation-involution-v1",
+    "subtraction-as-addition-v1",
+    "absolute-idempotence-v1",
+    "integer-add-commutativity-v1",
+    "float64-add-commutativity-v1",
+    "mixed-dtype-add-commutativity-v1",
+    "signed-zero-negation-involution-v1",
+    "nonfinite-absolute-idempotence-v1",
+    "extreme-finite-absolute-idempotence-v1",
+    "maximum-commutativity-v1",
+    "minimum-commutativity-v1",
+    "min-max-duality-v1",
+    "square-as-multiplication-v1",
+    "square-negation-involution-v1",
+    "min-max-reduction-duality-v1"
+  ],
+  "seed": 0,
+  "warning": "This corpus contains reviewed metamorphic relations, not newly discovered compiler findings. It does not establish correctness beyond the recorded executions."
+}

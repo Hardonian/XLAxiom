@@ -94,6 +94,8 @@ jobs:
               "${environment}/bin/xlaxiom" generate --synthetic --seed 7 --output original.json
               "${environment}/bin/xlaxiom" minimize --case original.json --output reduced.json
               "${environment}/bin/xlaxiom" reproduce --case reduced.json --output reproduction.json
+              "${environment}/bin/xlaxiom" report --case reduced.json --output report
+              test -f report/report.html
             )
           }
 

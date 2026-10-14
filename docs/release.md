@@ -55,11 +55,7 @@ token. Before the first publication, a maintainer must configure a PyPI pending
 publisher for `Hardonian/XLAxiom`, workflow `release.yml`, environment `pypi`, and must
 configure required reviewers on that GitHub environment.
 
-criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
-boundaries, not release blockers or implied claims; see [`support.md`](support.md).
 Version 0.6.0 met the source, wheel, CPU, Windows/Linux, and available CUDA hardware
-criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
-boundaries, not release blockers or implied claims; see [`support.md`](support.md).
 criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
 boundaries, not release blockers or implied claims; see [`support.md`](support.md).
 

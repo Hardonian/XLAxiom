@@ -1,0 +1,26 @@
+{
+  "environment_evidence_version": "1.0",
+  "host": {
+    "executable": "python",
+    "implementation": "CPython",
+    "machine": "x86_64",
+    "python": "3.12.15",
+    "release": "5.19.0-1022-gcp",
+    "system": "Linux"
+  },
+  "jax": {
+    "available": true,
+    "devices": [
+      "TPU_0(process=0,(0,0,0,0))",
+      "TPU_1(process=0,(1,0,0,0))",
+      "TPU_2(process=0,(0,1,0,0))",
+      "TPU_3(process=0,(1,1,0,0))"
+    ],
+    "jaxlib": "0.11.2",
+    "version": "0.11.2",
+    "x64_enabled": false
+  },
+  "label": "google-cloud-tpu-v5e-viperlite",
+  "redaction": "No host name, user name, paths, GPU UUIDs, or environment variables are stored.",
+  "sha256": "909a275858d358ef041389ffd3f6e224d7fa369a9fe54dce38038ccb8f04ce96"
+}
