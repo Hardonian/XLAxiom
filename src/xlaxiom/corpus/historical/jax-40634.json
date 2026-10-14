@@ -1,0 +1,11 @@
+{
+  "corpus_version": "1.0",
+  "category": "known-historical-regression",
+  "identifier": "jax-40634-large-float32-asinh-acosh-gradient",
+  "adapter": "jax-40634-asinh-acosh-large-float32-v1",
+  "issue": "https://github.com/jax-ml/jax/issues/40634",
+  "affected_version_evidence": "JAX 0.11.1, per the original issue environment.",
+  "fix_evidence": "Commit 86d3fe7 replaces the overflow-prone arcsinh JVP and adds a regression test.",
+  "status": "locally-reproduced-known-regression",
+  "warning": "This record names a trusted in-package adapter; it is not executable user-supplied Python."
+}

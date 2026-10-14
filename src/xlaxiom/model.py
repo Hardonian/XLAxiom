@@ -12,11 +12,14 @@ from typing import Any, Literal, cast
 import numpy as np
 from numpy.typing import NDArray
 
+# Backward-compatible registry views; new code should import operation metadata directly.
+from .operations import BINARY_OPS as BINARY_OPS
+from .operations import OPERATION_SPECS
+from .operations import OPS as OPS
+from .operations import UNARY_OPS as UNARY_OPS
+
 SCHEMA_VERSION = "1.0"
 DTYPES = {"float32", "float64", "int32", "int64"}
-UNARY_OPS = {"neg", "sin", "cos", "exp", "tanh", "abs"}
-BINARY_OPS = {"add", "sub", "mul", "div", "matmul"}
-OPS = UNARY_OPS | BINARY_OPS | {"reshape", "transpose", "sum", "mean"}
 
 
 class ValidationError(ValueError):
@@ -58,10 +61,6 @@ def _checked_product(shape: tuple[int, ...]) -> int:
     return result
 
 
-def _dtype_bytes(dtype: str) -> int:
-    return np.dtype(dtype).itemsize
-
-
 @dataclass(frozen=True)
 class InputSpec:
     name: str
@@ -97,7 +96,7 @@ class InputSpec:
         elements = _checked_product(self.shape)
         if (
             elements > limits.max_elements_per_tensor
-            or elements * _dtype_bytes(self.dtype) > limits.max_tensor_bytes
+            or elements * np.dtype(self.dtype).itemsize > limits.max_tensor_bytes
         ):
             raise ValidationError(f"input {self.name} exceeds element budget")
 
@@ -110,15 +109,15 @@ class Node:
     params: dict[str, Any] = field(default_factory=dict)
 
     def validate_basic(self) -> None:
-        if self.op not in OPS:
+        spec = OPERATION_SPECS.get(self.op)
+        if spec is None:
             raise ValidationError(f"operation {self.op!r} is not in the safe registry")
         if not self.output.isidentifier():
             raise ValidationError(f"invalid output name: {self.output!r}")
         if not isinstance(self.params, dict):
             raise ValidationError(f"{self.op} parameters must be an object")
-        expected = 1 if self.op in UNARY_OPS | {"reshape", "transpose", "sum", "mean"} else 2
-        if len(self.inputs) != expected:
-            raise ValidationError(f"{self.op} expects {expected} inputs")
+        if len(self.inputs) != spec.arity:
+            raise ValidationError(f"{self.op} expects {spec.arity} inputs")
 
 
 @dataclass(frozen=True)
@@ -153,15 +152,16 @@ class Workload:
         if not self.identifier or len(self.nodes) > 64 or len(self.inputs) > 16:
             raise ValidationError("identifier is missing or workload complexity exceeds limit")
         self.policy.validate()
-        known: dict[str, tuple[tuple[int, ...], int]] = {}
+        known: dict[str, tuple[tuple[int, ...], np.dtype[Any]]] = {}
         cumulative_bytes = 0
         for spec in self.inputs:
             spec.validate(limits)
             if spec.name in known:
                 raise ValidationError(f"duplicate value name {spec.name}")
-            size = _checked_product(spec.shape) * _dtype_bytes(spec.dtype)
+            dtype = np.dtype(spec.dtype)
+            size = _checked_product(spec.shape) * dtype.itemsize
             cumulative_bytes += size
-            known[spec.name] = (spec.shape, _dtype_bytes(spec.dtype))
+            known[spec.name] = (spec.shape, dtype)
         for node in self.nodes:
             node.validate_basic()
             if node.output in known or any(name not in known for name in node.inputs):
@@ -169,10 +169,10 @@ class Workload:
                     f"node {node.output} has duplicate or forward input reference"
                 )
             shape = infer_shape(node, {name: value[0] for name, value in known.items()})
+            dtype = infer_dtype(node, {name: value[1] for name, value in known.items()})
             if len(shape) > limits.max_rank:
                 raise ValidationError(f"intermediate {node.output} exceeds rank budget")
-            bytes_per_element = max(known[name][1] for name in node.inputs)
-            allocation = _checked_product(shape) * bytes_per_element
+            allocation = _checked_product(shape) * dtype.itemsize
             if (
                 _checked_product(shape) > limits.max_elements_per_tensor
                 or allocation > limits.max_tensor_bytes
@@ -187,7 +187,7 @@ class Workload:
             cumulative_bytes += allocation
             if cumulative_bytes > limits.max_cumulative_bytes:
                 raise ValidationError("workload exceeds cumulative allocation budget")
-            known[node.output] = (shape, bytes_per_element)
+            known[node.output] = (shape, dtype)
         if not self.outputs or any(name not in known for name in self.outputs):
             raise ValidationError("workload must name at least one defined output")
 
@@ -257,23 +257,23 @@ class Workload:
 
 def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...]:
     shapes = [known[name] for name in node.inputs]
+    spec = OPERATION_SPECS.get(node.op)
+    if spec is None:
+        raise ValidationError(f"shape inference unavailable for {node.op}")
     try:
-        if node.op in {"add", "sub", "mul", "div"}:
+        if spec.kind == "elementwise":
             _require_no_params(node)
-            return _broadcast_shape(*shapes)
-        if node.op == "matmul":
+            return shapes[0] if spec.arity == 1 else _broadcast_shape(*shapes)
+        if spec.kind == "matmul":
             _require_no_params(node)
             return _matmul_shape(shapes[0], shapes[1])
-        if node.op in UNARY_OPS:
-            _require_no_params(node)
-            return shapes[0]
-        if node.op == "reshape":
+        if spec.kind == "reshape":
             _require_parameter_keys(node, {"shape"}, required={"shape"})
             shape = _integer_sequence(node.params["shape"], "reshape shape")
             if _checked_product(shape) != _checked_product(shapes[0]) or any(v < 1 for v in shape):
                 raise ValidationError("reshape does not preserve element count")
             return shape
-        if node.op == "transpose":
+        if spec.kind == "transpose":
             _require_parameter_keys(node, {"axes"}, required=set())
             axes = (
                 tuple(reversed(range(len(shapes[0]))))
@@ -283,7 +283,7 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
             if sorted(axes) != list(range(len(shapes[0]))):
                 raise ValidationError("transpose axes are not a permutation")
             return tuple(shapes[0][axis] for axis in axes)
-        if node.op in {"sum", "mean"}:
+        if spec.kind == "reduction":
             _require_parameter_keys(node, {"axis", "keepdims"}, required=set())
             keepdims = node.params.get("keepdims", False)
             if not isinstance(keepdims, bool):
@@ -300,6 +300,36 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
     except (KeyError, TypeError, ValueError, OverflowError) as exc:
         raise ValidationError(f"invalid {node.op} parameters: {exc}") from exc
     raise ValidationError(f"shape inference unavailable for {node.op}")
+
+
+def infer_dtype(node: Node, known: dict[str, np.dtype[Any]]) -> np.dtype[Any]:
+    """Return the conservative NumPy result dtype for a validated operation.
+
+    The schema must account for the widest portable result, not just the input item
+    width.  For example, NumPy promotes an ``int32``/``float32`` add to ``float64``
+    and widens an ``int32`` reduction to ``int64``.  Tracking that result prevents a
+    workload from bypassing an allocation limit through dtype promotion.
+    """
+    spec = OPERATION_SPECS.get(node.op)
+    if spec is None:
+        raise ValidationError(f"dtype inference unavailable for {node.op}")
+    input_dtypes = tuple(known[name] for name in node.inputs)
+    if spec.kind in {"reshape", "transpose"}:
+        return input_dtypes[0]
+    if spec.kind == "matmul":
+        return np.dtype(np.result_type(*input_dtypes))
+    operation = getattr(np, spec.api_name)
+    probes = tuple(np.empty((), dtype=dtype) for dtype in input_dtypes)
+    try:
+        if spec.kind == "reduction":
+            result = operation(
+                probes[0], axis=None, keepdims=bool(node.params.get("keepdims", False))
+            )
+        else:
+            result = operation(*probes)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f"invalid {node.op} dtype combination: {exc}") from exc
+    return np.asarray(result).dtype
 
 
 def _require_parameter_keys(node: Node, allowed: set[str], required: set[str]) -> None:

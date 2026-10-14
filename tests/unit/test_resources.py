@@ -3,7 +3,7 @@ from importlib.resources import files
 
 import pytest
 
-from xlaxiom.model import InputSpec, Node, ValidationError, Workload
+from xlaxiom.model import InputSpec, Node, ResourceLimits, ValidationError, Workload
 
 
 def test_distribution_exposes_pep561_typing_marker() -> None:
@@ -35,3 +35,22 @@ def test_mismatched_matmul_is_rejected_symbolically() -> None:
     )
     with pytest.raises(ValidationError, match="contracting"):
         workload.validate()
+
+
+def test_dtype_promotion_cannot_bypass_the_intermediate_allocation_limit() -> None:
+    """``int32 + float32`` is a float64 NumPy result, not a four-byte tensor."""
+    workload = Workload(
+        "promoted-result",
+        0,
+        (InputSpec("integers", (1,), "int32"), InputSpec("floats", (1,), "float32")),
+        (Node("add", ("integers", "floats"), "out"),),
+        ("out",),
+    )
+    limits = ResourceLimits(
+        max_tensor_bytes=4,
+        max_intermediate_bytes=4,
+        max_cumulative_bytes=16,
+    )
+
+    with pytest.raises(ValidationError, match="intermediate out exceeds tensor allocation budget"):
+        workload.validate(limits)

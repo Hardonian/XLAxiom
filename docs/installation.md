@@ -25,7 +25,7 @@ uv pip install --python .venv/bin/python path/to/xlaxiom-<version>-py3-none-any.
 ```
 
 On Windows, use `.venv\\Scripts\\python.exe` and `.venv\\Scripts\\xlaxiom.exe`.
-The wheel includes the curated property corpus and the `py.typed` marker.
+The wheel includes the curated and historical evidence records plus the `py.typed` marker.
 
 ## Accelerator extras
 

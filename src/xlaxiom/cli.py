@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 from dataclasses import asdict
+from importlib.resources import files
 from pathlib import Path
 from statistics import median
 from time import perf_counter
@@ -1137,11 +1138,13 @@ def _load_known_historical() -> dict[str, Any] | None:
     """Admit a documented historical regression as known-historical."""
     from .corpus import CorpusEntry, build_entry
 
-    source = Path("corpus/historical/jax-40634.json")
-    if not source.is_file():
-        return None
+    source = "package:xlaxiom/corpus/historical/jax-40634.json"
     try:
-        payload = json.loads(source.read_text(encoding="utf-8"))
+        payload = json.loads(
+            files("xlaxiom")
+            .joinpath("corpus", "historical", "jax-40634.json")
+            .read_text(encoding="utf-8")
+        )
     except (OSError, json.JSONDecodeError):
         return None
     return build_entry(
@@ -1155,7 +1158,7 @@ def _load_known_historical() -> dict[str, Any] | None:
             ),
             references=(str(payload.get("issue", "")),),
             reproductions=0,
-            environment={"recorded_from": source.as_posix()},
+            environment={"recorded_from": source},
             caveats=("Known upstream behavior; never represented as a new defect.",),
         )
     )

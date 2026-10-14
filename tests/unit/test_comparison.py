@@ -78,6 +78,34 @@ def test_classification_is_unchanged_by_the_metric_redefinition() -> None:
     assert result.metrics[0].finite_mismatches == 1
 
 
+@pytest.mark.parametrize("dtype", (np.int32, np.int64))
+def test_signed_integer_minimum_compares_equal_without_absolute_value_overflow(dtype) -> None:
+    """The signed minimum has no positive counterpart in its native integer dtype."""
+    values = np.array([np.iinfo(dtype).min], dtype=dtype)
+
+    result = compare(_ok((values,)), _ok((values.copy(),)), ComparisonPolicy())
+
+    assert result.classification == Classification.PASS
+    assert result.metrics[0].finite_mismatches == 0
+    assert result.metrics[0].max_absolute_error == 0.0
+
+
+def test_int64_extreme_difference_is_not_accepted_after_subtraction_wraparound() -> None:
+    """A two-unit tolerance cannot hide the distance between the int64 extrema."""
+    observed = np.array([np.iinfo(np.int64).min], dtype=np.int64)
+    reference = np.array([np.iinfo(np.int64).max], dtype=np.int64)
+
+    result = compare(
+        _ok((observed,)),
+        _ok((reference,)),
+        ComparisonPolicy(rtol=0.0, atol=2.0),
+    )
+
+    assert result.classification == Classification.NUMERICAL_DISCREPANCY
+    assert result.metrics[0].finite_mismatches == 1
+    assert result.metrics[0].max_absolute_error > 1e18
+
+
 def test_benchmark_jax_rejects_a_zero_measurement_budget() -> None:
     """``measurements=0`` previously raised an opaque ZeroDivisionError from the mean
     calculation. The contract is a clear ValueError before any work starts."""

@@ -189,6 +189,40 @@ def test_property_corpus_cli_writes_replayable_evidence(tmp_path) -> None:
     assert evidence["counts"]["pass"] == 13
 
 
+def test_corpus_build_loads_packaged_historical_evidence_outside_the_checkout(tmp_path) -> None:
+    """The installed CLI must not depend on a source-checkout-relative corpus path."""
+    output = tmp_path / "findings.json"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "corpus",
+            "build",
+            "--backend",
+            "numpy",
+            "--cases",
+            "0",
+            "--output",
+            str(output),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    document = json.loads(output.read_text(encoding="utf-8"))
+    historical = next(
+        entry for entry in document["entries"] if entry["category"] == "known-historical"
+    )
+    assert historical["environment"]["recorded_from"] == (
+        "package:xlaxiom/corpus/historical/jax-40634.json"
+    )
+
+
 def test_property_campaign_and_coverage_cli(tmp_path) -> None:
     campaign = subprocess.run(
         [

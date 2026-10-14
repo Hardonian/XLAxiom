@@ -5,6 +5,7 @@ from __future__ import annotations
 import platform
 import time
 import traceback
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
@@ -12,7 +13,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from .model import Node, ValidationError, Workload, materialize_inputs
+from .model import ValidationError, Workload, materialize_inputs
+from .operations import OPERATION_SPECS, OperationSpec
 
 
 class ExecutionStatus(StrEnum):
@@ -22,6 +24,10 @@ class ExecutionStatus(StrEnum):
     COMPILATION_FAILURE = "compilation_failure"
     EXECUTION_FAILURE = "execution_failure"
     DEVICE_MISMATCH = "device_mismatch"
+
+
+class BackendAdapterError(ValueError):
+    """A NumPy-style execution namespace cannot run a validated workload."""
 
 
 @dataclass(frozen=True)
@@ -55,61 +61,208 @@ class ExecutionResult:
         }
 
 
-_OP_ATTR_MAP: dict[str, str] = {
-    "add": "add",
-    "sub": "subtract",
-    "mul": "multiply",
-    "div": "divide",
-    "matmul": "matmul",
-    "neg": "negative",
-    "sin": "sin",
-    "cos": "cos",
-    "exp": "exp",
-    "tanh": "tanh",
-    "abs": "abs",
-}
+@dataclass(frozen=True)
+class _PlannedNode:
+    """A node after names and JSON parameters have been resolved once."""
+
+    name: str
+    spec: OperationSpec
+    input_slots: tuple[int, ...]
+    reshape_shape: tuple[int, ...] | None = None
+    axes: tuple[int, ...] | None = None
+    axis: int | tuple[int, ...] | None = None
+    keepdims: bool = False
 
 
-def _apply(op: Node, values: dict[str, Any], api: Any) -> Any:
-    args = [values[name] for name in op.inputs]
-    func_name = _OP_ATTR_MAP.get(op.op)
-    if func_name is not None:
-        return getattr(api, func_name)(*args)
-    if op.op == "reshape":
-        return api.reshape(args[0], tuple(op.params["shape"]))
-    if op.op == "transpose":
-        axes = tuple(op.params.get("axes", tuple(reversed(range(args[0].ndim)))))
-        return api.transpose(args[0], axes=axes)
-    if op.op in {"sum", "mean"}:
-        axis_value = op.params.get("axis")
-        axis = tuple(axis_value) if isinstance(axis_value, list) else axis_value
-        return getattr(api, op.op)(args[0], axis=axis, keepdims=op.params.get("keepdims", False))
-    raise AssertionError(f"registry validation should have rejected {op.op}")
+@dataclass(frozen=True)
+class _BoundNode:
+    apply: Callable[[list[Any]], Any]
 
 
-def _evaluate(workload: Workload, initial: dict[str, Any], api: Any) -> tuple[Any, ...]:
-    values = dict(initial)
+@dataclass(frozen=True)
+class BoundExecutionPlan:
+    """A plan bound to one NumPy-compatible operation namespace."""
+
+    input_names: tuple[str, ...]
+    nodes: tuple[_BoundNode, ...]
+    output_slots: tuple[int, ...]
+
+    def evaluate(self, inputs: Sequence[Any]) -> tuple[Any, ...]:
+        if len(inputs) != len(self.input_names):
+            raise BackendAdapterError(
+                f"execution plan expects {len(self.input_names)} inputs, received {len(inputs)}"
+            )
+        values = list(inputs)
+        for node in self.nodes:
+            values.append(node.apply(values))
+        return tuple(values[slot] for slot in self.output_slots)
+
+
+@dataclass(frozen=True)
+class ExecutionPlan:
+    """Validated, backend-neutral graph execution plan.
+
+    A plan resolves graph names, parameter containers, and operation metadata once.
+    Binding it to an API namespace then resolves each operation once as well, leaving
+    the per-node hot path as positional list access and one direct call.
+    """
+
+    input_names: tuple[str, ...]
+    nodes: tuple[_PlannedNode, ...]
+    output_slots: tuple[int, ...]
+
+    def bind(self, api: Any) -> BoundExecutionPlan:
+        """Bind a validated plan to a NumPy-compatible operation namespace."""
+        functions: dict[str, Callable[..., Any]] = {}
+        for node in self.nodes:
+            if node.spec.api_name in functions:
+                continue
+            try:
+                candidate = getattr(api, node.spec.api_name, None)
+            except Exception as exc:
+                raise BackendAdapterError(
+                    f"backend adapter could not resolve {node.spec.api_name!r} "
+                    f"for operation {node.name!r}: {exc}"
+                ) from exc
+            if not callable(candidate):
+                raise BackendAdapterError(
+                    f"backend adapter does not provide {node.spec.api_name!r} "
+                    f"for operation {node.name!r}"
+                )
+            functions[node.spec.api_name] = candidate
+        return BoundExecutionPlan(
+            self.input_names,
+            tuple(_bind_node(node, functions[node.spec.api_name]) for node in self.nodes),
+            self.output_slots,
+        )
+
+
+def _bind_node(node: _PlannedNode, operation: Callable[..., Any]) -> _BoundNode:
+    """Create one direct executor after all symbolic data has been resolved."""
+    first = node.input_slots[0]
+    if node.spec.kind in {"elementwise", "matmul"}:
+        if node.spec.arity == 1:
+
+            def apply_unary(values: list[Any]) -> Any:
+                return operation(values[first])
+
+            return _BoundNode(apply_unary)
+        second = node.input_slots[1]
+
+        def apply_binary(values: list[Any]) -> Any:
+            return operation(values[first], values[second])
+
+        return _BoundNode(apply_binary)
+    if node.spec.kind == "reshape":
+        assert node.reshape_shape is not None
+        shape = node.reshape_shape
+
+        def apply_reshape(values: list[Any]) -> Any:
+            return operation(values[first], shape)
+
+        return _BoundNode(apply_reshape)
+    if node.spec.kind == "transpose":
+        axes = node.axes
+
+        def apply_transpose(values: list[Any]) -> Any:
+            value = values[first]
+            selected_axes = axes if axes is not None else tuple(reversed(range(value.ndim)))
+            return operation(value, axes=selected_axes)
+
+        return _BoundNode(apply_transpose)
+    if node.spec.kind == "reduction":
+        axis = node.axis
+        keepdims = node.keepdims
+
+        def apply_reduction(values: list[Any]) -> Any:
+            return operation(values[first], axis=axis, keepdims=keepdims)
+
+        return _BoundNode(apply_reduction)
+    raise AssertionError(f"registry validation should have rejected {node.spec!r}")
+
+
+def compile_execution_plan(workload: Workload) -> ExecutionPlan:
+    """Validate a workload once and turn it into a reusable positional plan."""
+    workload.validate()
+    slots = {spec.name: index for index, spec in enumerate(workload.inputs)}
+    nodes: list[_PlannedNode] = []
     for node in workload.nodes:
-        values[node.output] = _apply(node, values, api)
-    return tuple(values[name] for name in workload.outputs)
+        spec = OPERATION_SPECS[node.op]
+        input_slots = tuple(slots[name] for name in node.inputs)
+        axes: tuple[int, ...] | None = None
+        axis: int | tuple[int, ...] | None = None
+        reshape_shape: tuple[int, ...] | None = None
+        keepdims = False
+        if spec.kind == "reshape":
+            reshape_shape = tuple(node.params["shape"])
+        elif spec.kind == "transpose":
+            axes_value = node.params.get("axes")
+            axes = tuple(axes_value) if axes_value is not None else None
+        elif spec.kind == "reduction":
+            axis_value = node.params.get("axis")
+            axis = tuple(axis_value) if isinstance(axis_value, (list, tuple)) else axis_value
+            keepdims = bool(node.params.get("keepdims", False))
+        nodes.append(_PlannedNode(node.op, spec, input_slots, reshape_shape, axes, axis, keepdims))
+        slots[node.output] = len(slots)
+    return ExecutionPlan(
+        tuple(spec.name for spec in workload.inputs),
+        tuple(nodes),
+        tuple(slots[name] for name in workload.outputs),
+    )
+
+
+def _materialized_plan_inputs(plan: ExecutionPlan, workload: Workload) -> tuple[Any, ...]:
+    materialized = materialize_inputs(workload)
+    return tuple(materialized[name] for name in plan.input_names)
+
+
+def execute_array_api(
+    workload: Workload,
+    api: Any,
+    *,
+    backend: str = "array-api",
+    to_backend: Callable[[NDArray[np.generic]], Any] | None = None,
+    to_numpy: Callable[[Any], NDArray[np.generic]] = np.asarray,
+) -> ExecutionResult:
+    """Execute on a validated NumPy-compatible namespace without framework coupling.
+
+    ``to_backend`` and ``to_numpy`` let callers bridge namespaces that do not accept
+    NumPy inputs or cannot be converted through ``numpy.asarray``.  JAX callers should
+    use :func:`execute_jax` instead, because it additionally proves requested-device
+    placement and preserves the package's fail-closed accelerator contract.
+    """
+    started = time.perf_counter()
+    try:
+        plan = compile_execution_plan(workload)
+    except ValidationError as exc:
+        return ExecutionResult(backend, "eager", ExecutionStatus.INVALID_WORKLOAD, error=str(exc))
+    try:
+        bound = plan.bind(api)
+    except BackendAdapterError as exc:
+        return ExecutionResult(
+            backend, "eager", ExecutionStatus.UNSUPPORTED_BACKEND, error=str(exc)
+        )
+    try:
+        inputs = _materialized_plan_inputs(plan, workload)
+        if to_backend is not None:
+            inputs = tuple(to_backend(value) for value in inputs)
+        outputs = tuple(np.asarray(to_numpy(value)) for value in bound.evaluate(inputs))
+        return ExecutionResult(
+            backend,
+            "eager",
+            ExecutionStatus.OK,
+            outputs,
+            (time.perf_counter() - started) * 1000,
+        )
+    except Exception:
+        return ExecutionResult(
+            backend, "eager", ExecutionStatus.EXECUTION_FAILURE, error=traceback.format_exc()
+        )
 
 
 def execute_numpy(workload: Workload) -> ExecutionResult:
-    started = time.perf_counter()
-    try:
-        workload.validate()
-        outputs = tuple(
-            np.asarray(value) for value in _evaluate(workload, materialize_inputs(workload), np)
-        )
-        return ExecutionResult(
-            "numpy", "eager", ExecutionStatus.OK, outputs, (time.perf_counter() - started) * 1000
-        )
-    except ValidationError as exc:
-        return ExecutionResult("numpy", "eager", ExecutionStatus.INVALID_WORKLOAD, error=str(exc))
-    except Exception:
-        return ExecutionResult(
-            "numpy", "eager", ExecutionStatus.EXECUTION_FAILURE, error=traceback.format_exc()
-        )
+    """Execute through the built-in NumPy adapter."""
+    return execute_array_api(workload, np, backend="numpy")
 
 
 # JAX reports a CUDA device's ``platform`` attribute as ``gpu`` while its name string
@@ -146,7 +299,7 @@ def execute_jax(
     started = time.perf_counter()
     mode = "jit" if jit else "eager"
     try:
-        workload.validate()
+        plan = compile_execution_plan(workload)
     except ValidationError as exc:
         return ExecutionResult(
             f"jax-{requested_platform}", mode, ExecutionStatus.INVALID_WORKLOAD, error=str(exc)
@@ -195,13 +348,13 @@ def execute_jax(
             device = devices[device_index]
         else:
             device = devices[0]
-        initial = materialize_inputs(workload)
-        keys = tuple(spec.name for spec in workload.inputs)
+        bound = plan.bind(jnp)
+        initial = _materialized_plan_inputs(plan, workload)
 
         def program(*args: Any) -> tuple[Any, ...]:
-            return _evaluate(workload, dict(zip(keys, args, strict=True)), jnp)
+            return bound.evaluate(args)
 
-        placed = tuple(jax.device_put(initial[key], device) for key in keys)
+        placed = tuple(jax.device_put(value, device) for value in initial)
         fn = jax.jit(program) if jit else program
         with jax.default_device(device):
             values = fn(*placed)
@@ -256,7 +409,7 @@ def benchmark_jax(
     """
     if measurements < 1:
         raise ValueError("measurements must be at least 1")
-    workload.validate()
+    plan = compile_execution_plan(workload)
     try:
         import jax
         import jax.numpy as jnp
@@ -277,13 +430,13 @@ def benchmark_jax(
         device = devices[device_index]
     else:
         device = devices[0]
-    initial = materialize_inputs(workload)
-    keys = tuple(spec.name for spec in workload.inputs)
+    bound = plan.bind(jnp)
+    initial = _materialized_plan_inputs(plan, workload)
 
     def program(*args: Any) -> tuple[Any, ...]:
-        return _evaluate(workload, dict(zip(keys, args, strict=True)), jnp)
+        return bound.evaluate(args)
 
-    placed = tuple(jax.device_put(initial[key], device) for key in keys)
+    placed = tuple(jax.device_put(value, device) for value in initial)
     lowered = jax.jit(program).lower(*placed)
     started = time.perf_counter()
     compiled = lowered.compile()

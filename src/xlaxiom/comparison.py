@@ -108,6 +108,74 @@ def _max_relative_error(absolute: Any, expected: Any) -> float:
     return _max_or_zero(relative)
 
 
+def _integer_order(values: np.ndarray[Any, Any]) -> np.ndarray[Any, np.dtype[np.uint64]]:
+    """Map one integer dtype onto ascending ``uint64`` values without overflow."""
+    if values.dtype.kind == "u":
+        return values.astype(np.uint64, copy=False)
+    bits = values.dtype.itemsize * 8
+    unsigned_dtype = np.dtype(f"uint{bits}")
+    # Flipping the sign bit turns two's-complement signed order into unsigned order:
+    # INT_MIN becomes zero, zero becomes the sign bit, and INT_MAX becomes all ones.
+    sign_bit = np.array(1 << (bits - 1), dtype=unsigned_dtype)
+    return np.bitwise_xor(values.view(unsigned_dtype), sign_bit).astype(np.uint64)
+
+
+def _integer_absolute_difference(
+    actual: np.ndarray[Any, Any], expected: np.ndarray[Any, Any]
+) -> np.ndarray[Any, np.dtype[np.uint64]]:
+    """Return exact integer distances, including the ``int64`` extrema gap."""
+    actual_order = _integer_order(actual)
+    expected_order = _integer_order(expected)
+    actual_is_larger = actual >= expected
+    difference = np.empty(actual.shape, dtype=np.uint64)
+    np.subtract(actual_order, expected_order, out=difference, where=actual_is_larger)
+    np.subtract(expected_order, actual_order, out=difference, where=~actual_is_larger)
+    return difference
+
+
+def _integer_magnitude(values: np.ndarray[Any, Any]) -> np.ndarray[Any, np.dtype[np.uint64]]:
+    """Return exact absolute values without overflowing at a signed minimum."""
+    if values.dtype.kind == "u":
+        return values.astype(np.uint64, copy=False)
+    ordered = _integer_order(values)
+    zero = np.uint64(1 << (values.dtype.itemsize * 8 - 1))
+    nonnegative = values >= 0
+    magnitude = np.empty(values.shape, dtype=np.uint64)
+    np.subtract(ordered, zero, out=magnitude, where=nonnegative)
+    np.subtract(zero, ordered, out=magnitude, where=~nonnegative)
+    return magnitude
+
+
+def _integer_metrics(
+    actual: np.ndarray[Any, Any], expected: np.ndarray[Any, Any], policy: ComparisonPolicy
+) -> OutputMetrics:
+    """Compare integer outputs without native subtraction or absolute-value wrapping."""
+    absolute = _integer_absolute_difference(actual, expected)
+    magnitude = _integer_magnitude(expected)
+    if policy.atol == 0 and policy.rtol == 0:
+        close = actual == expected
+    else:
+        tolerance = policy.atol + policy.rtol * magnitude.astype(np.float64)
+        close = absolute.astype(np.float64) <= tolerance
+    relative = np.zeros(actual.shape, dtype=np.float64)
+    scalable = magnitude > 0
+    np.divide(
+        absolute.astype(np.float64),
+        magnitude.astype(np.float64),
+        out=relative,
+        where=scalable,
+    )
+    return OutputMetrics(
+        tuple(actual.shape),
+        str(actual.dtype),
+        _max_or_zero(absolute),
+        _max_or_zero(relative),
+        int((~close).sum()),
+        0,
+        0,
+    )
+
+
 def compare(
     left: ExecutionResult, right: ExecutionResult, policy: ComparisonPolicy
 ) -> ComparisonResult:
@@ -128,6 +196,9 @@ def compare(
             return ComparisonResult(Classification.SHAPE_MISMATCH, "output shapes differ", policy)
         if actual.dtype != expected.dtype:
             return ComparisonResult(Classification.DTYPE_MISMATCH, "output dtypes differ", policy)
+        if actual.dtype.kind in "iu":
+            metrics.append(_integer_metrics(actual, expected, policy))
+            continue
         finite = np.isfinite(actual) & np.isfinite(expected)
         delta = np.zeros(actual.shape, dtype=np.float64)
         np.subtract(actual, expected, out=delta, where=finite, casting="unsafe")

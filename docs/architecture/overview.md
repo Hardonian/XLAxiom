@@ -8,3 +8,15 @@ The backend boundary is deliberately narrow. CPU, CUDA, and TPU requests must ve
 genuine initialized device and real numerical operation before returning support; they
 otherwise return an unsupported-backend result without CPU fallback. Physical TPU
 execution remains unverified even though the fail-closed backend path is implemented.
+
+For integrations that expose a NumPy-compatible namespace, `execute_array_api` binds
+the same validated execution plan to that namespace and records a caller-supplied
+backend label. Adapters can provide explicit input/output conversion functions without
+adding a framework dependency to XLAxiom. JAX accelerator work should continue to use
+`execute_jax`, which additionally verifies the requested device placement.
+
+```python
+from xlaxiom import execute_array_api
+
+result = execute_array_api(workload, compatible_namespace, backend="my-array-backend")
+```

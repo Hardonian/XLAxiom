@@ -2,6 +2,16 @@
 
 ## 0.6.0 - 2026-10-13
 
+- Added a shared, positional execution plan that resolves graph names, parameters, and
+  operation lookups once per run; NumPy and JAX now share it, and a validated
+  NumPy-compatible adapter is available for interoperable eager execution.
+- Corrected integer comparisons at signed extrema. `int32`/`int64` minimum values no
+  longer overflow during equality checks, and the full `int64` range cannot wrap into
+  a false pass under a small tolerance.
+- Made validation account for NumPy dtype promotion when enforcing intermediate-memory
+  limits, so mixed-dtype operations cannot understate their allocation footprint.
+- Bundled the known JAX #40634 historical record and load it through package resources,
+  allowing `corpus build` to work from an installed wheel or any current directory.
 - Reframed the README and documentation entry points around complete user journeys;
   moved host-specific evidence detail out of the primary product surface.
 - Corrected the documented property-comparison workflow so it creates both evidence
