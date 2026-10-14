@@ -59,9 +59,10 @@ is deliberately narrower than software completion.
 | 50 | Documentation index | Implemented | Documentation index links operational evidence surfaces. |
 
 All fifty software priorities are implemented. Retained evidence closes the available
-Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, and independent-host milestones. TPU
-execution and macOS portability remain explicitly unverified external hardware/platform
-claims; the implemented paths fail closed and do not convert CPU execution into evidence.
+Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, independent-host, and Google Cloud TPU v5e
+milestones. macOS portability remains an unverified platform boundary until an Apple Silicon
+host supplies retained evidence; the implemented paths fail closed and do not convert CPU execution
+into evidence.
 
 Key completion artifacts:
 
@@ -70,3 +71,6 @@ Key completion artifacts:
 - [`metamorphic-crossbackend-hx370-v100-2026-10-13.json`](experiments/metamorphic-crossbackend-hx370-v100-2026-10-13.json)
 - [`metamorphic-crossdevice-v100-p40-2026-10-13.json`](experiments/metamorphic-crossdevice-v100-p40-2026-10-13.json)
 - [`epyc-cuda13-compatibility.json`](experiments/epyc-cuda13-compatibility.json)
+- [`tpu-vs-cpu-comparison.json`](../evidence/tpu/tpu-vs-cpu-comparison.json)
+- [`tpu-jit-evidence.json`](../evidence/tpu/tpu-jit-evidence.json)
+- [`tpu-campaign.json`](../evidence/tpu/tpu-campaign.json)

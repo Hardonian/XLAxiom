@@ -2,6 +2,9 @@
 
 ## 0.6.1 - 2026-10-14
 
+- Conducted physical Google Cloud TPU v5e (ViperLite, 4-chip `v5litepod-4`) execution and
+  retained concrete verification artifacts (`evidence/tpu/`) confirming 19/19 metamorphic property
+  equivalence against CPU JIT and passing a 25-case random campaign without CPU fallback.
 - Expanded the safe operation registry with eight new numerical operations: `maximum`,
   `minimum`, `sqrt`, `square`, `log`, `prod`, `max`, and `min`.
 - Expanded the curated metamorphic corpus from 13 to 19 declarative invariants, adding
