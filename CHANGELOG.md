@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.2 - 2026-10-14
 
 - Expanded the reviewed metamorphic corpus from 19 to 24 declarative invariants, adding
   multiplication commutativity (`mul-commutativity-v1`), minimum/maximum sum identity
