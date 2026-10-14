@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.1 - 2026-10-14
+
+- Expanded the safe operation registry with eight new numerical operations: `maximum`,
+  `minimum`, `sqrt`, `square`, `log`, `prod`, `max`, and `min`.
+- Added targeted operation generation in `GenerationConfig` via `preferred_op`, allowing
+  focused fuzzing and verification of specific operations across unary, binary, and reduction
+  classes.
+- Added comprehensive error distribution metrics to `OutputMetrics` in numerical comparison:
+  `mean_absolute_error` and `rms_error` (root-mean-square error) are now computed alongside
+  the worst-case maximum errors.
+- Enhanced `benchmark_jax` with detailed percentiles (`min_ms`, `max_ms`, `p90_ms`, `p95_ms`)
+  and attached the workload SHA-256 digest to benchmark artifacts for seamless baseline
+  comparisons.
+- Enriched `xlaxiom doctor` diagnostics with runtime NumPy version detection.
+- Added end-to-end integration coverage for the `benchmark` and `cache` CLI workflows.
+
 ## 0.6.0 - 2026-10-13
 
 - Added a shared, positional execution plan that resolves graph names, parameters, and

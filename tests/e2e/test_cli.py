@@ -342,3 +342,81 @@ def test_relational_artifact_cli_round_trip(tmp_path) -> None:
     assert created.returncode == 0, created.stderr
     assert executed.returncode == 0, executed.stderr
     assert json.loads(executed.stdout)["classification"] == "pass"
+
+
+def test_cli_benchmark_and_cache_workflow(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    bench1_path = tmp_path / "bench1.json"
+    bench2_path = tmp_path / "bench2.json"
+
+    gen = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "generate", "--seed", "1", "--output", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    b1 = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "benchmark",
+            "--case",
+            str(case_path),
+            "--measurements",
+            "3",
+            "--output",
+            str(bench1_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert b1.returncode == 0, b1.stderr
+    data1 = json.loads(bench1_path.read_text(encoding="utf-8"))
+    assert "median_ms" in data1
+    assert "workload_sha256" in data1
+
+    b2 = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "benchmark",
+            "--case",
+            str(case_path),
+            "--measurements",
+            "3",
+            "--output",
+            str(bench2_path),
+            "--baseline",
+            str(bench1_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert b2.returncode == 0, b2.stderr
+    out2 = json.loads(b2.stdout)
+    assert "baseline_assessment" in out2
+
+    cache_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "cache",
+            "--cold",
+            str(bench1_path),
+            "--warm",
+            str(bench2_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert cache_res.returncode == 0, cache_res.stderr
+    cache_data = json.loads(cache_res.stdout)
+    assert cache_data["comparable"] is True

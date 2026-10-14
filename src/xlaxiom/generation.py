@@ -8,6 +8,7 @@ from typing import Literal
 import numpy as np
 
 from .model import DTYPES, InputSpec, Node, Workload
+from .operations import BINARY_OPS, OPERATION_SPECS, REDUCTION_OPS, UNARY_OPS
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class GenerationConfig:
     input_mode: Literal[
         "random", "zeros", "ones", "finite_edges", "extreme_finite", "signed_zero", "nonfinite"
     ] = "finite_edges"
+    preferred_op: str | None = None
 
     def validate(self) -> None:
         if not 1 <= self.max_rank <= 6:
@@ -42,6 +44,8 @@ class GenerationConfig:
             raise ValueError(f"unsupported generation input mode {self.input_mode!r}")
         if self.dtype.startswith("int") and self.input_mode in {"signed_zero", "nonfinite"}:
             raise ValueError(f"input mode {self.input_mode!r} requires a floating-point dtype")
+        if self.preferred_op is not None and self.preferred_op not in OPERATION_SPECS:
+            raise ValueError(f"unsupported preferred operation {self.preferred_op!r}")
 
 
 def generate(config: GenerationConfig) -> Workload:
@@ -55,74 +59,98 @@ def generate(config: GenerationConfig) -> Workload:
     def input_spec(name: str, shape: tuple[int, ...]) -> InputSpec:
         return InputSpec(name, shape, config.dtype, config.input_mode)
 
-    if config.dtype.startswith("int"):
-        motif = config.seed % 2
-    else:
-        motif = config.seed % (6 if config.max_rank >= 3 else 4)
     inputs: tuple[InputSpec, ...]
     nodes: list[Node]
-    if motif == 0:
-        shape = (dim(), dim())
-        inputs = (input_spec("x", shape), input_spec("y", shape))
-        tail = "abs" if config.dtype.startswith("int") else "tanh"
-        nodes = [Node("add", ("x", "y"), "n0"), Node(tail, ("n0",), "out")]
-    elif motif == 1 and config.dtype.startswith("int"):
-        rows, inner, columns = dim(), dim(), dim()
-        inputs = (
-            input_spec("x", (rows, inner)),
-            input_spec("y", (inner, columns)),
-        )
-        nodes = [Node("matmul", ("x", "y"), "out")]
-    elif motif == 1:
-        rows, columns = dim(), dim()
-        inputs = (
-            input_spec("x", (rows, 1)),
-            input_spec("y", (1, columns)),
-        )
-        nodes = [
-            Node("add", ("x", "y"), "n0"),
-            Node("mean", ("n0",), "out", {"axis": [0], "keepdims": False}),
-        ]
-    elif motif == 2:
-        rows, inner, columns = dim(), dim(), dim()
-        inputs = (
-            input_spec("x", (rows, inner)),
-            input_spec("y", (inner, columns)),
-        )
-        nodes = [
-            Node("matmul", ("x", "y"), "n0"),
-            Node("transpose", ("n0",), "n1", {"axes": [1, 0]}),
-            Node("sum", ("n1",), "out", {"axis": [0], "keepdims": False}),
-        ]
-    elif motif == 3:
-        first, second = dim(), dim()
-        inputs = (input_spec("x", (first, second)),)
-        nodes = [
-            Node("reshape", ("x",), "n0", {"shape": [first * second]}),
-            Node("sin", ("n0",), "n1"),
-            Node("reshape", ("n1",), "out", {"shape": [first, second]}),
-        ]
-    elif motif == 4:
-        batch, rows, columns = dim(), dim(), dim()
-        inputs = (
-            input_spec("x", (batch, rows, 1)),
-            input_spec("y", (1, rows, columns)),
-        )
-        nodes = [
-            Node("add", ("x", "y"), "n0"),
-            Node("mean", ("n0",), "out", {"axis": [1], "keepdims": False}),
-        ]
+
+    if config.preferred_op is not None:
+        op = config.preferred_op
+        if op in UNARY_OPS:
+            shape = (dim(), dim())
+            inputs = (input_spec("x", shape),)
+            nodes = [Node(op, ("x",), "out")]
+        elif op == "matmul":
+            rows, inner, columns = dim(), dim(), dim()
+            inputs = (input_spec("x", (rows, inner)), input_spec("y", (inner, columns)))
+            nodes = [Node("matmul", ("x", "y"), "out")]
+        elif op in BINARY_OPS:
+            shape = (dim(), dim())
+            inputs = (input_spec("x", shape), input_spec("y", shape))
+            nodes = [Node(op, ("x", "y"), "out")]
+        elif op in REDUCTION_OPS:
+            shape = (dim(), dim())
+            inputs = (input_spec("x", shape),)
+            nodes = [Node(op, ("x",), "out", {"axis": [0], "keepdims": False})]
+        else:
+            shape = (dim(), dim())
+            inputs = (input_spec("x", shape),)
+            nodes = [Node("transpose", ("x",), "out", {"axes": [1, 0]})]
     else:
-        batch, rows, inner, columns = dim(), dim(), dim(), dim()
-        inputs = (
-            input_spec("x", (batch, rows, inner)),
-            input_spec("y", (1, inner, columns)),
-        )
-        nodes = [
-            Node("matmul", ("x", "y"), "n0"),
-            Node("transpose", ("n0",), "n1", {"axes": [0, 2, 1]}),
-            Node("sum", ("n1",), "out", {"axis": [1], "keepdims": False}),
-        ]
+        if config.dtype.startswith("int"):
+            motif = config.seed % 2
+        else:
+            motif = config.seed % (6 if config.max_rank >= 3 else 4)
+        if motif == 0:
+            shape = (dim(), dim())
+            inputs = (input_spec("x", shape), input_spec("y", shape))
+            tail = "abs" if config.dtype.startswith("int") else "tanh"
+            nodes = [Node("add", ("x", "y"), "n0"), Node(tail, ("n0",), "out")]
+        elif motif == 1 and config.dtype.startswith("int"):
+            rows, inner, columns = dim(), dim(), dim()
+            inputs = (
+                input_spec("x", (rows, inner)),
+                input_spec("y", (inner, columns)),
+            )
+            nodes = [Node("matmul", ("x", "y"), "out")]
+        elif motif == 1:
+            rows, columns = dim(), dim()
+            inputs = (
+                input_spec("x", (rows, 1)),
+                input_spec("y", (1, columns)),
+            )
+            nodes = [
+                Node("add", ("x", "y"), "n0"),
+                Node("mean", ("n0",), "out", {"axis": [0], "keepdims": False}),
+            ]
+        elif motif == 2:
+            rows, inner, columns = dim(), dim(), dim()
+            inputs = (
+                input_spec("x", (rows, inner)),
+                input_spec("y", (inner, columns)),
+            )
+            nodes = [
+                Node("matmul", ("x", "y"), "n0"),
+                Node("transpose", ("n0",), "n1", {"axes": [1, 0]}),
+                Node("sum", ("n1",), "out", {"axis": [0], "keepdims": False}),
+            ]
+        elif motif == 3:
+            first, second = dim(), dim()
+            inputs = (input_spec("x", (first, second)),)
+            nodes = [
+                Node("reshape", ("x",), "n0", {"shape": [first * second]}),
+                Node("sin", ("n0",), "n1"),
+                Node("reshape", ("n1",), "out", {"shape": [first, second]}),
+            ]
+        elif motif == 4:
+            batch, rows, columns = dim(), dim(), dim()
+            inputs = (
+                input_spec("x", (batch, rows, 1)),
+                input_spec("y", (1, rows, columns)),
+            )
+            nodes = [
+                Node("add", ("x", "y"), "n0"),
+                Node("mean", ("n0",), "out", {"axis": [1], "keepdims": False}),
+            ]
+        else:
+            batch, rows, inner, columns = dim(), dim(), dim(), dim()
+            inputs = (
+                input_spec("x", (batch, rows, inner)),
+                input_spec("y", (1, inner, columns)),
+            )
+            nodes = [
+                Node("matmul", ("x", "y"), "n0"),
+                Node("transpose", ("n0",), "n1", {"axes": [0, 2, 1]}),
+                Node("sum", ("n1",), "out", {"axis": [1], "keepdims": False}),
+            ]
     workload = Workload(
         identifier=f"generated-{config.seed}",
         seed=config.seed,

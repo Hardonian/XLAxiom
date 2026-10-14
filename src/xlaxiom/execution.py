@@ -461,6 +461,11 @@ def benchmark_jax(
         "median_ms": float(np.median(samples)),
         "mean_ms": mean,
         "stdev_ms": variance**0.5,
+        "min_ms": float(min(samples)),
+        "max_ms": float(max(samples)),
+        "p90_ms": float(np.percentile(samples, 90)),
+        "p95_ms": float(np.percentile(samples, 95)),
+        "workload_sha256": workload.digest(),
     }
 
 
@@ -468,6 +473,7 @@ def doctor() -> dict[str, Any]:
     info: dict[str, Any] = {
         "python": platform.python_version(),
         "platform": platform.platform(),
+        "numpy": np.__version__,
         "jax": None,
         "devices": [],
     }

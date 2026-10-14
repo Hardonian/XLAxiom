@@ -113,3 +113,28 @@ def test_benchmark_jax_rejects_a_zero_measurement_budget() -> None:
 
     with pytest.raises(ValueError, match="measurements must be at least 1"):
         benchmark_jax(synthetic_control(), measurements=0)
+
+
+def test_output_metrics_reports_mean_and_rms_error() -> None:
+    observed = np.array([1.0, 3.0, 5.0], dtype=np.float32)
+    reference = np.array([1.0, 1.0, 1.0], dtype=np.float32)
+    result = compare(_ok((observed,)), _ok((reference,)), ComparisonPolicy())
+    metric = result.metrics[0]
+    assert metric.max_absolute_error == pytest.approx(4.0)
+    assert metric.mean_absolute_error == pytest.approx(2.0)
+    assert metric.rms_error == pytest.approx(np.sqrt(20.0 / 3.0))
+
+
+def test_benchmark_jax_returns_rich_percentiles_and_identity() -> None:
+    from xlaxiom.generation import synthetic_control
+
+    record = benchmark_jax(synthetic_control(), measurements=3)
+    assert "workload_sha256" in record
+    assert "min_ms" in record
+    assert "max_ms" in record
+    assert "p90_ms" in record
+    assert "p95_ms" in record
+    min_ms = float(record["min_ms"])
+    median_ms = float(record["median_ms"])
+    max_ms = float(record["max_ms"])
+    assert min_ms <= median_ms <= max_ms

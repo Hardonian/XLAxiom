@@ -37,6 +37,8 @@ class OutputMetrics:
     finite_mismatches: int
     nonfinite_mismatches: int
     signed_zero_mismatches: int
+    mean_absolute_error: float = 0.0
+    rms_error: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -165,6 +167,9 @@ def _integer_metrics(
         out=relative,
         where=scalable,
     )
+    abs_f64 = absolute.astype(np.float64)
+    mean_abs_int = float(np.mean(abs_f64)) if abs_f64.size > 0 else 0.0
+    rms_int = float(np.sqrt(np.mean(np.square(abs_f64)))) if abs_f64.size > 0 else 0.0
     return OutputMetrics(
         tuple(actual.shape),
         str(actual.dtype),
@@ -173,6 +178,8 @@ def _integer_metrics(
         int((~close).sum()),
         0,
         0,
+        mean_abs_int,
+        rms_int,
     )
 
 
@@ -219,6 +226,9 @@ def compare(
             signed_zero = (
                 (actual == 0) & (expected == 0) & (np.signbit(actual) != np.signbit(expected))
             )
+        finite_abs = absolute[finite]
+        mean_abs = float(np.mean(finite_abs)) if finite_abs.size > 0 else 0.0
+        rms = float(np.sqrt(np.mean(np.square(finite_abs)))) if finite_abs.size > 0 else 0.0
         metrics.append(
             OutputMetrics(
                 tuple(actual.shape),
@@ -228,6 +238,8 @@ def compare(
                 finite_mismatches,
                 int(nonfinite.sum()),
                 int(signed_zero.sum()),
+                mean_abs,
+                rms,
             )
         )
     has_discrepancy = any(

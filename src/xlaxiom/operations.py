@@ -29,17 +29,25 @@ _OPERATION_SPECS = {
     "sub": OperationSpec(2, "subtract", "elementwise"),
     "mul": OperationSpec(2, "multiply", "elementwise"),
     "div": OperationSpec(2, "divide", "elementwise"),
+    "maximum": OperationSpec(2, "maximum", "elementwise"),
+    "minimum": OperationSpec(2, "minimum", "elementwise"),
     "matmul": OperationSpec(2, "matmul", "matmul"),
     "neg": OperationSpec(1, "negative", "elementwise"),
     "sin": OperationSpec(1, "sin", "elementwise"),
     "cos": OperationSpec(1, "cos", "elementwise"),
     "exp": OperationSpec(1, "exp", "elementwise"),
+    "log": OperationSpec(1, "log", "elementwise"),
+    "sqrt": OperationSpec(1, "sqrt", "elementwise"),
+    "square": OperationSpec(1, "square", "elementwise"),
     "tanh": OperationSpec(1, "tanh", "elementwise"),
     "abs": OperationSpec(1, "abs", "elementwise"),
     "reshape": OperationSpec(1, "reshape", "reshape"),
     "transpose": OperationSpec(1, "transpose", "transpose"),
     "sum": OperationSpec(1, "sum", "reduction"),
     "mean": OperationSpec(1, "mean", "reduction"),
+    "prod": OperationSpec(1, "prod", "reduction"),
+    "max": OperationSpec(1, "max", "reduction"),
+    "min": OperationSpec(1, "min", "reduction"),
 }
 
 # A read-only mapping is an important part of the closed-registry guarantee: workload
@@ -52,3 +60,6 @@ UNARY_OPS = frozenset(
 BINARY_OPS = frozenset(
     name for name, spec in OPERATION_SPECS.items() if spec.kind == "elementwise" and spec.arity == 2
 ) | {"matmul"}
+REDUCTION_OPS = frozenset(
+    name for name, spec in OPERATION_SPECS.items() if spec.kind == "reduction"
+)

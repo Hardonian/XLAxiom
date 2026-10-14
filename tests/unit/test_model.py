@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from xlaxiom.execution import ExecutionStatus, execute_jax, execute_numpy
 from xlaxiom.generation import GenerationConfig, generate
 from xlaxiom.model import ValidationError, Workload, _broadcast_shape, materialize_inputs
 
@@ -121,3 +122,31 @@ def test_rejects_malformed_operation_parameter_types_without_coercion() -> None:
 
     with pytest.raises(ValidationError, match="reshape shape must be an array of integers"):
         Workload.from_dict(data)
+
+
+def test_generator_preferred_op_support() -> None:
+    for op in ("maximum", "minimum", "sqrt", "square", "log", "prod", "max", "min", "matmul"):
+        workload = generate(GenerationConfig(seed=42, preferred_op=op))
+        workload.validate()
+        assert any(node.op == op for node in workload.nodes)
+
+    with pytest.raises(ValueError, match="unsupported preferred operation 'not_an_op'"):
+        generate(GenerationConfig(preferred_op="not_an_op"))
+
+
+def test_expanded_operations_execute_numpy_and_jax() -> None:
+    for op in ("maximum", "minimum", "sqrt", "square", "log", "prod", "max", "min"):
+        # For sqrt and log, use positive inputs
+        workload = generate(GenerationConfig(seed=10, preferred_op=op, input_mode="ones"))
+        np_res = execute_numpy(workload)
+        assert np_res.status == ExecutionStatus.OK
+        assert len(np_res.outputs) == 1
+        jax_res = execute_jax(workload, jit=True)
+        assert jax_res.status == ExecutionStatus.OK
+        assert len(jax_res.outputs) == 1
+        np.testing.assert_allclose(
+            np.asarray(np_res.outputs[0], dtype=np.float64),
+            np.asarray(jax_res.outputs[0], dtype=np.float64),
+            rtol=1e-5,
+            atol=1e-6,
+        )
