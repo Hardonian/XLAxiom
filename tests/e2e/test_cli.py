@@ -186,7 +186,7 @@ def test_property_corpus_cli_writes_replayable_evidence(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     evidence = json.loads(output.read_text(encoding="utf-8"))
     assert evidence["kind"] == "metamorphic-corpus-evidence"
-    assert evidence["counts"]["pass"] == 19
+    assert evidence["counts"]["pass"] == 24
 
 
 def test_corpus_build_loads_packaged_historical_evidence_outside_the_checkout(tmp_path) -> None:
@@ -257,9 +257,9 @@ def test_property_campaign_and_coverage_cli(tmp_path) -> None:
     )
 
     assert campaign.returncode == 0, campaign.stderr
-    assert json.loads(campaign.stdout)["counts"]["pass"] == 38
+    assert json.loads(campaign.stdout)["counts"]["pass"] == 48
     assert coverage.returncode == 0, coverage.stderr
-    assert json.loads(coverage_path.read_text(encoding="utf-8"))["property_count"] == 19
+    assert json.loads(coverage_path.read_text(encoding="utf-8"))["property_count"] == 24
 
 
 def test_property_evidence_compare_cli(tmp_path) -> None:
@@ -308,7 +308,7 @@ def test_property_evidence_compare_cli(tmp_path) -> None:
 
     assert compared.returncode == 0, compared.stderr
     evidence = json.loads(output_path.read_text(encoding="utf-8"))
-    assert evidence["summary"]["property_count"] == 19
+    assert evidence["summary"]["property_count"] == 24
     assert evidence["summary"]["equivalent"] is True
 
 

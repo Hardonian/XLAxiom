@@ -18,6 +18,8 @@ from .model import Node, Workload
 _SWAP_MAP: dict[str, str] = {
     "add": "sub",
     "sub": "add",
+    "mul": "add",
+    "div": "mul",
     "maximum": "minimum",
     "minimum": "maximum",
     "sin": "cos",

@@ -547,6 +547,140 @@ def _min_max_reduction_duality(seed: int) -> PropertyWorkloads:
     )
 
 
+def _mul_commutativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "mul-commutativity-v1",
+            seed,
+            inputs,
+            (Node("mul", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "mul-commutativity-v1",
+            seed,
+            inputs,
+            (Node("mul", ("y", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _min_max_addition_identity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "min-max-addition-identity-v1",
+            seed,
+            inputs,
+            (
+                Node("minimum", ("x", "y"), "min_val"),
+                Node("maximum", ("x", "y"), "max_val"),
+                Node("add", ("min_val", "max_val"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "min-max-addition-identity-v1",
+            seed,
+            inputs,
+            (Node("add", ("x", "y"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _square_absolute_identity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "square-absolute-identity-v1",
+            seed,
+            inputs,
+            (
+                Node("abs", ("x",), "abs_x"),
+                Node("square", ("abs_x",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "square-absolute-identity-v1",
+            seed,
+            inputs,
+            (Node("square", ("x",), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _negation_multiplication_duality(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "negation-multiplication-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "neg_x"),
+                Node("mul", ("neg_x", "y"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "negation-multiplication-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("mul", ("x", "y"), "xy"),
+                Node("neg", ("xy",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _sum_negation_duality(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "sum-negation-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "neg_x"),
+                Node("sum", ("neg_x",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "sum-negation-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("sum", ("x",), "sum_x"),
+                Node("neg", ("sum_x",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
 _BUILDERS: dict[str, PropertyBuilder] = {
     "add-commutativity-v1": _add_commutativity,
     "transpose-involution-v1": _transpose_involution,
@@ -567,6 +701,11 @@ _BUILDERS: dict[str, PropertyBuilder] = {
     "square-as-multiplication-v1": _square_as_multiplication,
     "square-negation-involution-v1": _square_negation_involution,
     "min-max-reduction-duality-v1": _min_max_reduction_duality,
+    "mul-commutativity-v1": _mul_commutativity,
+    "min-max-addition-identity-v1": _min_max_addition_identity,
+    "square-absolute-identity-v1": _square_absolute_identity,
+    "negation-multiplication-duality-v1": _negation_multiplication_duality,
+    "sum-negation-duality-v1": _sum_negation_duality,
 }
 
 

@@ -137,6 +137,11 @@ jobs:
           - square-as-multiplication-v1
           - square-negation-involution-v1
           - min-max-reduction-duality-v1
+          - mul-commutativity-v1
+          - min-max-addition-identity-v1
+          - square-absolute-identity-v1
+          - negation-multiplication-duality-v1
+          - sum-negation-duality-v1
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0

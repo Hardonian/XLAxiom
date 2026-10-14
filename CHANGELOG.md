@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- Expanded the reviewed metamorphic corpus from 19 to 24 declarative invariants, adding
+  multiplication commutativity (`mul-commutativity-v1`), minimum/maximum sum identity
+  (`min-max-addition-identity-v1`), square of absolute value identity (`square-absolute-identity-v1`),
+  multiplication negation duality (`negation-multiplication-duality-v1`), and global sum reduction
+  negation duality (`sum-negation-duality-v1`).
+- Evaluated mutation sharpness across all new metamorphic invariants (`xlaxiom property sharpness`),
+  confirming mutant kill rates between 67% and 100% against synthetic compiler fault hypotheses.
+- Modernized the single-file offline HTML evidence report (`build_html_report`) with:
+  - System-responsive Dark and Light mode themes with an interactive toggle button and persistent local storage preference.
+  - Interactive one-click reproduction command copy button with visual feedback.
+  - Collapsible raw JSON evidence inspector card for transparent auditability.
+- Added Darwin macOS memory sampling fallback using POSIX `resource.getrusage(RUSAGE_SELF)` and `ps -o rss=` in `safety.py`.
+- Hardened CI macOS diagnostics capture and stabilized micro-benchmark comparative timing thresholds against OS scheduling jitter.
+- Executed and retained a 10-case / 240-evaluation JAX JIT x64 campaign artifact (`experiments/metamorphic-campaign-v1-24props.json`) confirming 100% pass across all 24 metamorphic properties.
+
 ## 0.6.1 - 2026-10-14
 
 - Conducted physical Google Cloud TPU v5e (ViperLite, 4-chip `v5litepod-4`) execution and

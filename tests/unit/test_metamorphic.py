@@ -37,6 +37,11 @@ def test_curated_properties_exactly_match_the_reviewed_registry() -> None:
         "square-as-multiplication-v1",
         "square-negation-involution-v1",
         "min-max-reduction-duality-v1",
+        "mul-commutativity-v1",
+        "min-max-addition-identity-v1",
+        "square-absolute-identity-v1",
+        "negation-multiplication-duality-v1",
+        "sum-negation-duality-v1",
     ]
 
 

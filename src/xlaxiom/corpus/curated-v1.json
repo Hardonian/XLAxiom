@@ -127,6 +127,36 @@
       "title": "Min-max global reduction duality",
       "description": "min(x) and -max(-x) produce equivalent reduction outputs.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "mul-commutativity-v1",
+      "title": "Elementwise multiplication commutes",
+      "description": "x * y and y * x produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "min-max-addition-identity-v1",
+      "title": "Minimum and maximum sum identity",
+      "description": "minimum(x, y) + maximum(x, y) equals x + y elementwise.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "square-absolute-identity-v1",
+      "title": "Square of absolute value is square",
+      "description": "square(abs(x)) and square(x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "negation-multiplication-duality-v1",
+      "title": "Multiplication negation duality",
+      "description": "(-x) * y equals -(x * y) elementwise.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "sum-negation-duality-v1",
+      "title": "Global sum reduction negation duality",
+      "description": "sum(-x) equals -sum(x) for global reduction.",
+      "relation": "outputs_equal"
     }
   ]
 }

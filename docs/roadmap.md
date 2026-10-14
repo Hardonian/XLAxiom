@@ -17,7 +17,7 @@ is deliberately narrower than software completion.
 | 8 | Independent-environment metadata | Verified | Checksummed HX370 Windows and EPYC Linux records establish independent host identity. |
 | 9 | Corpus review/status | Implemented | Corpus validation reports composition and evidence status. |
 | 10 | Corpus regression CI | Implemented | Property shards and scheduled campaigns run in CI. |
-| 11 | More metamorphic relations | Implemented | Thirteen reviewed declarative relations. |
+| 11 | More metamorphic relations | Implemented | Twenty-four reviewed declarative relations spanning algebraic commutativity, min-max duality and addition identities, square-absolute duality, and reduction negation. |
 | 12 | Dtype-specific properties | Implemented | `float32`, `int32`, mixed `int32`/`float32`, and explicit-process `float64` relations. |
 | 13 | Non-finite and signed-zero cases | Implemented | Dedicated signed-zero and NaN/infinity relations use explicit input modes. |
 | 14 | Randomized property campaigns | Verified | The bounded command is covered and a retained 100-seed/1,300-comparison JAX x64 campaign passed. |

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import platform
 from datetime import UTC, datetime
 from pathlib import Path
@@ -175,6 +176,7 @@ def build_html_report(report: dict[str, Any]) -> str:
     np_str = html.escape(str(env.get("numpy", "")))
     interpretation = html.escape(str(report.get("interpretation", "")))
     confidence = html.escape(str(report.get("confidence", "")))
+    raw_json_str = json.dumps(report, indent=2)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -184,12 +186,30 @@ def build_html_report(report: dict[str, Any]) -> str:
   <title>XLAxiom Evidence Report</title>
   <style>
     :root {{
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
       --accent: #38bdf8;
+      --code-bg: #030712;
+      --code-border: #1e293b;
+      --btn-bg: #1f2937;
+      --btn-text: #f3f4f6;
+    }}
+    [data-theme="light"] {{
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-subtle: rgba(0, 0, 0, 0.04);
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --code-bg: #f1f5f9;
+      --code-border: #cbd5e1;
+      --btn-bg: #e2e8f0;
+      --btn-text: #0f172a;
     }}
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -197,8 +217,9 @@ def build_html_report(report: dict[str, Any]) -> str:
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 2rem;
+      padding: 2rem 1rem;
       line-height: 1.5;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }}
     .container {{
       max-width: 860px;
@@ -211,6 +232,8 @@ def build_html_report(report: dict[str, Any]) -> str:
       border-bottom: 1px solid var(--border);
       padding-bottom: 1.5rem;
       margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
     }}
     .title-group h1 {{
       margin: 0;
@@ -222,6 +245,27 @@ def build_html_report(report: dict[str, Any]) -> str:
       color: var(--text-muted);
       font-size: 0.875rem;
       margin-top: 0.25rem;
+    }}
+    .header-controls {{
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }}
+    .theme-toggle {{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }}
+    .theme-toggle:hover {{
+      border-color: var(--accent);
     }}
     .badge {{
       display: inline-block;
@@ -240,14 +284,35 @@ def build_html_report(report: dict[str, Any]) -> str:
       border-radius: 0.75rem;
       padding: 1.25rem 1.5rem;
       margin-bottom: 1.25rem;
+      transition: border-color 0.2s ease;
+    }}
+    .card-header-row {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
     }}
     .card h2 {{
-      margin-top: 0;
+      margin: 0;
       font-size: 1.1rem;
       font-weight: 600;
       color: var(--accent);
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.5rem;
+    }}
+    .copy-btn {{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }}
+    .copy-btn:hover {{
+      border-color: var(--accent);
+      color: var(--accent);
     }}
     .grid-2 {{
       display: grid;
@@ -255,10 +320,10 @@ def build_html_report(report: dict[str, Any]) -> str:
       gap: 1rem;
     }}
     .metric-item {{
-      background: rgba(15, 23, 42, 0.6);
+      background: var(--btn-bg);
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
     }}
     .metric-label {{
       font-size: 0.75rem;
@@ -282,14 +347,14 @@ def build_html_report(report: dict[str, Any]) -> str:
       height: auto;
     }}
     pre.code-box {{
-      background: #020617;
-      border: 1px solid var(--border);
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
       border-radius: 0.5rem;
       padding: 1rem;
       overflow-x: auto;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.875rem;
-      color: #38bdf8;
+      color: var(--accent);
     }}
     .disclaimer {{
       border-left: 4px solid #f59e0b;
@@ -305,6 +370,12 @@ def build_html_report(report: dict[str, Any]) -> str:
       color: var(--text-muted);
       font-size: 0.875rem;
     }}
+    details.card summary {{
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent);
+      user-select: none;
+    }}
   </style>
 </head>
 <body>
@@ -314,11 +385,19 @@ def build_html_report(report: dict[str, Any]) -> str:
         <h1>XLAxiom Evidence Report</h1>
         <div class="subtitle">Generated {timestamp} &bull; Engine v{version}</div>
       </div>
-      <div class="badge">{html.escape(badge_label)}</div>
+      <div class="header-controls">
+        <button id="theme-btn" class="theme-toggle"
+                onclick="toggleTheme()" aria-label="Toggle theme">
+          <span id="theme-icon">☀️ Light</span>
+        </button>
+        <div class="badge">{html.escape(badge_label)}</div>
+      </div>
     </div>
 
     <div class="card">
-      <h2>Numerical Metrics</h2>
+      <div class="card-header-row">
+        <h2>Numerical Metrics</h2>
+      </div>
       <div class="grid-2">
         <div class="metric-item">
           <div class="metric-label">Max Absolute Difference</div>
@@ -352,12 +431,17 @@ def build_html_report(report: dict[str, Any]) -> str:
     </div>
 
     <div class="card">
-      <h2>Reproduction Command</h2>
-      <pre class="code-box"><code>{html.escape(repro)}</code></pre>
+      <div class="card-header-row">
+        <h2>Reproduction Command</h2>
+        <button id="copy-btn" class="copy-btn" onclick="copyRepro()">Copy</button>
+      </div>
+      <pre class="code-box"><code id="repro-code">{html.escape(repro)}</code></pre>
     </div>
 
     <div class="card">
-      <h2>Environment &amp; Provenance</h2>
+      <div class="card-header-row">
+        <h2>Environment &amp; Provenance</h2>
+      </div>
       <div class="grid-2">
         <div class="metric-item">
           <div class="metric-label">Platform</div>
@@ -371,7 +455,9 @@ def build_html_report(report: dict[str, Any]) -> str:
     </div>
 
     <div class="card">
-      <h2>Governance &amp; Interpretation</h2>
+      <div class="card-header-row">
+        <h2>Governance &amp; Interpretation</h2>
+      </div>
       <p style="margin-top: 0;">{interpretation}</p>
       <div class="disclaimer">
         <strong>Strict non-filing notice:</strong>
@@ -382,7 +468,42 @@ def build_html_report(report: dict[str, Any]) -> str:
         {lim_items}
       </ul>
     </div>
+
+    <details class="card">
+      <summary>Raw Evidence JSON</summary>
+      <pre class="code-box" style="margin-top: 1rem; max-height: 380px; overflow-y: auto;">
+<code>{html.escape(raw_json_str)}</code></pre>
+    </details>
   </div>
+
+  <script>
+    function toggleTheme() {{
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = next === 'dark' ? '☀️ Light' : '🌙 Dark';
+      try {{ localStorage.setItem('xlaxiom_theme', next); }} catch(e) {{}}
+    }}
+    try {{
+      const saved = localStorage.getItem('xlaxiom_theme');
+      if (saved) {{
+        document.documentElement.setAttribute('data-theme', saved);
+        const icon = document.getElementById('theme-icon');
+        if (icon) icon.textContent = saved === 'dark' ? '☀️ Light' : '🌙 Dark';
+      }}
+    }} catch(e) {{}}
+    function copyRepro() {{
+      const code = document.getElementById('repro-code').innerText;
+      if (navigator.clipboard) {{
+        navigator.clipboard.writeText(code).then(() => {{
+          const btn = document.getElementById('copy-btn');
+          btn.textContent = 'Copied!';
+          setTimeout(() => {{ btn.textContent = 'Copy'; }}, 2000);
+        }});
+      }}
+    }}
+  </script>
 </body>
 </html>
 """
