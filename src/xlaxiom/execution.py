@@ -265,6 +265,136 @@ def execute_numpy(workload: Workload) -> ExecutionResult:
     return execute_array_api(workload, np, backend="numpy")
 
 
+def execute_torch(workload: Workload, device: str = "cpu") -> ExecutionResult:
+    """Execute through the optional PyTorch adapter for cross-framework differential testing.
+
+    Fail-closed: if PyTorch or the requested device is unavailable, returns UNSUPPORTED_BACKEND.
+    """
+    started = time.perf_counter()
+    try:
+        plan = compile_execution_plan(workload)
+    except ValidationError as exc:
+        return ExecutionResult("torch", "eager", ExecutionStatus.INVALID_WORKLOAD, error=str(exc))
+
+    try:
+        import torch
+    except ImportError as exc:
+        return ExecutionResult(
+            "torch",
+            "eager",
+            ExecutionStatus.UNSUPPORTED_BACKEND,
+            error=f"torch is not installed: {exc}",
+        )
+
+    if device.startswith("cuda") and not torch.cuda.is_available():
+        return ExecutionResult(
+            "torch",
+            "eager",
+            ExecutionStatus.UNSUPPORTED_BACKEND,
+            error=f"torch CUDA device {device!r} is unavailable",
+        )
+
+    class _TorchNamespace:
+        add = staticmethod(torch.add)
+        subtract = staticmethod(torch.subtract)
+        multiply = staticmethod(torch.multiply)
+        divide = staticmethod(torch.divide)
+        maximum = staticmethod(torch.maximum)
+        minimum = staticmethod(torch.minimum)
+        matmul = staticmethod(torch.matmul)
+        negative = staticmethod(torch.negative)
+        sin = staticmethod(torch.sin)
+        cos = staticmethod(torch.cos)
+        exp = staticmethod(torch.exp)
+        log = staticmethod(torch.log)
+        sqrt = staticmethod(torch.sqrt)
+        square = staticmethod(torch.square)
+        tanh = staticmethod(torch.tanh)
+        abs = staticmethod(torch.abs)
+        reshape = staticmethod(torch.reshape)
+
+        @staticmethod
+        def transpose(tensor: Any, axes: tuple[int, ...] | None = None) -> Any:
+            if axes is None:
+                return (
+                    torch.transpose(tensor, 0, 1)
+                    if tensor.ndim == 2
+                    else torch.permute(tensor, tuple(reversed(range(tensor.ndim))))
+                )
+            return torch.permute(tensor, axes)
+
+        @staticmethod
+        def sum(
+            tensor: Any, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+        ) -> Any:
+            if axis is None:
+                return torch.sum(tensor)
+            return torch.sum(tensor, dim=axis, keepdim=keepdims)
+
+        @staticmethod
+        def mean(
+            tensor: Any, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+        ) -> Any:
+            if axis is None:
+                return torch.mean(tensor)
+            return torch.mean(tensor, dim=axis, keepdim=keepdims)
+
+        @staticmethod
+        def prod(
+            tensor: Any, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+        ) -> Any:
+            if axis is None:
+                return torch.prod(tensor)
+            if isinstance(axis, int):
+                return torch.prod(tensor, dim=axis, keepdim=keepdims)
+            res = tensor
+            for d in sorted(axis, reverse=True):
+                res = torch.prod(res, dim=d, keepdim=keepdims)
+            return res
+
+        @staticmethod
+        def max(
+            tensor: Any, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+        ) -> Any:
+            if axis is None:
+                return torch.amax(tensor)
+            return torch.amax(tensor, dim=axis, keepdim=keepdims)
+
+        @staticmethod
+        def min(
+            tensor: Any, axis: int | tuple[int, ...] | None = None, keepdims: bool = False
+        ) -> Any:
+            if axis is None:
+                return torch.amin(tensor)
+            return torch.amin(tensor, dim=axis, keepdim=keepdims)
+
+    try:
+        bound = plan.bind(_TorchNamespace)
+    except BackendAdapterError as exc:
+        return ExecutionResult(
+            "torch", "eager", ExecutionStatus.UNSUPPORTED_BACKEND, error=str(exc)
+        )
+
+    try:
+        raw_inputs = _materialized_plan_inputs(plan, workload)
+        torch_device = torch.device(device)
+        inputs = tuple(torch.from_numpy(np.asarray(val)).to(torch_device) for val in raw_inputs)
+        raw_outputs = bound.evaluate(inputs)
+        outputs = tuple(np.asarray(val.detach().cpu().numpy()) for val in raw_outputs)
+        return ExecutionResult(
+            "torch",
+            "eager",
+            ExecutionStatus.OK,
+            outputs,
+            (time.perf_counter() - started) * 1000,
+            device=str(device),
+        )
+    except Exception:
+        return ExecutionResult(
+            "torch", "eager", ExecutionStatus.EXECUTION_FAILURE, error=traceback.format_exc()
+        )
+
+
 # JAX reports a CUDA device's ``platform`` attribute as ``gpu`` while its name string
 # is ``cuda:N``. Availability must match the name prefix; placement must match the
 # platform attribute. Mixing the two makes a working GPU look absent or misplaced.

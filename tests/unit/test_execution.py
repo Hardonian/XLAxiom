@@ -95,3 +95,17 @@ def test_array_api_preserves_invalid_workload_status_before_accessing_backend() 
     assert result.status == ExecutionStatus.INVALID_WORKLOAD
     assert result.backend == "unreachable-api"
     assert result.error is not None
+
+
+def test_execute_torch_fails_closed_when_uninstalled() -> None:
+    from xlaxiom.execution import execute_torch
+
+    workload = _workload()
+    result = execute_torch(workload)
+    # PyTorch is not installed in the default test environment,
+    # so it must fail closed and return UNSUPPORTED_BACKEND
+    assert result.status == ExecutionStatus.UNSUPPORTED_BACKEND
+    assert result.backend == "torch"
+    assert result.mode == "eager"
+    assert result.error is not None
+    assert "torch" in result.error.lower()

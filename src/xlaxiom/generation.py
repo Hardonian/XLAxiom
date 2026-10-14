@@ -235,4 +235,3 @@ def generate_boundary_suite(workload: Workload) -> list[Workload]:
         variant.validate()
         variants.append(variant)
     return variants
-

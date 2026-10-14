@@ -4,6 +4,20 @@
 
 - Expanded the safe operation registry with eight new numerical operations: `maximum`,
   `minimum`, `sqrt`, `square`, `log`, `prod`, `max`, and `min`.
+- Expanded the curated metamorphic corpus from 13 to 19 declarative invariants, adding
+  maximum/minimum commutativity, min-max duality, square as self-multiplication, square
+  negation involution, and min-max global reduction duality.
+- Implemented offline single-file interactive HTML evidence reporting (`build_html_report`,
+  `write_html_report`, `command_report`) featuring responsive metric cards, inline SVG
+  tolerance gauges, and environment provenance tables.
+- Added a full mutation testing and metamorphic property sharpness engine
+  (`xlaxiom property sharpness`, `src/xlaxiom/mutation.py`) that systematically injects
+  compiler fault hypotheses to evaluate test suite sensitivity.
+- Added deterministic boundary suite synthesis (`generate_boundary_suite` in `generation.py`)
+  probing workloads across zeros, ones, finite edges, extreme subnormals, signed zeros,
+  and non-finite values.
+- Added an optional fail-closed PyTorch differential execution adapter (`execute_torch` in
+  `execution.py`) for cross-framework verification against Torch / Inductor.
 - Added targeted operation generation in `GenerationConfig` via `preferred_op`, allowing
   focused fuzzing and verification of specific operations across unary, binary, and reduction
   classes.
@@ -13,6 +27,8 @@
 - Enhanced `benchmark_jax` with detailed percentiles (`min_ms`, `max_ms`, `p90_ms`, `p95_ms`)
   and attached the workload SHA-256 digest to benchmark artifacts for seamless baseline
   comparisons.
+- Added Apple Silicon (Darwin `macos-latest`) test verification job in the GitHub Actions CI matrix
+  with retained diagnostic artifacts (`doctor.json`, `property-coverage.json`).
 - Enriched `xlaxiom doctor` diagnostics with runtime NumPy version detection.
 - Added end-to-end integration coverage for the `benchmark` and `cache` CLI workflows.
 

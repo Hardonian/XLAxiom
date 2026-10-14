@@ -136,7 +136,11 @@ def build_html_report(report: dict[str, Any]) -> str:
     raw_metrics = comp.get("metrics", [])
     first_metric: dict[str, Any] = (
         raw_metrics[0]
-        if isinstance(raw_metrics, (list, tuple)) and len(raw_metrics) > 0 and isinstance(raw_metrics[0], dict)
+        if (
+            isinstance(raw_metrics, (list, tuple))
+            and len(raw_metrics) > 0
+            and isinstance(raw_metrics[0], dict)
+        )
         else (raw_metrics if isinstance(raw_metrics, dict) else {})
     )
     policy = comp.get("policy", {})
@@ -165,6 +169,13 @@ def build_html_report(report: dict[str, Any]) -> str:
     bar_color = "#10b981" if diff_val <= tol_val else "#ef4444"
 
     lim_items = "".join(f"<li>{html.escape(item)}</li>" for item in limitations)
+    timestamp = html.escape(str(report.get("timestamp_utc", "")))
+    version = html.escape(str(report.get("report_version", "1.0")))
+    platform_str = html.escape(str(env.get("platform", "unknown")))
+    py_str = html.escape(str(env.get("python", "")))
+    np_str = html.escape(str(env.get("numpy", "")))
+    interpretation = html.escape(str(report.get("interpretation", "")))
+    confidence = html.escape(str(report.get("confidence", "")))
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -182,7 +193,8 @@ def build_html_report(report: dict[str, Any]) -> str:
       --accent: #38bdf8;
     }}
     body {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
@@ -301,7 +313,7 @@ def build_html_report(report: dict[str, Any]) -> str:
     <div class="header">
       <div class="title-group">
         <h1>XLAxiom Evidence Report</h1>
-        <div class="subtitle">Generated {html.escape(report.get("timestamp_utc", ""))} &bull; Engine v{html.escape(report.get("report_version", "1.0"))}</div>
+        <div class="subtitle">Generated {timestamp} &bull; Engine v{version}</div>
       </div>
       <div class="badge">{html.escape(badge_label)}</div>
     </div>
@@ -330,9 +342,11 @@ def build_html_report(report: dict[str, Any]) -> str:
         <svg viewBox="0 0 400 65" class="gauge-svg" xmlns="http://www.w3.org/2000/svg">
           <rect x="20" y="20" width="360" height="16" rx="8" fill="#334155" />
           <rect x="20" y="20" width="{bar_width}" height="16" rx="8" fill="{bar_color}" />
-          <line x1="200" y1="12" x2="200" y2="44" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3 3" />
+          <line x1="200" y1="12" x2="200" y2="44" stroke="#f8fafc"
+                stroke-width="2" stroke-dasharray="3 3" />
           <text x="20" y="54" font-size="10" fill="#94a3b8">0.0</text>
-          <text x="200" y="54" font-size="10" fill="#f8fafc" text-anchor="middle">atol ({tol_val:.1e})</text>
+          <text x="200" y="54" font-size="10" fill="#f8fafc"
+                text-anchor="middle">atol ({tol_val:.1e})</text>
           <text x="380" y="54" font-size="10" fill="#94a3b8" text-anchor="end">2x atol</text>
         </svg>
       </div>
@@ -348,20 +362,21 @@ def build_html_report(report: dict[str, Any]) -> str:
       <div class="grid-2">
         <div class="metric-item">
           <div class="metric-label">Platform</div>
-          <div class="metric-value" style="font-size: 0.95rem;">{html.escape(str(env.get("platform", "unknown")))}</div>
+          <div class="metric-value" style="font-size: 0.95rem;">{platform_str}</div>
         </div>
         <div class="metric-item">
           <div class="metric-label">Python &amp; NumPy</div>
-          <div class="metric-value" style="font-size: 0.95rem;">Py {html.escape(str(env.get("python", "")))}, NP {html.escape(str(env.get("numpy", "")))}</div>
+          <div class="metric-value" style="font-size: 0.95rem;">Py {py_str}, NP {np_str}</div>
         </div>
       </div>
     </div>
 
     <div class="card">
       <h2>Governance &amp; Interpretation</h2>
-      <p style="margin-top: 0;">{html.escape(str(report.get("interpretation", "")))}</p>
+      <p style="margin-top: 0;">{interpretation}</p>
       <div class="disclaimer">
-        <strong>Strict non-filing notice:</strong> No upstream issue is filed automatically. {html.escape(str(report.get("confidence", "")))}
+        <strong>Strict non-filing notice:</strong>
+        No upstream issue is filed automatically. {confidence}
       </div>
       <h3 style="font-size: 0.95rem; margin-top: 1rem; color: var(--text-muted);">Limitations</h3>
       <ul class="limitations">

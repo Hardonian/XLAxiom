@@ -133,7 +133,9 @@ def generate_workload_mutants(workload: Workload) -> list[Mutant]:
                     Mutant(
                         original_workload_id=base_id,
                         mutator_name="OperandReversalMutator",
-                        description=f"Reversed node {idx} operands from {node.inputs} to {reversed_inputs}",
+                        description=(
+                            f"Reversed node {idx} operands from {node.inputs} to {reversed_inputs}"
+                        ),
                         workload=mutated_workload,
                     )
                 )

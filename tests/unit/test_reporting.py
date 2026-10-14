@@ -107,4 +107,3 @@ def test_write_report_creates_json_and_markdown(tmp_path) -> None:
     assert "NUMERICAL DISCREPANCY" in html_text
     assert f"xlaxiom reproduce --case {case_path}" in html_text
     assert "Strict non-filing notice" in html_text
-

@@ -69,6 +69,7 @@ from .metamorphic import (
 )
 from .minimization import minimize
 from .model import ComparisonPolicy
+from .mutation import evaluate_property_sharpness
 from .outcomes import compare_outcomes
 from .performance import PerformanceArtifactError, compare_benchmarks, compare_compilation_cache
 from .pipeline import FaultInjection, run_backend, run_comparison
@@ -508,6 +509,18 @@ def command_property_coverage(args: argparse.Namespace) -> int:
     if args.output:
         save_json(args.output, result)
     _emit(result)
+    return 0
+
+
+def command_property_sharpness(args: argparse.Namespace) -> int:
+    try:
+        report = evaluate_property_sharpness(args.property, args.seed, args.backend)
+    except (ValueError, MetamorphicPropertyError) as exc:
+        raise SystemExit(f"cannot evaluate property sharpness: {exc}") from exc
+    record = report.to_dict()
+    if args.output:
+        save_json(args.output, record)
+    _emit(record)
     return 0
 
 
@@ -1501,6 +1514,20 @@ def parser() -> argparse.ArgumentParser:
     property_coverage_parser.add_argument("--seed", type=int, default=0)
     property_coverage_parser.add_argument("--output", help="JSON evidence path")
     property_coverage_parser.set_defaults(func=command_property_coverage)
+    property_sharpness_parser = property_commands.add_parser(
+        "sharpness", help="evaluate mutant kill rate and fault-detection power of a property"
+    )
+    property_sharpness_parser.add_argument(
+        "--property",
+        required=True,
+        choices=tuple(
+            property_definition.identifier for property_definition in curated_properties()
+        ),
+    )
+    property_sharpness_parser.add_argument("--seed", type=int, default=42)
+    property_sharpness_parser.add_argument("--backend", default="numpy")
+    property_sharpness_parser.add_argument("--output", help="JSON evidence path")
+    property_sharpness_parser.set_defaults(func=command_property_sharpness)
     relation_parser = commands.add_parser(
         "relation", help="create, minimize, reproduce, and report relational case artifacts"
     )
