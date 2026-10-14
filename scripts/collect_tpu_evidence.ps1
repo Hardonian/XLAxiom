@@ -5,7 +5,7 @@
 [CmdletBinding()]
 param(
     [string]$ProjectId = "",
-    [string]$Zone = "us-east1-c",
+    [string]$Zone = "",
     [string]$AcceleratorType = "v5litepod-1",
     [string]$Version = "tpu-ubuntu2204-base",
     [string]$VmName = "xlaxiom-tpu-eval",
@@ -29,11 +29,13 @@ if (-not $ProjectId) {
     }
 }
 
+$candidateZones = if ($Zone) { @($Zone) } else { @("us-central1-a", "us-central1-b", "us-east5-a", "us-east1-c") }
+
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host " XLAxiom Physical TPU Evidence Collector" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host " Project:          $ProjectId"
-Write-Host " Zone:             $Zone"
+Write-Host " Candidate Zones:  $($candidateZones -join ', ')"
 Write-Host " Accelerator:      $AcceleratorType"
 Write-Host " VM Name:          $VmName"
 Write-Host " Estimated Cost:   < $0.20 (billed per-second, destroyed upon completion)"
@@ -44,27 +46,37 @@ Write-Host "`n[1/5] Ensuring Cloud TPU API is enabled..." -ForegroundColor Yello
 gcloud services enable tpu.googleapis.com --project=$ProjectId
 
 $vmCreated = $false
+$activeZone = ""
 
 try {
-    # 2. Provision TPU VM
-    Write-Host "`n[2/5] Creating Cloud TPU VM '$VmName'..." -ForegroundColor Yellow
-    $createArgs = @(
-        "compute", "tpus", "tpu-vm", "create", $VmName,
-        "--zone=$Zone",
-        "--accelerator-type=$AcceleratorType",
-        "--version=$Version",
-        "--project=$ProjectId",
-        "--quiet"
-    )
-    if ($Spot) {
-        $createArgs += "--spot"
+    # 2. Provision TPU VM across candidate zones
+    foreach ($candidate in $candidateZones) {
+        Write-Host "`n[2/5] Attempting to create Cloud TPU VM '$VmName' in zone '$candidate'..." -ForegroundColor Yellow
+        $createArgs = @(
+            "compute", "tpus", "tpu-vm", "create", $VmName,
+            "--zone=$candidate",
+            "--accelerator-type=$AcceleratorType",
+            "--version=$Version",
+            "--project=$ProjectId",
+            "--quiet"
+        )
+        if ($Spot) {
+            $createArgs += "--spot"
+        }
+
+        & gcloud @createArgs
+        if ($LASTEXITCODE -eq 0) {
+            $activeZone = $candidate
+            $vmCreated = $true
+            Write-Host "TPU VM successfully provisioned in zone '$activeZone'!" -ForegroundColor Green
+            break
+        }
+        Write-Warning "Capacity unavailable in zone '$candidate'. Trying next zone..."
     }
 
-    & gcloud @createArgs
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to create TPU VM. Check TPU quota in zone $Zone for $AcceleratorType."
+    if (-not $vmCreated) {
+        throw "Failed to allocate TPU VM across candidate zones ($($candidateZones -join ', ')). Check TPU quota or try v4-8 in us-central2-b."
     }
-    $vmCreated = $true
 
     # 3. Remote execution script
     Write-Host "`n[3/5] Setting up JAX with libtpu and executing XLAxiom test suite on TPU..." -ForegroundColor Yellow
@@ -106,7 +118,7 @@ echo "=== Evidence Generation Complete ==="
 '@
 
     # Execute remote commands via gcloud SSH
-    & gcloud compute tpus tpu-vm ssh $VmName --zone=$Zone --project=$ProjectId --command=$remoteScript
+    & gcloud compute tpus tpu-vm ssh $VmName --zone=$activeZone --project=$ProjectId --command=$remoteScript
     if ($LASTEXITCODE -ne 0) {
         throw "Remote TPU execution failed."
     }
@@ -118,17 +130,17 @@ echo "=== Evidence Generation Complete ==="
         New-Item -ItemType Directory -Path $localTarget -Force | Out-Null
     }
 
-    & gcloud compute tpus tpu-vm scp --recurse "${VmName}:~/XLAxiom/evidence/tpu/*" $localTarget --zone=$Zone --project=$ProjectId
+    & gcloud compute tpus tpu-vm scp --recurse "${VmName}:~/XLAxiom/evidence/tpu/*" $localTarget --zone=$activeZone --project=$ProjectId
     Write-Host "Evidence artifacts saved to $localTarget" -ForegroundColor Green
 
 } finally {
     # 5. Teardown TPU VM to avoid ongoing charges
     if ($vmCreated -and (-not $KeepVm)) {
         Write-Host "`n[5/5] Tearing down Cloud TPU VM '$VmName' to prevent idle billing..." -ForegroundColor Yellow
-        & gcloud compute tpus tpu-vm delete $VmName --zone=$Zone --project=$ProjectId --quiet
+        & gcloud compute tpus tpu-vm delete $VmName --zone=$activeZone --project=$ProjectId --quiet
         Write-Host "Cloud TPU VM successfully destroyed. Total run time was under 5 minutes." -ForegroundColor Green
     } elseif ($KeepVm) {
         Write-Host "`nNotice: -KeepVm was passed. Cloud TPU VM '$VmName' is still running." -ForegroundColor Red
-        Write-Host "Remember to delete it when done: gcloud compute tpus tpu-vm delete $VmName --zone=$Zone --project=$ProjectId" -ForegroundColor Red
+        Write-Host "Remember to delete it when done: gcloud compute tpus tpu-vm delete $VmName --zone=$activeZone --project=$ProjectId" -ForegroundColor Red
     }
 }
