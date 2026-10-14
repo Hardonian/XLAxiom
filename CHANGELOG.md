@@ -21,6 +21,16 @@
   hardware discovery and capability gating.
 - Consolidated the outstanding agent branches into main; all previously open work is
   landed.
+- Raised coverage on the two modules carrying the core correctness claims: the spawned
+  worker boundary (3 tests to 24, 57% to 81%) and the relational artifact pipeline
+  (55% to 100%). Every classified worker exit path and every relational failure mode is
+  now exercised.
+- Corrected the relative-error metric, which previously divided by an `atol` floor and so
+  reported a 10,000% relative error for a 1e-7 absolute difference. It now scales by each
+  element's own reference magnitude. The discrepancy decision itself is unchanged and is
+  pinned by test.
+- Validated the benchmark measurement budget: `benchmark_jax(measurements=0)` previously
+  raised an opaque `ZeroDivisionError` and now raises a clear `ValueError`.
 
 ## 0.5.3 - 2026-10-13
 
