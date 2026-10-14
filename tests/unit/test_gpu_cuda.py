@@ -7,6 +7,7 @@ which on a CPU-only host must report UNSUPPORTED rather than silently using CPU.
 
 from __future__ import annotations
 
+import argparse
 import os
 from pathlib import Path
 from types import SimpleNamespace
@@ -413,7 +414,7 @@ class TestGpuCampaignCliGuards:
         )
 
         result = cli.command_gpu_campaign(
-            SimpleNamespace(
+            argparse.Namespace(
                 shard_count=1,
                 shard_index=0,
                 resume=False,

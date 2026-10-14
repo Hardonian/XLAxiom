@@ -15,7 +15,7 @@ def test_current_packaged_jax_reproduces_known_arcsinh_issue() -> None:
     else:
         assert result.arcsinh_gradient > 0
     study = hyperbolic_gradient_study()
-    observed = {
-        (item["operation"], item["input"]): item["classification"] for item in study["observations"]
-    }
+    observations = study["observations"]
+    assert isinstance(observations, list)
+    observed = {(item["operation"], item["input"]): item["classification"] for item in observations}
     assert observed

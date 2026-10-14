@@ -2,11 +2,9 @@
 
 ## Release state
 
-The source tree currently declares version 0.5.3, but it is not a published release
-until an annotated `v0.5.3` tag has passed Release verification. The latest tagged
-release in this repository is 0.5.2; citation metadata deliberately tracks that tagged
-release until the next tag is verified. Do not describe a source-only version as
-released, published, or independently verified.
+The source tree declares version 0.6.0, matching the annotated `v0.6.0` release tag.
+Citation metadata deliberately tracks this tagged release. Do not describe an
+unverified or source-only version as released, published, or independently verified.
 
 ## Release criteria
 

@@ -8,6 +8,7 @@ validation rather than being waved through.
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import pytest
 
@@ -29,9 +30,9 @@ from xlaxiom.corpus import (
 from xlaxiom.generation import GenerationConfig, generate
 
 
-def make_entry(**overrides):
+def make_entry(**overrides: Any) -> dict[str, Any]:
     workload = generate(GenerationConfig(seed=17))
-    payload = {
+    payload: dict[str, Any] = {
         "identifier": "finding-test",
         "category": "reproduced-finding",
         "title": "Reproduced numerical_discrepancy",

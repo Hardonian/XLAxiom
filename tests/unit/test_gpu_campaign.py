@@ -323,17 +323,17 @@ class TestRunGpuCampaign:
             time_idx += 1
             return val
 
+        def mock_cpu(*args: object, **kwargs: object) -> dict[str, object]:
+            calls.append("cpu")
+            return {"numpy_vs_gpu_jit": {"classification": "pass"}}
+
+        def mock_eager(*args: object, **kwargs: object) -> dict[str, object]:
+            calls.append("eager")
+            return {"classification": "pass"}
+
         monkeypatch.setattr("time.perf_counter", fake_perf_counter)
-        monkeypatch.setattr(
-            "xlaxiom.gpu_campaign.cpu_vs_gpu",
-            lambda s, d, v, m: (
-                calls.append("cpu") or {"numpy_vs_gpu_jit": {"classification": "pass"}}
-            ),
-        )
-        monkeypatch.setattr(
-            "xlaxiom.gpu_campaign.gpu_eager_vs_jit",
-            lambda s, d, v: calls.append("eager") or {"classification": "pass"},
-        )
+        monkeypatch.setattr("xlaxiom.gpu_campaign.cpu_vs_gpu", mock_cpu)
+        monkeypatch.setattr("xlaxiom.gpu_campaign.gpu_eager_vs_jit", mock_eager)
 
         budget = CampaignBudget(cases=5)
         summary = run_gpu_campaign(device, "cuda13", budget=budget)
@@ -364,17 +364,17 @@ class TestRunGpuCampaign:
             time_idx += 1
             return value
 
+        def mock_cpu_2(*args: object, **kwargs: object) -> dict[str, object]:
+            calls.append("cpu")
+            return {"numpy_vs_gpu_jit": {"classification": "pass"}}
+
+        def mock_eager_2(*args: object, **kwargs: object) -> dict[str, object]:
+            calls.append("eager")
+            return {"classification": "pass"}
+
         monkeypatch.setattr("time.perf_counter", fake_perf_counter)
-        monkeypatch.setattr(
-            "xlaxiom.gpu_campaign.cpu_vs_gpu",
-            lambda s, d, v, m: (
-                calls.append("cpu") or {"numpy_vs_gpu_jit": {"classification": "pass"}}
-            ),
-        )
-        monkeypatch.setattr(
-            "xlaxiom.gpu_campaign.gpu_eager_vs_jit",
-            lambda s, d, v: calls.append("eager") or {"classification": "pass"},
-        )
+        monkeypatch.setattr("xlaxiom.gpu_campaign.cpu_vs_gpu", mock_cpu_2)
+        monkeypatch.setattr("xlaxiom.gpu_campaign.gpu_eager_vs_jit", mock_eager_2)
 
         summary = run_gpu_campaign(device, "cuda13", budget=CampaignBudget(cases=2))
 

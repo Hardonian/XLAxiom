@@ -1,17 +1,21 @@
-# XLAxiom 0.5.3 package hardening
+# XLAxiom 0.6.0 release milestone
 
 ## Scope
 
-- Preserves the completed fifty-priority product and its retained hardware evidence.
-- Marks the wheel as a PEP 561 typed distribution and modernizes license metadata.
-- Adds explicit CUDA 12/13 install extras and complete installation guidance.
-- Adds dependency maintenance and guarded, tokenless PyPI publication automation.
+- Lands the shared execution plan across NumPy and JAX eager/JIT execution with the validated NumPy-compatible adapter.
+- Hardens integer comparisons at signed extrema against overflow and false passes under small tolerances.
+- Enforces intermediate memory limits accounting for NumPy dtype promotion in mixed-dtype operations.
+- Bundles the JAX #40634 historical record via package resources for portable `corpus build` execution from wheels and source checkouts.
+- Removes dead code across hardware, corpus, gpu_validation, and historical modules.
+- Hardens version matrix execution against argument injection in JAX specifiers.
+- Optimizes CUDA variant selection and operation resolution hot paths.
+- Pushes test coverage across the spawned worker boundary and relational artifact pipeline to 100% of classified paths and failure modes.
+- Corrects relative-error metric scaling against element reference magnitudes and validates the benchmark measurement budget.
 
 ## Verification
 
-- Formatting, lint, typing, complete tests, lockfile consistency, and distribution builds pass.
-- Twine validates both distributions; the runtime dependency audit reports no known vulnerabilities.
-- The wheel is installed and exercised under Python 3.11, 3.12, and 3.13.
+- Formatting, lint, typing, complete tests (330 passed, 2 hardware-gated skipped), lockfile consistency, and distribution builds pass cleanly.
+- Twine validates both source and wheel distributions; package smoke test passes end-to-end.
 
 ## Evidence boundary
 

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import sys
 import types
+from collections.abc import Generator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -62,9 +64,9 @@ def test_platform_present_matches_the_device_name_prefix() -> None:
 
 
 @pytest.fixture
-def fake_jax() -> types.ModuleType:
+def fake_jax() -> Generator[Any, None, None]:
     """Install a controllable ``jax`` module for the duration of one test."""
-    module = types.ModuleType("jax")
+    module: Any = types.ModuleType("jax")
     submodule = types.ModuleType("jax.numpy")
     module.numpy = submodule
     with (
@@ -74,7 +76,7 @@ def fake_jax() -> types.ModuleType:
 
 
 def test_absent_accelerator_is_unsupported_and_never_falls_back_to_cpu(
-    fake_jax: types.ModuleType,
+    fake_jax: Any,
 ) -> None:
     fake_jax.devices = lambda _platform=None: []
     fake_jax.__version__ = "0.0.0-test"
@@ -88,7 +90,7 @@ def test_absent_accelerator_is_unsupported_and_never_falls_back_to_cpu(
 
 
 def test_device_enumeration_failure_is_reported_as_unsupported(
-    fake_jax: types.ModuleType,
+    fake_jax: Any,
 ) -> None:
     def explode(_platform: str | None = None) -> list[str]:
         raise RuntimeError("backend initialization failed")
@@ -102,10 +104,8 @@ def test_device_enumeration_failure_is_reported_as_unsupported(
     assert "backend initialization failed" in (result.error or "")
 
 
-def test_out_of_range_device_index_is_rejected(fake_jax: types.ModuleType) -> None:
-    device = MagicMock()
-    device.__str__ = lambda _self: "cpu:0"
-    fake_jax.devices = lambda _platform=None: [device]
+def test_out_of_range_device_index_is_rejected(fake_jax: Any) -> None:
+    fake_jax.devices = lambda _platform=None: ["cpu:0"]
     fake_jax.__version__ = "0.0.0-test"
 
     result = execute_jax(_workload(), requested_platform="cpu", device_index=5)
@@ -115,11 +115,11 @@ def test_out_of_range_device_index_is_rejected(fake_jax: types.ModuleType) -> No
 
 
 def test_missing_jax_import_is_unsupported() -> None:
-    real_import = (
+    real_import: Any = (
         __builtins__["__import__"] if isinstance(__builtins__, dict) else __builtins__.__import__
     )
 
-    def deny_jax(name: str, *args: object, **kwargs: object) -> object:
+    def deny_jax(name: str, *args: Any, **kwargs: Any) -> Any:
         if name == "jax" or name.startswith("jax."):
             raise ImportError("jax is not installed")
         return real_import(name, *args, **kwargs)

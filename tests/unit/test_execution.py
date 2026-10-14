@@ -61,7 +61,12 @@ def test_array_api_proxy_matches_numpy_for_a_valid_workload() -> None:
     assert numpy_result.status == ExecutionStatus.OK
     assert len(result.outputs) == len(numpy_result.outputs)
     for actual, expected in zip(result.outputs, numpy_result.outputs, strict=True):
-        np.testing.assert_allclose(actual, expected, rtol=1e-6, atol=1e-7)
+        np.testing.assert_allclose(
+            np.asarray(actual, dtype=np.float64),
+            np.asarray(expected, dtype=np.float64),
+            rtol=1e-6,
+            atol=1e-7,
+        )
 
 
 def test_array_api_reports_a_missing_required_operation_as_unsupported() -> None:
