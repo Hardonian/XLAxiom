@@ -393,6 +393,8 @@ def test_cli_benchmark_and_cache_workflow(tmp_path) -> None:
             str(bench2_path),
             "--baseline",
             str(bench1_path),
+            "--max-relative-regression",
+            "10.0",
         ],
         capture_output=True,
         text=True,

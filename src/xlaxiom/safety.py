@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import os
+import platform
 import queue
 import time
 import traceback
@@ -90,12 +91,30 @@ def _resident_memory_bytes(pid: int | None) -> int | None:
                 windll.kernel32.CloseHandle(process)
         except (AttributeError, OSError):
             return None
-    try:
-        for line in open(f"/proc/{pid}/status", encoding="utf-8"):
-            if line.startswith("VmRSS:"):
-                return int(line.split()[1]) * 1024
-    except (OSError, ValueError, IndexError):
-        return None
+    if os.path.exists(f"/proc/{pid}/status"):
+        try:
+            for line in open(f"/proc/{pid}/status", encoding="utf-8"):
+                if line.startswith("VmRSS:"):
+                    return int(line.split()[1]) * 1024
+        except (OSError, ValueError, IndexError):
+            pass
+    if platform.system() == "Darwin":
+        try:
+            if pid == os.getpid():
+                import resource
+
+                rusage_self = getattr(resource, "RUSAGE_SELF", 0)
+                getrusage = getattr(resource, "getrusage", None)
+                if callable(getrusage):
+                    return int(getrusage(rusage_self).ru_maxrss)
+            import subprocess
+
+            out = subprocess.check_output(
+                ["ps", "-o", "rss=", "-p", str(pid)], text=True, stderr=subprocess.DEVNULL
+            )
+            return int(out.strip()) * 1024
+        except Exception:
+            return None
     return None
 
 
