@@ -17,6 +17,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
       - run: uv python install 3.12
       - name: Verify lockfile
@@ -51,10 +53,12 @@ jobs:
           done
       - name: Verify distribution identity and package data
         shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
         run: |
           tag_arguments=()
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            tag_arguments=(--tag "${GITHUB_REF_NAME}")
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] || [ "${GITHUB_EVENT_NAME}" = "release" ]; then
+            tag_arguments=(--tag "${RELEASE_TAG}")
           fi
           uv run python scripts/verify_distribution.py --dist-dir dist "${tag_arguments[@]}"
       - run: uvx twine check dist/*
@@ -90,7 +94,7 @@ jobs:
           "${environment}/bin/xlaxiom" reproduce --case reduced.json --output reproduction.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: xlaxiom-${{ github.ref_name }}
+          name: xlaxiom-${{ github.event.release.tag_name || github.ref_name }}
           path: dist/*
           if-no-files-found: error
       - name: Upload release diagnostics
@@ -114,6 +118,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: xlaxiom-${{ github.ref_name }}
+          name: xlaxiom-${{ github.event.release.tag_name }}
           path: dist
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

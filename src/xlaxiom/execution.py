@@ -408,8 +408,15 @@ def _device_prefix(requested_platform: str) -> str:
 
 def _platform_present(jax_module: Any, requested_platform: str) -> bool:
     """True when a device of the requested platform is really initialized."""
-    prefix = _device_prefix(requested_platform)
-    return any(str(device).startswith(prefix) for device in jax_module.devices())
+    target = requested_platform.lower()
+    prefix = _device_prefix(requested_platform).lower()
+    for device in jax_module.devices():
+        platform_attr = getattr(device, "platform", None)
+        if platform_attr is not None and str(platform_attr).lower() == target:
+            return True
+        if str(device).lower().startswith(prefix):
+            return True
+    return False
 
 
 def execute_jax(
