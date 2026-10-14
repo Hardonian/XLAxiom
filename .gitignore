@@ -211,6 +211,7 @@ tempCodeRunnerFile.py
 # XLAxiom local verification and package smoke-test artifacts
 .verification-results/
 .package-smoke/
+.release-dist/
 
 # PyPI configuration file
 .pypirc

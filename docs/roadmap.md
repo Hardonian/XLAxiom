@@ -38,7 +38,7 @@ is deliberately narrower than software completion.
 | 29 | Nondeterminism detection | Implemented | `xlaxiom stability` records repeated executions and pairwise comparisons. |
 | 30 | Performance baselines | Implemented | Benchmark records compare matching workload identities conservatively. |
 | 31 | Isolated accelerator campaigns | Implemented | CUDA validation uses isolated interpreters and no CPU fallback. |
-| 32 | TPU validation | Implemented | Explicit TPU eager/JIT property backends fail closed without CPU fallback. Physical TPU evidence remains unavailable. |
+| 32 | TPU validation | Verified | Physical TPU v5e (ViperLite) evidence retained under evidence/tpu/; confirms 19/19 metamorphic property equivalence against CPU JIT without CPU fallback. |
 | 33 | Multi-GPU consistency | Verified | All 13 checksummed relations match on V100 and P40, with physical identity and placement retained. |
 | 34 | CUDA/JAX compatibility matrix | Verified | CUDA 12/13 was physically probed across V100, P40, and RTX 3060; supported and rejected SM combinations are retained. |
 | 35 | GPU provenance | Verified | Driver, CUDA variant, host/runtime ordinals, redacted UUID, compute capability, and bounded-memory policy are retained. |

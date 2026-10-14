@@ -43,9 +43,9 @@ wheel and source distribution metadata, package data, and (when supplied) tag ag
 the package version:
 
 ```console
-uv build
-uv run twine check dist/*
-uv run python scripts/verify_distribution.py --dist-dir dist --tag v0.6.1
+uv build --out-dir .release-dist
+uv run twine check .release-dist/*
+uv run python scripts/verify_distribution.py --dist-dir .release-dist --tag v0.6.1
 ```
 
 Publishing a GitHub Release activates a separate, minimal PyPI job only after the

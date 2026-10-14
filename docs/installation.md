@@ -49,9 +49,9 @@ The wheel includes the curated and historical evidence records plus the `py.type
 Use `twine check` and the distribution verifier before installing a locally built artifact:
 
 ```console
-uv build
-uv run twine check dist/*
-uv run python scripts/verify_distribution.py --dist-dir dist
+uv build --out-dir .release-dist
+uv run twine check .release-dist/*
+uv run python scripts/verify_distribution.py --dist-dir .release-dist
 ```
 
 ## Accelerator extras
