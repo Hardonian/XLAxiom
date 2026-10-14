@@ -6,8 +6,8 @@
 set -euo pipefail
 
 PROJECT_ID="${1:-$(gcloud config get-value project 2>/dev/null)}"
-ZONE="${2:-us-east1-c}"
-ACCELERATOR_TYPE="${3:-v5litepod-1}"
+ZONE="${2:-us-south1-a}"
+ACCELERATOR_TYPE="${3:-v5litepod-4}"
 VERSION="tpu-ubuntu2204-base"
 VM_NAME="${4:-xlaxiom-tpu-eval}"
 KEEP_VM="${5:-false}"
@@ -24,7 +24,7 @@ echo " Project:          ${PROJECT_ID}"
 echo " Zone:             ${ZONE}"
 echo " Accelerator:      ${ACCELERATOR_TYPE}"
 echo " VM Name:          ${VM_NAME}"
-echo " Estimated Cost:   < \$0.20 (billed per-second, destroyed on exit)"
+echo " Estimated Cost:   < \$0.35 (billed per-second, destroyed on exit)"
 echo "=========================================================="
 
 # Ensure TPU API is enabled
@@ -64,20 +64,20 @@ cd XLAxiom
 
 uv venv --python 3.12
 source .venv/bin/activate
-pip install -U "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-uv sync --extra dev --frozen
+uv pip install -e .
+uv pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
 echo "=== Verifying Physical TPU Silicon ==="
 python -c "import jax; print(\"JAX Devices:\", jax.devices()); assert any(d.platform == \"tpu\" for d in jax.devices())"
 
 mkdir -p evidence/tpu
-uv run xlaxiom doctor > evidence/tpu/doctor.json
-uv run xlaxiom environment capture --output evidence/tpu/environment.json
-uv run xlaxiom property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-uv run xlaxiom property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-uv run xlaxiom property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-uv run xlaxiom property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
-uv run xlaxiom property compare \
+python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
+python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
+python -m xlaxiom.cli property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+python -m xlaxiom.cli property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+python -m xlaxiom.cli property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+python -m xlaxiom.cli property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json

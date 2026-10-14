@@ -6,7 +6,7 @@
 param(
     [string]$ProjectId = "",
     [string]$Zone = "",
-    [string]$AcceleratorType = "v5litepod-1",
+    [string]$AcceleratorType = "v5litepod-4",
     [string]$Version = "tpu-ubuntu2204-base",
     [string]$VmName = "xlaxiom-tpu-eval",
     [switch]$Spot = $false,
@@ -29,7 +29,9 @@ if (-not $ProjectId) {
     }
 }
 
-$candidateZones = if ($Zone) { @($Zone) } else { @("us-central1-a", "us-central1-b", "us-east5-a", "us-east1-c") }
+# Note: Single-chip v5litepod-1 (TPU_LITE_DEVICE_V5) has 0 quota by default in GCP.
+# Pod slices (TPU_LITE_PODSLICE_V5, starting at 4-chip v5litepod-4) have default quota (16 slices).
+$candidateZones = if ($Zone) { @($Zone) } else { @("us-south1-a", "us-central1-a", "us-east5-a", "europe-west4-a", "us-east1-c") }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host " XLAxiom Physical TPU Evidence Collector" -ForegroundColor Cyan
@@ -38,7 +40,7 @@ Write-Host " Project:          $ProjectId"
 Write-Host " Candidate Zones:  $($candidateZones -join ', ')"
 Write-Host " Accelerator:      $AcceleratorType"
 Write-Host " VM Name:          $VmName"
-Write-Host " Estimated Cost:   < $0.20 (billed per-second, destroyed upon completion)"
+Write-Host " Estimated Cost:   < $0.35 (billed per-second, destroyed upon completion)"
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Enable Cloud TPU API if needed
@@ -95,21 +97,21 @@ cd XLAxiom
 
 uv venv --python 3.12
 source .venv/bin/activate
-pip install -U "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-uv sync --extra dev --frozen
+uv pip install -e .
+uv pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
 echo "=== Verifying Physical TPU Silicon ==="
 python -c "import jax; print('JAX Devices:', jax.devices()); assert any(d.platform == 'tpu' for d in jax.devices()), 'No TPU silicon found!'"
 
 echo "=== Executing Metamorphic Properties on TPU ==="
 mkdir -p evidence/tpu
-uv run xlaxiom doctor > evidence/tpu/doctor.json
-uv run xlaxiom environment capture --output evidence/tpu/environment.json
-uv run xlaxiom property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-uv run xlaxiom property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-uv run xlaxiom property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-uv run xlaxiom property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
-uv run xlaxiom property compare \
+python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
+python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
+python -m xlaxiom.cli property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+python -m xlaxiom.cli property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+python -m xlaxiom.cli property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+python -m xlaxiom.cli property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json

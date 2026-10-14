@@ -10,7 +10,7 @@ For a real observation, share these together:
 | --- | --- | --- |
 | Minimized case JSON | `xlaxiom minimize` | Records the smallest known predicate and its deterministic workload identity. |
 | Reproduction verdict | `xlaxiom reproduce` | Shows whether the saved predicate still holds in a fresh command invocation. |
-| JSON and Markdown report | `xlaxiom report` | Captures the comparison, numerical policy, execution outputs, and a readable summary. |
+| JSON, Markdown, and offline HTML report | `xlaxiom report` | Captures the comparison, numerical policy, execution outputs, and readable machine, text, and browser-friendly summaries. |
 | Validated bundle | `xlaxiom bundle create` then `bundle validate` | Packages one or more checksummed cases for safe, portable review. |
 | Version matrix, when relevant | `xlaxiom matrix run` | Separates a likely version transition from a stable observation. |
 
@@ -28,7 +28,7 @@ uv run xlaxiom bundle run --bundle handoff.zip --output results/handoff-evidence
 
 Bundle validation rejects unsafe archive paths, duplicate or undeclared members, oversized uncompressed content, checksum mismatches, and malformed case schemas. Version 1 bundles contain only their manifest and declared case files. Bundle archives are deterministic for identical ordered inputs, which makes them suitable for content-addressed retention and review. Running a bundle produces a new evidence record; it does not mutate the archive.
 
-Generated case, JSON evidence, and Markdown report files are written atomically: a complete temporary file is flushed beside its destination and then replaced in one operation. An interrupted write therefore leaves the prior artifact intact rather than a misleading partial record.
+Generated case, JSON evidence, Markdown report, and HTML report files are written atomically: a complete temporary file is flushed beside its destination and then replaced in one operation. An interrupted write therefore leaves the prior artifact intact rather than a misleading partial record. The standalone `report.html` has no external assets and is suitable for offline review.
 
 ## Strict readiness gate
 

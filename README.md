@@ -98,7 +98,8 @@ uv run ruff check .
 uv run ruff format --check .
 uv run mypy src
 uv build
+uv run twine check dist/*
+uv run python scripts/verify_distribution.py --dist-dir dist
 ```
 
 The [release policy](docs/release.md) defines the required quality gates, reproducible-build expectations, and Trusted Publishing boundary. The [roadmap](docs/roadmap.md) distinguishes implemented capability from physical-hardware evidence that cannot be manufactured locally.
-

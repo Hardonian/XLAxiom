@@ -1,5 +1,25 @@
 # Installation
 
+## From PyPI
+
+After the stable release is published, install the exact release you intend to run:
+
+```console
+python -m pip install "xlaxiom==0.6.1"
+xlaxiom --version
+xlaxiom doctor
+```
+
+For an isolated command-line installation with `uv`:
+
+```console
+uv tool install "xlaxiom==0.6.1"
+xlaxiom --version
+```
+
+Pinning the version makes saved evidence easier to reproduce. Upgrade deliberately after
+reviewing the [changelog](../CHANGELOG.md).
+
 ## From a source checkout
 
 Python 3.11, 3.12, and 3.13 are supported. A CPU development environment is the
@@ -26,11 +46,18 @@ uv pip install --python .venv/bin/python path/to/xlaxiom-<version>-py3-none-any.
 
 On Windows, use `.venv\\Scripts\\python.exe` and `.venv\\Scripts\\xlaxiom.exe`.
 The wheel includes the curated and historical evidence records plus the `py.typed` marker.
+Use `twine check` and the distribution verifier before installing a locally built artifact:
+
+```console
+uv build
+uv run twine check dist/*
+uv run python scripts/verify_distribution.py --dist-dir dist
+```
 
 ## Accelerator extras
 
-After PyPI publication, Linux users may request the matching JAX CUDA family with
-`xlaxiom[cuda12]` or `xlaxiom[cuda13]`. These extras install user-space JAX packages;
+Linux users may request the matching JAX CUDA family with `xlaxiom[cuda12]` or
+`xlaxiom[cuda13]`. These extras install user-space JAX packages;
 they do not install an NVIDIA driver or change system CUDA. Always begin with:
 
 ```console

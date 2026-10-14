@@ -249,6 +249,7 @@ def command_report(args: argparse.Namespace) -> int:
         {
             "json": str(json_path),
             "markdown": str(markdown_path),
+            "html": str(Path(args.output) / "report.html"),
             "classification": comparison.classification.value,
         }
     )
@@ -1333,7 +1334,9 @@ def parser() -> argparse.ArgumentParser:
         "--output", help="write checksummed reproduction evidence JSON for readiness review"
     )
     reproduce_parser.set_defaults(func=command_reproduce)
-    report_parser = commands.add_parser("report", help="write JSON and Markdown evidence reports")
+    report_parser = commands.add_parser(
+        "report", help="write JSON, Markdown, and offline HTML evidence reports"
+    )
     report_parser.add_argument("--case", required=True)
     report_parser.add_argument("--output", required=True)
     report_parser.set_defaults(func=command_report)

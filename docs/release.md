@@ -2,9 +2,11 @@
 
 ## Release state
 
-The source tree declares version 0.6.0, matching the annotated `v0.6.0` release tag.
-Citation metadata deliberately tracks this tagged release. Do not describe an
-unverified or source-only version as released, published, or independently verified.
+The source tree is prepared for version 0.6.1. It becomes a release only when the
+annotated `v0.6.1` tag passes the `Release verification` workflow and its GitHub Release
+is published. Do not describe a source-only or merely tagged version as published until
+the PyPI publishing job has succeeded. Citation metadata is versioned with the release
+candidate so the tagged source, wheel, source distribution, and citation agree.
 
 ## Release criteria
 
@@ -36,6 +38,16 @@ Both build passes receive `SOURCE_DATE_EPOCH` from the tagged commit timestamp. 
 normalizes archive headers across runner operating systems instead of relying on wall
 clock timing.
 
+Before creating a tag, run the same distribution-identity check locally. It verifies the
+wheel and source distribution metadata, package data, and (when supplied) tag against
+the package version:
+
+```console
+uv build
+uv run twine check dist/*
+uv run python scripts/verify_distribution.py --dist-dir dist --tag v0.6.1
+```
+
 Publishing a GitHub Release activates a separate, minimal PyPI job only after the
 verification job passes. That job downloads the verified distributions and uses OIDC
 Trusted Publishing from the protected `pypi` environment; it stores no long-lived PyPI
@@ -43,7 +55,11 @@ token. Before the first publication, a maintainer must configure a PyPI pending
 publisher for `Hardonian/XLAxiom`, workflow `release.yml`, environment `pypi`, and must
 configure required reviewers on that GitHub environment.
 
-Version 0.5.0 met the source, wheel, CPU, Windows/Linux, and available CUDA hardware
+criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
+boundaries, not release blockers or implied claims; see [`support.md`](support.md).
+Version 0.6.0 met the source, wheel, CPU, Windows/Linux, and available CUDA hardware
+criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
+boundaries, not release blockers or implied claims; see [`support.md`](support.md).
 criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
 boundaries, not release blockers or implied claims; see [`support.md`](support.md).
 

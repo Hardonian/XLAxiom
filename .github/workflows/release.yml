@@ -49,13 +49,15 @@ jobs:
           for artifact in dist/*; do
             cmp "${artifact}" "${repeat_dir}/$(basename "${artifact}")"
           done
-      - run: uvx twine check dist/*
-      - name: Verify tag matches package version
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Verify distribution identity and package data
         shell: bash
         run: |
-          package_version="$(uv run python -c 'from xlaxiom import __version__; print(__version__)')"
-          test "${GITHUB_REF_NAME}" = "v${package_version}"
+          tag_arguments=()
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tag_arguments=(--tag "${GITHUB_REF_NAME}")
+          fi
+          uv run python scripts/verify_distribution.py --dist-dir dist "${tag_arguments[@]}"
+      - run: uvx twine check dist/*
       - name: Smoke-test installed wheel
         shell: bash
         run: |

@@ -121,8 +121,7 @@ def write_report(
     )
     markdown_path = destination / "report.md"
     atomic_write_text(markdown_path, markdown)
-    html_path = destination / "report.html"
-    atomic_write_text(html_path, build_html_report(report))
+    write_html_report(destination / "report.html", report)
     return json_path, markdown_path
 
 
