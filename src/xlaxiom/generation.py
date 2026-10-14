@@ -185,3 +185,54 @@ def synthetic_control(seed: int = 0) -> Workload:
     )
     workload.validate()
     return workload
+
+
+def generate_boundary_suite(workload: Workload) -> list[Workload]:
+    """Generate deterministic boundary variants of a workload across all input value modes.
+
+    Systematically exercises zeros, ones, finite edges, extreme subnormals/boundaries,
+    signed zeros, and (for floating-point dtypes) non-finite NaNs and infinities.
+    """
+    workload.validate()
+    variants: list[Workload] = []
+    has_only_floats = all(spec.dtype.startswith("float") for spec in workload.inputs)
+
+    modes: list[
+        Literal[
+            "zeros",
+            "ones",
+            "finite_edges",
+            "extreme_finite",
+            "signed_zero",
+            "nonfinite",
+        ]
+    ] = ["zeros", "ones", "finite_edges", "extreme_finite"]
+    if has_only_floats:
+        modes.extend(["signed_zero", "nonfinite"])
+
+    for mode in modes:
+        modified_inputs = tuple(
+            InputSpec(
+                spec.name,
+                spec.shape,
+                spec.dtype,
+                mode,
+            )
+            for spec in workload.inputs
+        )
+        variant = Workload(
+            identifier=f"{workload.identifier}-boundary-{mode}",
+            seed=workload.seed,
+            inputs=modified_inputs,
+            nodes=workload.nodes,
+            outputs=workload.outputs,
+            policy=workload.policy,
+            metadata={
+                **workload.metadata,
+                "boundary_mode": mode,
+            },
+        )
+        variant.validate()
+        variants.append(variant)
+    return variants
+

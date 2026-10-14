@@ -98,3 +98,13 @@ def test_write_report_creates_json_and_markdown(tmp_path) -> None:
     issue_draft = data["issue_draft"]
     assert issue_draft["case_sha256"] == artifact.to_dict()["sha256"]
     assert issue_draft["workload_sha256"] == artifact.workload.digest()
+
+    html_path = tmp_path / "report.html"
+    assert html_path.exists()
+    html_text = html_path.read_text(encoding="utf-8")
+    assert "<!DOCTYPE html>" in html_text
+    assert "XLAxiom Evidence Report" in html_text
+    assert "NUMERICAL DISCREPANCY" in html_text
+    assert f"xlaxiom reproduce --case {case_path}" in html_text
+    assert "Strict non-filing notice" in html_text
+

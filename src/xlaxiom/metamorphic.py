@@ -397,6 +397,156 @@ def _extreme_finite_absolute_idempotence(seed: int) -> PropertyWorkloads:
     )
 
 
+def _maximum_commutativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "maximum-commutativity-v1",
+            seed,
+            inputs,
+            (Node("maximum", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "maximum-commutativity-v1",
+            seed,
+            inputs,
+            (Node("maximum", ("y", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _minimum_commutativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "minimum-commutativity-v1",
+            seed,
+            inputs,
+            (Node("minimum", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "minimum-commutativity-v1",
+            seed,
+            inputs,
+            (Node("minimum", ("y", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _min_max_duality(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "min-max-duality-v1",
+            seed,
+            inputs,
+            (Node("minimum", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "min-max-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "neg_x"),
+                Node("neg", ("y",), "neg_y"),
+                Node("maximum", ("neg_x", "neg_y"), "max_neg"),
+                Node("neg", ("max_neg",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _square_as_multiplication(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "square-as-multiplication-v1",
+            seed,
+            inputs,
+            (Node("square", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "square-as-multiplication-v1",
+            seed,
+            inputs,
+            (Node("mul", ("x", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _square_negation_involution(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "square-negation-involution-v1",
+            seed,
+            inputs,
+            (Node("square", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "square-negation-involution-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "neg_x"),
+                Node("square", ("neg_x",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _min_max_reduction_duality(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "min-max-reduction-duality-v1",
+            seed,
+            inputs,
+            (Node("min", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "min-max-reduction-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "neg_x"),
+                Node("max", ("neg_x",), "max_neg"),
+                Node("neg", ("max_neg",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
 _BUILDERS: dict[str, PropertyBuilder] = {
     "add-commutativity-v1": _add_commutativity,
     "transpose-involution-v1": _transpose_involution,
@@ -411,6 +561,12 @@ _BUILDERS: dict[str, PropertyBuilder] = {
     "signed-zero-negation-involution-v1": _signed_zero_negation_involution,
     "nonfinite-absolute-idempotence-v1": _nonfinite_absolute_idempotence,
     "extreme-finite-absolute-idempotence-v1": _extreme_finite_absolute_idempotence,
+    "maximum-commutativity-v1": _maximum_commutativity,
+    "minimum-commutativity-v1": _minimum_commutativity,
+    "min-max-duality-v1": _min_max_duality,
+    "square-as-multiplication-v1": _square_as_multiplication,
+    "square-negation-involution-v1": _square_negation_involution,
+    "min-max-reduction-duality-v1": _min_max_reduction_duality,
 }
 
 

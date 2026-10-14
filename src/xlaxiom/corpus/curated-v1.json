@@ -91,6 +91,42 @@
       "title": "Absolute value is idempotent for finite extremes",
       "description": "abs(x) and abs(abs(x)) agree for finite values spanning normal and subnormal boundaries.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "maximum-commutativity-v1",
+      "title": "Elementwise maximum commutes",
+      "description": "maximum(x, y) and maximum(y, x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "minimum-commutativity-v1",
+      "title": "Elementwise minimum commutes",
+      "description": "minimum(x, y) and minimum(y, x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "min-max-duality-v1",
+      "title": "Min-max duality relation",
+      "description": "minimum(x, y) equals -maximum(-x, -y) elementwise.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "square-as-multiplication-v1",
+      "title": "Square is self-multiplication",
+      "description": "square(x) and mul(x, x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "square-negation-involution-v1",
+      "title": "Square of negation is identity with square",
+      "description": "square(x) and square(-x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "min-max-reduction-duality-v1",
+      "title": "Min-max global reduction duality",
+      "description": "min(x) and -max(-x) produce equivalent reduction outputs.",
+      "relation": "outputs_equal"
     }
   ]
 }

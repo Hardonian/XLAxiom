@@ -150,3 +150,17 @@ def test_expanded_operations_execute_numpy_and_jax() -> None:
             rtol=1e-5,
             atol=1e-6,
         )
+
+
+def test_generate_boundary_suite() -> None:
+    from xlaxiom.generation import generate_boundary_suite
+    workload = generate(GenerationConfig(seed=7, dtype="float32"))
+    suite = generate_boundary_suite(workload)
+    assert len(suite) == 6
+    modes = [w.metadata["boundary_mode"] for w in suite]
+    assert modes == ["zeros", "ones", "finite_edges", "extreme_finite", "signed_zero", "nonfinite"]
+    for variant in suite:
+        variant.validate()
+        inputs = materialize_inputs(variant)
+        assert len(inputs) == len(variant.inputs)
+
