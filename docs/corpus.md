@@ -83,8 +83,8 @@ It carries no executable payload and has no general `builder` or import field.
 
 ## Finding admission
 
-No newly discovered compiler finding is admitted in corpus v1. The historical JAX
-#40634 adapter remains a labelled historical study rather than a new discovery.
+No newly discovered compiler finding is admitted in corpus v1. The historical JAX #40634
+adapter remains a labelled historical study rather than a new discovery.
 
 A proposed finding must include all of the following before admission:
 
@@ -103,7 +103,6 @@ observed discrepancy and a supported root-cause claim.
 `xlaxiom corpus build` applies failure-preserving minimization before its independent
 fresh-process reproduction gate. The checked-in corpus currently contains all thirty-five
 reviewed properties, one labelled historical record, and no newly discovered finding.
-
 
 The retained 100-seed HX370 JAX x64 campaign executed 1,300 property comparisons with
 1,300 passes and no candidates. Separate seed-0 artifacts retain identical results on
