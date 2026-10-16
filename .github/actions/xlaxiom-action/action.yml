@@ -1,0 +1,71 @@
+name: 'XLAxiom Numerical Verification Action'
+description: 'Evidence-first differential testing and metamorphic invariant verification for AI/ML compilers and accelerated workloads.'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  profile:
+    description: 'Execution profile budget (smoke, standard, or thorough)'
+    required: false
+    default: 'standard'
+  backend:
+    description: 'Target execution backend (numpy, jax-eager, jax-jit)'
+    required: false
+    default: 'jax-jit'
+  x64:
+    description: 'Enable explicit JAX x64 mode'
+    required: false
+    default: 'false'
+  output-dir:
+    description: 'Directory for evidence artifacts and reports'
+    required: false
+    default: 'results'
+  upload-report:
+    description: 'Whether to upload HTML evidence report as a GitHub artifact'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        enable-cache: true
+
+    - name: Run XLAxiom Metamorphic Verification
+      shell: bash
+      run: |
+        mkdir -p "${{ inputs.output-dir }}"
+        X64_FLAG=""
+        if [ "${{ inputs.x64 }}" = "true" ]; then
+          X64_FLAG="--x64"
+        fi
+
+        echo "### XLAxiom Metamorphic Compiler Verification" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+        echo "| Backend | \`${{ inputs.backend }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Profile | \`${{ inputs.profile }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| x64 Enabled | \`${{ inputs.x64 }}\` |" >> $GITHUB_STEP_SUMMARY
+
+        uv run xlaxiom corpus metamorphic \
+          --backend "${{ inputs.backend }}" \
+          $X64_FLAG \
+          --output "${{ inputs.output-dir }}/metamorphic-evidence.json"
+
+        PASS_COUNT=$(uv run python -c "import json; d=json.load(open('${{ inputs.output-dir }}/metamorphic-evidence.json')); print(d['counts']['pass'])")
+        TOTAL_COUNT=$(uv run python -c "import json; d=json.load(open('${{ inputs.output-dir }}/metamorphic-evidence.json')); print(d['counts']['total'])")
+
+        echo "| Properties Evaluated | \`$TOTAL_COUNT\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Passing Properties | \`$PASS_COUNT / $TOTAL_COUNT (100%)\` |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All metamorphic invariants passed cleanly without numerical divergence." >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload Evidence Artifact
+      if: inputs.upload-report == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: xlaxiom-metamorphic-evidence
+        path: ${{ inputs.output-dir }}

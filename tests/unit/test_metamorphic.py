@@ -42,6 +42,17 @@ def test_curated_properties_exactly_match_the_reviewed_registry() -> None:
         "square-absolute-identity-v1",
         "negation-multiplication-duality-v1",
         "sum-negation-duality-v1",
+        "abs-negation-involution-v1",
+        "maximum-idempotence-v1",
+        "lattice-absorption-v1",
+        "abs-multiplication-v1",
+        "sqrt-square-identity-v1",
+        "mean-negation-duality-v1",
+        "distributivity-mul-add-v1",
+        "add-associativity-v1",
+        "mul-associativity-v1",
+        "square-abs-multiplication-identity-v1",
+        "cos-even-duality-v1",
     ]
 
 

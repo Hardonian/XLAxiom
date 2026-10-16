@@ -21,6 +21,7 @@ from .attestation import (
     sign_attestation,
     verify_subject_attestation,
 )
+from .bisect import bisect_versions
 from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .comparison import Classification
@@ -98,6 +99,8 @@ from .storage import (
     save_json,
     save_relational_case,
 )
+from .tracing import load_and_trace_target
+from .triage import format_triage_issue
 
 
 def _emit(data: Any) -> None:
@@ -1202,6 +1205,51 @@ def command_bundle_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_trace(args: argparse.Namespace) -> int:
+    try:
+        shapes = [tuple(int(d) for d in s.split(",")) for s in args.shapes.split(";") if s.strip()]
+        dtypes = [d.strip() for d in args.dtypes.split(",")] if args.dtypes else None
+        workload = load_and_trace_target(args.target, shapes, dtypes)
+        save_json(args.output, workload.canonical_dict())
+    except Exception as exc:
+        raise SystemExit(f"tracing failed: {exc}") from exc
+    _emit(
+        {
+            "status": "ok",
+            "workload": workload.identifier,
+            "output": args.output,
+            "nodes": len(workload.nodes),
+        }
+    )
+    return 0
+
+
+def command_bisect(args: argparse.Namespace) -> int:
+    try:
+        versions = [v.strip() for v in args.versions.split(",") if v.strip()]
+        result = bisect_versions(args.case, versions, timeout_s=args.timeout_s)
+        data = result.to_dict()
+        if args.output:
+            save_json(args.output, data)
+        _emit(data)
+    except Exception as exc:
+        raise SystemExit(f"bisection failed: {exc}") from exc
+    return 0
+
+
+def command_triage(args: argparse.Namespace) -> int:
+    try:
+        markdown = format_triage_issue(args.case, target_tracker=args.target)
+        if args.output:
+            Path(args.output).write_text(markdown, encoding="utf-8")
+            _emit({"status": "ok", "target": args.target, "output": args.output})
+        else:
+            print(markdown)
+    except Exception as exc:
+        raise SystemExit(f"triage generation failed: {exc}") from exc
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         prog="xlaxiom", description="Evidence-first numerical differential testing for JAX/OpenXLA."
@@ -1210,6 +1258,45 @@ def parser() -> argparse.ArgumentParser:
     commands = root.add_subparsers(dest="command", required=True)
     doctor_parser = commands.add_parser("doctor", help="inspect JAX/backend capabilities")
     doctor_parser.set_defaults(func=command_doctor)
+
+    trace_parser = commands.add_parser(
+        "trace", help="trace a JAX callable into a declarative workload"
+    )
+    trace_parser.add_argument(
+        "--target", required=True, help="callable formatted as module:function"
+    )
+    trace_parser.add_argument(
+        "--shapes", required=True, help="semi-colon separated shapes, e.g. '2,3;2,3'"
+    )
+    trace_parser.add_argument("--dtypes", help="comma-separated dtypes, e.g. 'float32,float32'")
+    trace_parser.add_argument("--output", required=True, help="JSON workload output path")
+    trace_parser.set_defaults(func=command_trace)
+
+    bisect_parser = commands.add_parser(
+        "bisect", help="pinpoint compiler regression version via binary search"
+    )
+    bisect_parser.add_argument("--case", required=True, help="path to failing case JSON")
+    bisect_parser.add_argument(
+        "--versions", required=True, help="comma-separated list of versions to search"
+    )
+    bisect_parser.add_argument(
+        "--timeout-s", type=float, default=90.0, help="per-version timeout in seconds"
+    )
+    bisect_parser.add_argument("--output", help="optional output path for bisect results JSON")
+    bisect_parser.set_defaults(func=command_bisect)
+
+    triage_parser = commands.add_parser(
+        "triage", help="format ready-to-file GitHub Issue markdown for upstream compilers"
+    )
+    triage_parser.add_argument("--case", required=True, help="path to case or reduced case JSON")
+    triage_parser.add_argument(
+        "--target",
+        default="jax",
+        choices=("jax", "pytorch", "openxla"),
+        help="target compiler tracker",
+    )
+    triage_parser.add_argument("--output", help="optional markdown output file path")
+    triage_parser.set_defaults(func=command_triage)
     attest_parser = commands.add_parser(
         "attest", help="create detached signatures with a maintainer-supplied private key"
     )

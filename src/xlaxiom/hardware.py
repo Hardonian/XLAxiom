@@ -14,6 +14,7 @@ both the CUDA ordinal and the physical device name so the two can be reconciled.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import platform
 import shutil
@@ -498,6 +499,47 @@ def environment_manifest() -> dict[str, Any]:
     return manifest
 
 
+def discover_apple_silicon() -> dict[str, Any]:
+    """Detect Apple Silicon (Darwin ARM64) capabilities and Metal/MPS status."""
+    is_darwin = platform.system() == "Darwin"
+    is_arm = platform.machine() in {"arm64", "aarch64"}
+    mps_available = False
+    if is_darwin and is_arm:
+        try:
+            import torch
+
+            mps_available = bool(torch.backends.mps.is_available())
+        except (ImportError, AttributeError):
+            pass
+    return {
+        "is_apple_silicon": is_darwin and is_arm,
+        "platform": platform.platform(),
+        "processor": platform.processor(),
+        "metal_supported": is_darwin and is_arm,
+        "mps_available": mps_available,
+    }
+
+
+def discover_rocm_devices() -> list[dict[str, Any]]:
+    """Detect AMD ROCm (HIP) accelerators via rocm-smi."""
+    executable = shutil.which("rocm-smi")
+    if executable is None:
+        return []
+    try:
+        completed = subprocess.run(
+            [executable, "--showid", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if completed.returncode == 0:
+            data = json.loads(completed.stdout)
+            return [{"device_id": str(k), "info": v} for k, v in data.items()]
+    except Exception:
+        pass
+    return []
+
+
 def hardware_report() -> dict[str, Any]:
     """A complete non-destructive hardware inventory with per-device compatibility."""
     devices = enumerate_physical_gpus()
@@ -519,6 +561,8 @@ def hardware_report() -> dict[str, Any]:
         "environment": environment_manifest(),
         "device_count": len(entries),
         "devices": entries,
+        "apple_silicon": discover_apple_silicon(),
+        "rocm_devices": discover_rocm_devices(),
         "note": (
             "CUDA runtime ordinal order may differ from nvidia-smi index order; the "
             "ordinal and nvidia-smi index are both recorded for reconciliation."

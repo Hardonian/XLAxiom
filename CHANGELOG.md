@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.0.0 - 2026-10-16
+
+- **General Availability & Full Release Milestone**: Complete delivery of all strategic compiler evidence capabilities, turning XLAxiom into an essential, universal developer tool across frameworks and accelerators.
+- **Graph Tracing & Code Ingestion (`xlaxiom.trace` / `xlaxiom trace`)**:
+  - Direct translation of live JAX callables (`jax.make_jaxpr`) into safe, declarative XLAxiom `Workload` IR.
+  - Subgraph extraction engine (`extract_subgraph`) that isolates minimal dependency closures around observed numerical discrepancies.
+  - Live verification decorator (`@xlaxiom.capture`) for inline differential assertions across execution backends.
+  - New CLI subcommand `xlaxiom trace` for ingesting arbitrary Python functions with explicit tensor shapes and dtypes.
+- **Automated Compiler Version Bisection (`xlaxiom bisect`)**:
+  - Automated binary search across compiler releases using isolated `uv` virtual environments (`MatrixEnvironment`).
+  - Automatically isolates the exact compiler release or commit introducing a numerical divergence or regression.
+  - Emits structured bisection ledgers and copy-pasteable reproduction commands.
+- **Automated Upstream Triage Exporter (`xlaxiom triage`)**:
+  - One-click GitHub Issue generator generating audit-ready markdown packages formatted for `google/jax`, `pytorch/pytorch`, and `openxla/xla` issue templates.
+  - Produces complete numerical error distribution tables (Max Abs, Max Rel, MAE, RMS), environment provenance, and a standalone 10-line zero-dependency Python reproduction script.
+- **Expanded Metamorphic Corpus (from 24 to 35 invariants)**:
+  - Added eleven new reviewed algebraic and lattice invariants:
+    - Absolute value negation involution (`abs-negation-involution-v1`)
+    - Maximum and minimum idempotence (`maximum-idempotence-v1`)
+    - Lattice min-max absorption identity (`lattice-absorption-v1`)
+    - Absolute value product distributivity (`abs-multiplication-v1`)
+    - Square root of square identity (`sqrt-square-identity-v1`)
+    - Global mean reduction negation duality (`mean-negation-duality-v1`)
+    - Multiplication distributivity over addition (`distributivity-mul-add-v1`)
+    - Addition associativity (`add-associativity-v1`)
+    - Multiplication associativity (`mul-associativity-v1`)
+    - Square absolute self-multiplication identity (`square-abs-multiplication-identity-v1`)
+    - Cosine even function symmetry (`cos-even-duality-v1`)
+  - Evaluated mutation sharpness across all new properties, confirming 60%–100% mutant kill rates.
+- **Developer Ergonomics & Testing Framework (`pytest-xlaxiom`)**:
+  - First-class `pytest` plugin registered via entry-point `pytest11`.
+  - Provides custom markers (`@pytest.mark.xlaxiom`, `@pytest.mark.xlaxiom_metamorphic`) and fixtures (`xlaxiom_workload_factory`, `xlaxiom_evidence_dir`).
+  - Automatic test failure hook emitting offline HTML evidence reports in `.xlaxiom-reports/`.
+- **Multi-Framework & Accelerator Expansion**:
+  - Enhanced PyTorch adapter (`execute_torch`) with support for TorchInductor compilation (`mode="compile"`) and Apple Silicon Metal/MPS acceleration (`device="mps"`).
+  - Added hardware discovery for Apple Silicon (`discover_apple_silicon`) and AMD ROCm (`discover_rocm_devices`) integrated into non-destructive hardware inventory reports.
+- **Official GitHub Action (`.github/actions/xlaxiom-action/action.yml`)**:
+  - Composite action enabling drop-in CI verification with automated `$GITHUB_STEP_SUMMARY` report tables and artifact uploads.
+
 ## 0.6.2 - 2026-10-14
 
 - Expanded the reviewed metamorphic corpus from 19 to 24 declarative invariants, adding

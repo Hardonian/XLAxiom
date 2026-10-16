@@ -265,23 +265,23 @@ def execute_numpy(workload: Workload) -> ExecutionResult:
     return execute_array_api(workload, np, backend="numpy")
 
 
-def execute_torch(workload: Workload, device: str = "cpu") -> ExecutionResult:
-    """Execute through the optional PyTorch adapter for cross-framework differential testing.
+def execute_torch(workload: Workload, device: str = "cpu", mode: str = "eager") -> ExecutionResult:
+    """Execute through the PyTorch adapter for cross-framework differential testing.
 
-    Fail-closed: if PyTorch or the requested device is unavailable, returns UNSUPPORTED_BACKEND.
+    Fail-closed: returns UNSUPPORTED_BACKEND if PyTorch or the device/mode is absent.
     """
     started = time.perf_counter()
     try:
         plan = compile_execution_plan(workload)
     except ValidationError as exc:
-        return ExecutionResult("torch", "eager", ExecutionStatus.INVALID_WORKLOAD, error=str(exc))
+        return ExecutionResult("torch", mode, ExecutionStatus.INVALID_WORKLOAD, error=str(exc))
 
     try:
         import torch
     except ImportError as exc:
         return ExecutionResult(
             "torch",
-            "eager",
+            mode,
             ExecutionStatus.UNSUPPORTED_BACKEND,
             error=f"torch is not installed: {exc}",
         )
@@ -289,9 +289,18 @@ def execute_torch(workload: Workload, device: str = "cpu") -> ExecutionResult:
     if device.startswith("cuda") and not torch.cuda.is_available():
         return ExecutionResult(
             "torch",
-            "eager",
+            mode,
             ExecutionStatus.UNSUPPORTED_BACKEND,
             error=f"torch CUDA device {device!r} is unavailable",
+        )
+
+    mps_backend = getattr(torch.backends, "mps", None)
+    if device == "mps" and (mps_backend is None or not mps_backend.is_available()):
+        return ExecutionResult(
+            "torch",
+            mode,
+            ExecutionStatus.UNSUPPORTED_BACKEND,
+            error="torch MPS device is unavailable on this host",
         )
 
     class _TorchNamespace:
@@ -371,19 +380,25 @@ def execute_torch(workload: Workload, device: str = "cpu") -> ExecutionResult:
     try:
         bound = plan.bind(_TorchNamespace)
     except BackendAdapterError as exc:
-        return ExecutionResult(
-            "torch", "eager", ExecutionStatus.UNSUPPORTED_BACKEND, error=str(exc)
-        )
+        return ExecutionResult("torch", mode, ExecutionStatus.UNSUPPORTED_BACKEND, error=str(exc))
 
     try:
         raw_inputs = _materialized_plan_inputs(plan, workload)
         torch_device = torch.device(device)
         inputs = tuple(torch.from_numpy(np.asarray(val)).to(torch_device) for val in raw_inputs)
-        raw_outputs = bound.evaluate(inputs)
+        eval_fn: Callable[[Sequence[Any]], tuple[Any, ...]] = bound.evaluate
+        if mode == "compile":
+            try:
+                eval_fn = torch.compile(bound.evaluate, backend="inductor")
+            except Exception as exc:
+                return ExecutionResult(
+                    "torch", mode, ExecutionStatus.COMPILATION_FAILURE, error=str(exc)
+                )
+        raw_outputs = eval_fn(inputs)
         outputs = tuple(np.asarray(val.detach().cpu().numpy()) for val in raw_outputs)
         return ExecutionResult(
             "torch",
-            "eager",
+            mode,
             ExecutionStatus.OK,
             outputs,
             (time.perf_counter() - started) * 1000,
@@ -391,7 +406,7 @@ def execute_torch(workload: Workload, device: str = "cpu") -> ExecutionResult:
         )
     except Exception:
         return ExecutionResult(
-            "torch", "eager", ExecutionStatus.EXECUTION_FAILURE, error=traceback.format_exc()
+            "torch", mode, ExecutionStatus.EXECUTION_FAILURE, error=traceback.format_exc()
         )
 
 

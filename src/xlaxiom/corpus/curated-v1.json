@@ -157,6 +157,72 @@
       "title": "Global sum reduction negation duality",
       "description": "sum(-x) equals -sum(x) for global reduction.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "abs-negation-involution-v1",
+      "title": "Absolute value of negation is absolute value",
+      "description": "abs(-x) and abs(x) produce equivalent elementwise outputs preserving signed zero.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "maximum-idempotence-v1",
+      "title": "Maximum and minimum idempotence",
+      "description": "maximum(x, x) and minimum(x, x) produce equivalent elementwise outputs equal to x.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "lattice-absorption-v1",
+      "title": "Lattice min-max absorption identity",
+      "description": "maximum(x, minimum(x, y)) and minimum(x, maximum(x, y)) produce equivalent elementwise outputs equal to x.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "abs-multiplication-v1",
+      "title": "Absolute value product distributivity",
+      "description": "abs(x * y) and abs(x) * abs(y) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "sqrt-square-identity-v1",
+      "title": "Square root of square identity",
+      "description": "sqrt(square(x)) and abs(x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "mean-negation-duality-v1",
+      "title": "Global mean reduction negation duality",
+      "description": "mean(-x) and -mean(x) produce equivalent reduction outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "distributivity-mul-add-v1",
+      "title": "Multiplication distributes over addition",
+      "description": "x * (y + z) and (x * y) + (x * z) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "add-associativity-v1",
+      "title": "Addition associativity",
+      "description": "(x + y) + z and x + (y + z) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "mul-associativity-v1",
+      "title": "Multiplication associativity",
+      "description": "(x * y) * z and x * (y * z) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "square-abs-multiplication-identity-v1",
+      "title": "Square absolute self-multiplication identity",
+      "description": "abs(x * x) and square(abs(x)) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "cos-even-duality-v1",
+      "title": "Cosine even function symmetry",
+      "description": "cos(x) and cos(-x) produce equivalent elementwise outputs.",
+      "relation": "outputs_equal"
     }
   ]
 }

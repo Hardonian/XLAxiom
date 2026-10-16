@@ -681,6 +681,324 @@ def _sum_negation_duality(seed: int) -> PropertyWorkloads:
     )
 
 
+def _abs_negation_involution(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "abs-negation-involution-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "nx"),
+                Node("abs", ("nx",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "abs-negation-involution-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _maximum_idempotence(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "maximum-idempotence-v1",
+            seed,
+            inputs,
+            (Node("maximum", ("x", "x"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "maximum-idempotence-v1",
+            seed,
+            inputs,
+            (Node("minimum", ("x", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _lattice_absorption(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "lattice-absorption-v1",
+            seed,
+            inputs,
+            (
+                Node("minimum", ("x", "y"), "min_xy"),
+                Node("maximum", ("x", "min_xy"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "lattice-absorption-v1",
+            seed,
+            inputs,
+            (
+                Node("maximum", ("x", "y"), "max_xy"),
+                Node("minimum", ("x", "max_xy"), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _abs_multiplication(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "abs-multiplication-v1",
+            seed,
+            inputs,
+            (
+                Node("mul", ("x", "y"), "xy"),
+                Node("abs", ("xy",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "abs-multiplication-v1",
+            seed,
+            inputs,
+            (
+                Node("abs", ("x",), "ax"),
+                Node("abs", ("y",), "ay"),
+                Node("mul", ("ax", "ay"), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _sqrt_square_identity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "sqrt-square-identity-v1",
+            seed,
+            inputs,
+            (
+                Node("square", ("x",), "sq"),
+                Node("sqrt", ("sq",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "sqrt-square-identity-v1",
+            seed,
+            inputs,
+            (Node("abs", ("x",), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _mean_negation_duality(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "mean-negation-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "nx"),
+                Node("mean", ("nx",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "mean-negation-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("mean", ("x",), "mx"),
+                Node("neg", ("mx",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _distributivity_mul_add(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (
+        InputSpec("x", (rows, columns)),
+        InputSpec("y", (rows, columns)),
+        InputSpec("z", (rows, columns)),
+    )
+    return PropertyWorkloads(
+        _workload(
+            "distributivity-mul-add-v1",
+            seed,
+            inputs,
+            (
+                Node("add", ("y", "z"), "yz"),
+                Node("mul", ("x", "yz"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "distributivity-mul-add-v1",
+            seed,
+            inputs,
+            (
+                Node("mul", ("x", "y"), "xy"),
+                Node("mul", ("x", "z"), "xz"),
+                Node("add", ("xy", "xz"), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _add_associativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (
+        InputSpec("x", (rows, columns)),
+        InputSpec("y", (rows, columns)),
+        InputSpec("z", (rows, columns)),
+    )
+    return PropertyWorkloads(
+        _workload(
+            "add-associativity-v1",
+            seed,
+            inputs,
+            (
+                Node("add", ("x", "y"), "xy"),
+                Node("add", ("xy", "z"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "add-associativity-v1",
+            seed,
+            inputs,
+            (
+                Node("add", ("y", "z"), "yz"),
+                Node("add", ("x", "yz"), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _mul_associativity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (
+        InputSpec("x", (rows, columns)),
+        InputSpec("y", (rows, columns)),
+        InputSpec("z", (rows, columns)),
+    )
+    return PropertyWorkloads(
+        _workload(
+            "mul-associativity-v1",
+            seed,
+            inputs,
+            (
+                Node("mul", ("x", "y"), "xy"),
+                Node("mul", ("xy", "z"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "mul-associativity-v1",
+            seed,
+            inputs,
+            (
+                Node("mul", ("y", "z"), "yz"),
+                Node("mul", ("x", "yz"), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _square_abs_multiplication_identity(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "square-abs-multiplication-identity-v1",
+            seed,
+            inputs,
+            (
+                Node("mul", ("x", "x"), "xx"),
+                Node("abs", ("xx",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "square-abs-multiplication-identity-v1",
+            seed,
+            inputs,
+            (
+                Node("abs", ("x",), "ax"),
+                Node("square", ("ax",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _cos_even_duality(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "cos-even-duality-v1",
+            seed,
+            inputs,
+            (Node("cos", ("x",), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "cos-even-duality-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "nx"),
+                Node("cos", ("nx",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
 _BUILDERS: dict[str, PropertyBuilder] = {
     "add-commutativity-v1": _add_commutativity,
     "transpose-involution-v1": _transpose_involution,
@@ -706,6 +1024,17 @@ _BUILDERS: dict[str, PropertyBuilder] = {
     "square-absolute-identity-v1": _square_absolute_identity,
     "negation-multiplication-duality-v1": _negation_multiplication_duality,
     "sum-negation-duality-v1": _sum_negation_duality,
+    "abs-negation-involution-v1": _abs_negation_involution,
+    "maximum-idempotence-v1": _maximum_idempotence,
+    "lattice-absorption-v1": _lattice_absorption,
+    "abs-multiplication-v1": _abs_multiplication,
+    "sqrt-square-identity-v1": _sqrt_square_identity,
+    "mean-negation-duality-v1": _mean_negation_duality,
+    "distributivity-mul-add-v1": _distributivity_mul_add,
+    "add-associativity-v1": _add_associativity,
+    "mul-associativity-v1": _mul_associativity,
+    "square-abs-multiplication-identity-v1": _square_abs_multiplication_identity,
+    "cos-even-duality-v1": _cos_even_duality,
 }
 
 
