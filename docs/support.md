@@ -13,7 +13,6 @@
 | Windows/Linux | Verified | Independent HX370 Windows and EPYC Linux records are checksummed and compared. |
 | macOS | Portable, unverified | Commands are portable; a macOS host must supply retained evidence before support is claimed. |
 
-
 Use `xlaxiom environment capture` on each host and `xlaxiom environment compare` to
 attach redacted, checksummed independent-host metadata. Use `xlaxiom runtime list` and
 `xlaxiom runtime compare` for fresh-process CPU thread-profile studies.

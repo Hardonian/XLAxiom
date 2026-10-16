@@ -44,6 +44,7 @@ and floating-point edge-case semantics:
 ## Publication boundary
 
 The source tree, packaging configurations, and distribution artifacts are synchronized for version `1.0.0`:
+
 - `pyproject.toml` version `1.0.0`
 - `src/xlaxiom/_version.py` version `1.0.0`
 - `CITATION.cff` version `1.0.0`, release date `2026-10-16`
