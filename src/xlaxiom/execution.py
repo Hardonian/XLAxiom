@@ -402,7 +402,7 @@ def execute_torch(workload: Workload, device: str = "cpu", mode: str = "eager") 
             ExecutionStatus.OK,
             outputs,
             (time.perf_counter() - started) * 1000,
-            device=str(device),
+            device=device,
         )
     except Exception:
         return ExecutionResult(
@@ -651,7 +651,8 @@ def doctor() -> dict[str, Any]:
             info["gpu_devices"] = [str(device) for device in gpu_devices]
             info["gpu_probe"] = "ok"
         except Exception as exc:
-            info["gpu_devices"] = []
+            empty_gpu_devices: list[str] = []
+            info["gpu_devices"] = empty_gpu_devices
             info["gpu_probe"] = "unsupported"
             info["gpu_error"] = repr(exc)
     except ImportError as exc:

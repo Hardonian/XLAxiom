@@ -111,7 +111,7 @@ def format_triage_issue(
     try:
         import jax
 
-        jax_version = str(jax.__version__)
+        jax_version = jax.__version__
     except Exception:
         pass
     if isinstance(provenance, dict):

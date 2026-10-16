@@ -46,7 +46,7 @@ class CudaVariant(StrEnum):
 
 
 def _sm_tuple(text: str) -> tuple[int, int]:
-    parts = str(text).split(".")
+    parts = text.split(".")
     return (int(parts[0]), int(parts[1])) if len(parts) >= 2 else (int(parts[0]), 0)
 
 

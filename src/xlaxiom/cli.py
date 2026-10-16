@@ -464,7 +464,7 @@ def command_property_run(args: argparse.Namespace) -> int:
             identifiers=tuple(args.property) if args.property else None,
             policy=_property_policy(args),
         )
-    except (MetamorphicPropertyError, ValueError) as exc:
+    except ValueError as exc:
         raise SystemExit(f"invalid curated property corpus: {exc}") from exc
     if args.output:
         save_json(args.output, result)
@@ -483,7 +483,7 @@ def command_property_campaign(args: argparse.Namespace) -> int:
             identifiers=tuple(args.property) if args.property else None,
             policy=_property_policy(args),
         )
-    except (MetamorphicPropertyError, ValueError) as exc:
+    except ValueError as exc:
         raise SystemExit(f"invalid property campaign: {exc}") from exc
     if args.output:
         save_json(args.output, result)
@@ -519,7 +519,7 @@ def command_property_coverage(args: argparse.Namespace) -> int:
 def command_property_sharpness(args: argparse.Namespace) -> int:
     try:
         report = evaluate_property_sharpness(args.property, args.seed, args.backend)
-    except (ValueError, MetamorphicPropertyError) as exc:
+    except ValueError as exc:
         raise SystemExit(f"cannot evaluate property sharpness: {exc}") from exc
     record = report.to_dict()
     if args.output:

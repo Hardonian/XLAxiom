@@ -85,4 +85,3 @@ Key completion artifacts:
 - [`tpu-vs-cpu-comparison.json`](../evidence/tpu/tpu-vs-cpu-comparison.json)
 - [`tpu-jit-evidence.json`](../evidence/tpu/tpu-jit-evidence.json)
 - [`tpu-campaign.json`](../evidence/tpu/tpu-campaign.json)
-
