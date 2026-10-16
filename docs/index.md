@@ -19,7 +19,9 @@
 ## Evidence and project status
 
 - [Experiment evidence](experiments/)
+- [1.0.0 General Availability release closure audit](experiments/release-closure-1.0.0-2026-10-16.md)
 - [2026-10-13 milestone completion audit](experiments/milestone-completion-2026-10-13.md)
 - [0.5.1–0.5.2 package completion audit](experiments/package-completion-0.5.1-2026-10-13.md)
 - [Holistic delivery plan](roadmap.md)
 - [Research notes](research/)
+
