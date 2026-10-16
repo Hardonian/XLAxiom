@@ -2,8 +2,8 @@
 
 ## Release state
 
-The source tree is prepared for version 0.6.1. It becomes a release only when the
-annotated `v0.6.1` tag passes the `Release verification` workflow and its GitHub Release
+The source tree is prepared for version 1.0.0. It becomes a release only when the
+annotated `v1.0.0` tag passes the `Release verification` workflow and its GitHub Release
 is published. Do not describe a source-only or merely tagged version as published until
 the PyPI publishing job has succeeded. Citation metadata is versioned with the release
 candidate so the tagged source, wheel, source distribution, and citation agree.
@@ -45,7 +45,7 @@ the package version:
 ```console
 uv build --out-dir .release-dist
 uv run twine check .release-dist/*
-uv run python scripts/verify_distribution.py --dist-dir .release-dist --tag v0.6.1
+uv run python scripts/verify_distribution.py --dist-dir .release-dist --tag v1.0.0
 ```
 
 Publishing a GitHub Release activates a separate, minimal PyPI job only after the
@@ -55,9 +55,10 @@ token. Before the first publication, a maintainer must configure a PyPI pending
 publisher for `Hardonian/XLAxiom`, workflow `release.yml`, environment `pypi`, and must
 configure required reviewers on that GitHub environment.
 
-Version 0.6.0 met the source, wheel, CPU, Windows/Linux, and available CUDA hardware
-criteria on 2026-10-13. Physical TPU and macOS execution remain unverified support
-boundaries, not release blockers or implied claims; see [`support.md`](support.md).
+Version 1.0.0 delivers General Availability across 61 strategic priorities, including
+graph tracing, compiler version bisection, upstream triage generation, 35 curated metamorphic
+properties with verified mutation sharpness, PyTorch Inductor compilation, and Apple Silicon/ROCm
+discovery. Physical TPU and macOS execution retain fail-closed boundaries; see [`support.md`](support.md).
 
 ## Schema compatibility
 

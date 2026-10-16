@@ -45,8 +45,9 @@ observe → classify → minimize → reproduce in a fresh process
 ```
 
 - **Records the evidence.** It captures versions, device placement, numerical policy, outputs, and an explicit predicate instead of treating a mismatch as a diagnosis.
-- **Keeps cases small.** Failure-preserving minimization reduces a reproducible observation without silently changing what failed.
-- **Makes handoffs portable.** Declarative JSON workloads, checksums, reports, and bundles let another engineer validate the same artifact.
+- **Keeps cases small.** Failure-preserving minimization and topological subgraph extraction reduce a reproducible observation without silently changing what failed.
+- **Pinpoints compiler regressions.** Automated bisection binary-searches compiler releases in isolated environments to identify exact breaking changes.
+- **Makes handoffs portable.** Declarative JSON workloads, copy-pasteable 10-line reproduction scripts, triage markdown packages, checksummed reports, and bundles let another engineer or upstream maintainer validate the observation immediately.
 - **Fails closed on hardware.** Accelerator requests must prove actual placement; unavailable GPU/TPU hardware is never represented as a CPU success.
 
 XLAxiom is the evidence layer between a suspicious numerical result and a focused engineering investigation. It is not a general correctness oracle, performance benchmark suite, or automatic root-cause analyzer.
@@ -65,7 +66,7 @@ The [artifact lifecycle](docs/artifacts.md) has the exact command-level process.
 The repository is designed to make scope visible rather than inflate it:
 
 - The CPU path, checksummed artifacts, failure containment, and reviewed property corpus are covered by automated tests and release verification.
-- The curated corpus contains thirteen explicit relations across ordinary, extreme, signed-zero, non-finite, integer, mixed-dtype, and x64 inputs.
+- The curated corpus contains thirty-five explicit relations across ordinary, extreme, signed-zero, non-finite, integer, mixed-dtype, and x64 inputs with verified mutation sharpness.
 - Windows/Linux and selected CUDA evidence are retained as concrete records; GPU, TPU, and macOS claims remain capability- and evidence-gated.
 
 See the [support and verification matrix](docs/support.md) for what is supported versus merely implemented, and the [experiment records](docs/experiments/) for the underlying evidence—not a condensed lab notebook in this README.
@@ -74,9 +75,11 @@ See the [support and verification matrix](docs/support.md) for what is supported
 
 | Goal | Primary commands |
 | --- | --- |
+| Ingest live code | `trace` |
 | Inspect an environment | `doctor`, `environment capture`, `runtime compare` |
 | Investigate one case | `generate`, `run`, `compare`, `minimize`, `reproduce` |
-| Prepare a handoff | `report`, `bundle create`, `bundle validate`, `readiness` |
+| Pinpoint compiler regression | `bisect` |
+| Prepare upstream triage/handoff | `triage`, `report`, `bundle create`, `bundle validate`, `readiness` |
 | Test known relations | `property list`, `property run`, `property campaign`, `relation` |
 | Compare changes safely | `matrix run`, `property compare`, `historical-study` |
 | Validate accelerators | `gpu doctor`, `gpu validate`, `gpu campaign` |
