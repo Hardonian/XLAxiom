@@ -10,7 +10,7 @@ import functools
 import importlib
 from collections import deque
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, Protocol, cast
 
 import numpy as np
 
@@ -214,14 +214,22 @@ def extract_subgraph(
     return extracted
 
 
+class CapturedCallable(Protocol):
+    """Protocol for callables wrapped with the capture decorator."""
+
+    last_divergence: dict[str, Any] | None
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+
 def capture(
     backends: tuple[str, str] = ("numpy", "jax-jit"),
     rtol: float = 1e-5,
     atol: float = 1e-6,
-) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+) -> Callable[[Callable[..., Any]], CapturedCallable]:
     """Decorator to verify execution parity and trace on discrepancy."""
 
-    def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+    def decorator(fn: Callable[..., Any]) -> CapturedCallable:
         @functools.wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             res = fn(*args, **kwargs)
@@ -244,7 +252,7 @@ def capture(
             return res
 
         wrapper.last_divergence = None  # type: ignore[attr-defined]
-        return wrapper
+        return cast(CapturedCallable, wrapper)
 
     return decorator
 

@@ -6,7 +6,6 @@ import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass, field
-from itertools import zip_longest
 from typing import Any, Literal, cast
 
 import numpy as np
@@ -152,24 +151,26 @@ class Workload:
         if not self.identifier or len(self.nodes) > 64 or len(self.inputs) > 16:
             raise ValidationError("identifier is missing or workload complexity exceeds limit")
         self.policy.validate()
-        known: dict[str, tuple[tuple[int, ...], np.dtype[Any]]] = {}
+        known_shapes: dict[str, tuple[int, ...]] = {}
+        known_dtypes: dict[str, np.dtype[Any]] = {}
         cumulative_bytes = 0
         for spec in self.inputs:
             spec.validate(limits)
-            if spec.name in known:
+            if spec.name in known_shapes:
                 raise ValidationError(f"duplicate value name {spec.name}")
             dtype = np.dtype(spec.dtype)
             size = _checked_product(spec.shape) * dtype.itemsize
             cumulative_bytes += size
-            known[spec.name] = (spec.shape, dtype)
+            known_shapes[spec.name] = spec.shape
+            known_dtypes[spec.name] = dtype
         for node in self.nodes:
             node.validate_basic()
-            if node.output in known or any(name not in known for name in node.inputs):
+            if node.output in known_shapes or any(name not in known_shapes for name in node.inputs):
                 raise ValidationError(
                     f"node {node.output} has duplicate or forward input reference"
                 )
-            shape = infer_shape(node, {name: value[0] for name, value in known.items()})
-            dtype = infer_dtype(node, {name: value[1] for name, value in known.items()})
+            shape = infer_shape(node, known_shapes)
+            dtype = infer_dtype(node, known_dtypes)
             if len(shape) > limits.max_rank:
                 raise ValidationError(f"intermediate {node.output} exceeds rank budget")
             allocation = _checked_product(shape) * dtype.itemsize
@@ -187,8 +188,9 @@ class Workload:
             cumulative_bytes += allocation
             if cumulative_bytes > limits.max_cumulative_bytes:
                 raise ValidationError("workload exceeds cumulative allocation budget")
-            known[node.output] = (shape, dtype)
-        if not self.outputs or any(name not in known for name in self.outputs):
+            known_shapes[node.output] = shape
+            known_dtypes[node.output] = dtype
+        if not self.outputs or any(name not in known_shapes for name in self.outputs):
             raise ValidationError("workload must name at least one defined output")
 
     def canonical_dict(self) -> dict[str, Any]:
@@ -302,6 +304,9 @@ def infer_shape(node: Node, known: dict[str, tuple[int, ...]]) -> tuple[int, ...
     raise ValidationError(f"shape inference unavailable for {node.op}")
 
 
+_DTYPE_CACHE: dict[tuple[str, tuple[str, ...], bool], np.dtype[Any]] = {}
+
+
 def infer_dtype(node: Node, known: dict[str, np.dtype[Any]]) -> np.dtype[Any]:
     """Return the conservative NumPy result dtype for a validated operation.
 
@@ -318,18 +323,25 @@ def infer_dtype(node: Node, known: dict[str, np.dtype[Any]]) -> np.dtype[Any]:
         return input_dtypes[0]
     if spec.kind == "matmul":
         return np.dtype(np.result_type(*input_dtypes))
+
+    keepdims = bool(node.params.get("keepdims", False))
+    cache_key = (node.op, tuple(d.name for d in input_dtypes), keepdims)
+    cached = _DTYPE_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
     operation = getattr(np, spec.api_name)
     probes = tuple(np.empty((), dtype=dtype) for dtype in input_dtypes)
     try:
         if spec.kind == "reduction":
-            result = operation(
-                probes[0], axis=None, keepdims=bool(node.params.get("keepdims", False))
-            )
+            result = operation(probes[0], axis=None, keepdims=keepdims)
         else:
             result = operation(*probes)
     except (TypeError, ValueError) as exc:
         raise ValidationError(f"invalid {node.op} dtype combination: {exc}") from exc
-    return np.asarray(result).dtype
+    res_dtype = np.asarray(result).dtype
+    _DTYPE_CACHE[cache_key] = res_dtype
+    return res_dtype
 
 
 def _require_parameter_keys(node: Node, allowed: set[str], required: set[str]) -> None:
@@ -372,13 +384,36 @@ def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
             continue
         if result == shape or not shape:
             continue
-        output: list[int] = []
-        for left, right in zip_longest(reversed(result), reversed(shape), fillvalue=1):
-            if left != right and left != 1 and right != 1:
+        r_len = len(result)
+        s_len = len(shape)
+        if r_len == s_len:
+            out = list(result)
+            for i in range(r_len):
+                r = result[i]
+                s = shape[i]
+                if r == s or s == 1:
+                    continue
+                if r == 1:
+                    out[i] = s
+                else:
+                    raise ValidationError(f"incompatible broadcast shapes: {shapes}")
+            result = tuple(out)
+            continue
+
+        out_len = r_len if r_len > s_len else s_len
+        out = [0] * out_len
+        for i in range(1, out_len + 1):
+            r = result[-i] if i <= r_len else 1
+            s = shape[-i] if i <= s_len else 1
+            if r == s:
+                out[-i] = r
+            elif r == 1:
+                out[-i] = s
+            elif s == 1:
+                out[-i] = r
+            else:
                 raise ValidationError(f"incompatible broadcast shapes: {shapes}")
-            output.append(left if right == 1 else right)
-        output.reverse()
-        result = tuple(output)
+        result = tuple(out)
     return result
 
 

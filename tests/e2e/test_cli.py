@@ -422,3 +422,408 @@ def test_cli_benchmark_and_cache_workflow(tmp_path) -> None:
     assert cache_res.returncode == 0, cache_res.stderr
     cache_data = json.loads(cache_res.stdout)
     assert cache_data["comparable"] is True
+
+
+def test_cli_report_generation(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    report_dir = tmp_path / "report_out"
+    gen = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "generate", "--seed", "3", "--output", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    rep = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "report",
+            "--case",
+            str(case_path),
+            "--output",
+            str(report_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert rep.returncode == 0, rep.stderr
+    out = json.loads(rep.stdout)
+    assert out["classification"] == "pass"
+    assert (report_dir / "report.json").exists()
+    assert (report_dir / "report.md").exists()
+    assert (report_dir / "report.html").exists()
+    assert "<!DOCTYPE html>" in (report_dir / "report.html").read_text(encoding="utf-8")
+
+
+def test_cli_bundle_lifecycle(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    bundle_path = tmp_path / "bundle.zip"
+    run_output = tmp_path / "bundle_result.json"
+    gen = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "generate", "--seed", "5", "--output", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    created = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "bundle",
+            "create",
+            "--case",
+            str(case_path),
+            "--output",
+            str(bundle_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert created.returncode == 0, created.stderr
+
+    validated = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "bundle", "validate", "--bundle", str(bundle_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert validated.returncode == 0, validated.stderr
+    v_data = json.loads(validated.stdout)
+    assert "cases" in v_data and len(v_data["cases"]) == 1
+
+    run_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "bundle",
+            "run",
+            "--bundle",
+            str(bundle_path),
+            "--output",
+            str(run_output),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert run_res.returncode == 0, run_res.stderr
+    assert run_output.exists()
+
+
+def test_cli_trace_workflow(tmp_path) -> None:
+    mod_file = tmp_path / "sample_model.py"
+    mod_file.write_text(
+        "import jax.numpy as jnp\ndef custom_fn(x, y):\n    return jnp.sin(jnp.add(x, y))\n",
+        encoding="utf-8",
+    )
+    traced_out = tmp_path / "traced.json"
+    res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "trace",
+            "--target",
+            "sample_model:custom_fn",
+            "--shapes",
+            "2,4;2,4",
+            "--dtypes",
+            "float32,float32",
+            "--output",
+            str(traced_out),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res.returncode == 0, res.stderr
+    data = json.loads(traced_out.read_text(encoding="utf-8"))
+    assert data["schema_version"] == "1.0"
+    assert len(data["inputs"]) == 2
+    assert any(n["op"] == "add" for n in data["nodes"])
+
+
+def test_cli_triage_exporter(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    gen = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "generate",
+            "--seed",
+            "11",
+            "--synthetic",
+            "--output",
+            str(case_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    for target in ("jax", "pytorch", "openxla"):
+        out_path = tmp_path / f"issue_{target}.md"
+        triage = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlaxiom",
+                "triage",
+                "--case",
+                str(case_path),
+                "--target",
+                target,
+                "--output",
+                str(out_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert triage.returncode == 0, triage.stderr
+        content = out_path.read_text(encoding="utf-8")
+        assert "Numerical Discrepancy" in content or "Reproduction" in content
+
+
+def test_cli_property_list_and_sharpness(tmp_path) -> None:
+    list_res = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "property", "list"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert list_res.returncode == 0, list_res.stderr
+    props = json.loads(list_res.stdout)
+    assert len(props["properties"]) == 35
+
+    sharpness_out = tmp_path / "sharpness.json"
+    sharp_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "property",
+            "sharpness",
+            "--property",
+            "add-commutativity-v1",
+            "--backend",
+            "numpy",
+            "--output",
+            str(sharpness_out),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert sharp_res.returncode == 0, sharp_res.stderr
+    sharp_data = json.loads(sharpness_out.read_text(encoding="utf-8"))
+    assert sharp_data["property_identifier"] == "add-commutativity-v1"
+    assert sharp_data["sharpness_score"] >= 0.5
+
+
+def test_cli_relation_reproduce_and_report(tmp_path) -> None:
+    relation_path = tmp_path / "relation.json"
+    report_dir = tmp_path / "relation_report"
+    created = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "relation",
+            "create",
+            "--property",
+            "maximum-idempotence-v1",
+            "--backend",
+            "numpy",
+            "--output",
+            str(relation_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert created.returncode == 0, created.stderr
+
+    repro = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "relation", "reproduce", "--case", str(relation_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert repro.returncode == 0, repro.stderr
+    repro_data = json.loads(repro.stdout)
+    assert repro_data["reproduced"] is True
+
+    rep = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "relation",
+            "report",
+            "--case",
+            str(relation_path),
+            "--output",
+            str(report_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert rep.returncode == 0, rep.stderr
+    assert (report_dir / "report.json").exists()
+    assert (report_dir / "report.md").exists()
+
+
+def test_cli_stability_runtime_and_environment(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    gen = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "generate", "--seed", "15", "--output", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    stab = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "stability",
+            "--case",
+            str(case_path),
+            "--backend",
+            "numpy",
+            "--runs",
+            "2",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert stab.returncode == 0, stab.stderr
+    assert json.loads(stab.stdout)["classification"] == "pass"
+
+    r_list = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "runtime", "list"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r_list.returncode == 0, r_list.stderr
+    profiles = json.loads(r_list.stdout)
+    assert len(profiles) >= 2
+
+    env_a = tmp_path / "env_a.json"
+    env_b = tmp_path / "env_b.json"
+    cmp_out = tmp_path / "env_cmp.json"
+    for path, label in ((env_a, "node-alpha"), (env_b, "node-beta")):
+        res = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "xlaxiom",
+                "environment",
+                "capture",
+                "--label",
+                label,
+                "--output",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert res.returncode == 0, res.stderr
+
+    env_cmp = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "environment",
+            "compare",
+            "--primary",
+            str(env_a),
+            "--secondary",
+            str(env_b),
+            "--output",
+            str(cmp_out),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert env_cmp.returncode == 1
+    assert cmp_out.exists()
+    env_data = json.loads(cmp_out.read_text(encoding="utf-8"))
+    assert env_data["independent"] is False
+
+
+def test_cli_run_compare_outcomes_and_gradient(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    gen = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "generate", "--seed", "20", "--output", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    r_res = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "run", "--case", str(case_path), "--backend", "numpy"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r_res.returncode == 0, r_res.stderr
+
+    c_res = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "compare", "--case", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert c_res.returncode == 0, c_res.stderr
+    assert json.loads(c_res.stdout)["classification"] == "pass"
+
+    outcomes = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "outcomes",
+            "--case",
+            str(case_path),
+            "--left-backend",
+            "numpy",
+            "--right-backend",
+            "jax-jit",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert outcomes.returncode == 0, outcomes.stderr
+    assert json.loads(outcomes.stdout)["classification"] == "pass"
+
+    grad = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "gradient", "--seed", "1"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert grad.returncode == 0, grad.stderr
