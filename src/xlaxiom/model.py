@@ -251,7 +251,7 @@ class Workload:
                 policy=policy,
                 metadata=data.get("metadata", {}),
             )
-        except (KeyError, TypeError, ValueError, ValidationError) as exc:
+        except (KeyError, TypeError, ValueError) as exc:
             raise ValidationError(f"malformed workload: {exc}") from exc
         workload.validate()
         return workload
