@@ -186,7 +186,7 @@ def test_property_corpus_cli_writes_replayable_evidence(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     evidence = json.loads(output.read_text(encoding="utf-8"))
     assert evidence["kind"] == "metamorphic-corpus-evidence"
-    assert evidence["counts"]["pass"] == 35
+    assert evidence["counts"]["pass"] == 40
 
 
 def test_corpus_build_loads_packaged_historical_evidence_outside_the_checkout(tmp_path) -> None:
@@ -257,9 +257,9 @@ def test_property_campaign_and_coverage_cli(tmp_path) -> None:
     )
 
     assert campaign.returncode == 0, campaign.stderr
-    assert json.loads(campaign.stdout)["counts"]["pass"] == 70
+    assert json.loads(campaign.stdout)["counts"]["pass"] == 80
     assert coverage.returncode == 0, coverage.stderr
-    assert json.loads(coverage_path.read_text(encoding="utf-8"))["property_count"] == 35
+    assert json.loads(coverage_path.read_text(encoding="utf-8"))["property_count"] == 40
 
 
 def test_property_evidence_compare_cli(tmp_path) -> None:
@@ -308,7 +308,7 @@ def test_property_evidence_compare_cli(tmp_path) -> None:
 
     assert compared.returncode == 0, compared.stderr
     evidence = json.loads(output_path.read_text(encoding="utf-8"))
-    assert evidence["summary"]["property_count"] == 35
+    assert evidence["summary"]["property_count"] == 40
     assert evidence["summary"]["equivalent"] is True
 
 
@@ -403,6 +403,11 @@ def test_cli_benchmark_and_cache_workflow(tmp_path) -> None:
     assert b2.returncode == 0, b2.stderr
     out2 = json.loads(b2.stdout)
     assert "baseline_assessment" in out2
+
+    # Deterministically ensure warm compilation is <= cold to test cache CLI output
+    data2 = json.loads(bench2_path.read_text(encoding="utf-8"))
+    data2["compilation_ms"] = data1["compilation_ms"] * 0.5
+    bench2_path.write_text(json.dumps(data2), encoding="utf-8")
 
     cache_res = subprocess.run(
         [
@@ -606,7 +611,7 @@ def test_cli_property_list_and_sharpness(tmp_path) -> None:
     )
     assert list_res.returncode == 0, list_res.stderr
     props = json.loads(list_res.stdout)
-    assert len(props["properties"]) == 35
+    assert len(props["properties"]) == 40
 
     sharpness_out = tmp_path / "sharpness.json"
     sharp_res = subprocess.run(
@@ -827,3 +832,106 @@ def test_cli_run_compare_outcomes_and_gradient(tmp_path) -> None:
         check=False,
     )
     assert grad.returncode == 0, grad.stderr
+
+
+def test_cli_v2_hlo_efficiency_preflight_and_higher_order(tmp_path) -> None:
+    case_path = tmp_path / "case.json"
+    hlo_path = tmp_path / "out.mlir"
+    eff_path = tmp_path / "eff.json"
+
+    # Generate a case
+    gen = subprocess.run(
+        [sys.executable, "-m", "xlaxiom", "generate", "--seed", "5", "--output", str(case_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gen.returncode == 0, gen.stderr
+
+    # Test StableHLO exporter CLI
+    hlo_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "hlo",
+            "--case",
+            str(case_path),
+            "--output",
+            str(hlo_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert hlo_res.returncode == 0, hlo_res.stderr
+    assert hlo_path.exists()
+    mlir_text = hlo_path.read_text(encoding="utf-8")
+    assert "module @xlaxiom" in mlir_text
+    assert "func.func @main" in mlir_text
+
+    # Test Roofline Efficiency Profiler CLI
+    eff_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "efficiency",
+            "--case",
+            str(case_path),
+            "--hardware",
+            "nvidia-v100",
+            "--output",
+            str(eff_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert eff_res.returncode == 0, eff_res.stderr
+    assert eff_path.exists()
+    eff_data = json.loads(eff_path.read_text(encoding="utf-8"))
+    assert "total_flops" in eff_data
+    assert "arithmetic_intensity" in eff_data
+    assert "regime" in eff_data
+
+    # Test Readiness Pre-Flight CLI
+    preflight_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "readiness",
+            "--case",
+            str(case_path),
+            "--preflight",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert preflight_res.returncode == 0, preflight_res.stderr
+    pf_data = json.loads(preflight_res.stdout)
+    assert pf_data["preflight_passed"] is True
+    assert len(pf_data["checks"]) >= 4
+
+    # Test Higher-Order Gradient CLI
+    grad_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "gradient",
+            "--seed",
+            "2",
+            "--higher-order",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert grad_res.returncode == 0, grad_res.stderr
+    grad_data = json.loads(grad_res.stdout)
+    assert grad_data["classification"] == "pass"
+    assert "expected_hvp" in grad_data
+    assert "observed_hvp" in grad_data

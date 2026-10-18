@@ -52,6 +52,7 @@ def build_report(
             comparison.classification.value == "numerical_discrepancy" and not artifact.fault
         ),
         "issue_draft": issue_draft(artifact, comparison, case_path),
+        "workload": artifact.workload.canonical_dict(),
     }
 
 
@@ -126,6 +127,135 @@ def write_report(
     return json_path, markdown_path
 
 
+def render_svg_dag(workload_data: dict[str, Any] | None) -> str:
+    """Render a self-contained SVG computation DAG of the workload."""
+    if not workload_data or not isinstance(workload_data, dict):
+        return (
+            '<svg viewBox="0 0 400 50"><text x="20" y="30" fill="#94a3b8" '
+            'font-size="12">No workload graph data attached.</text></svg>'
+        )
+
+    inputs = workload_data.get("inputs", [])
+    nodes = workload_data.get("nodes", [])
+    outputs = set(workload_data.get("outputs", []))
+
+    if not inputs and not nodes:
+        return (
+            '<svg viewBox="0 0 400 50"><text x="20" y="30" fill="#94a3b8" '
+            'font-size="12">Empty computation graph.</text></svg>'
+        )
+
+    depth: dict[str, int] = {}
+    for inp in inputs:
+        depth[inp["name"]] = 0
+
+    for node in nodes:
+        in_depths = [depth.get(inp, 0) for inp in node.get("inputs", [])]
+        depth[node["output"]] = (max(in_depths) + 1) if in_depths else 0
+
+    layers: dict[int, list[dict[str, Any]]] = {}
+    for inp in inputs:
+        layers.setdefault(0, []).append(
+            {
+                "kind": "input",
+                "name": inp["name"],
+                "label": f"in: {inp['name']}",
+            }
+        )
+
+    for node in nodes:
+        d = depth.get(node["output"], 1)
+        layers.setdefault(d, []).append(
+            {
+                "kind": "op",
+                "name": node["output"],
+                "op": node["op"],
+                "inputs": node.get("inputs", []),
+                "is_output": node["output"] in outputs,
+                "label": f"{node['op']} ({node['output']})",
+            }
+        )
+
+    max_layer = max(layers.keys()) if layers else 0
+    max_nodes_in_layer = max(len(items) for items in layers.values()) if layers else 1
+
+    col_width = 170
+    row_height = 65
+    svg_width = max(420, (max_layer + 1) * col_width + 50)
+    svg_height = max(100, max_nodes_in_layer * row_height + 40)
+
+    positions: dict[str, tuple[int, int]] = {}
+    elements: list[str] = []
+
+    for d, items in layers.items():
+        x = 25 + d * col_width
+        total_h = len(items) * row_height
+        start_y = max(20, (svg_height - total_h) // 2)
+        for idx, item in enumerate(items):
+            y = start_y + idx * row_height
+            positions[item["name"]] = (x, y)
+
+    for _d, items in layers.items():
+        for item in items:
+            if item["kind"] == "op":
+                target_pos = positions.get(item["name"])
+                if not target_pos:
+                    continue
+                tx, ty = target_pos
+                for in_name in item.get("inputs", []):
+                    src_pos = positions.get(in_name)
+                    if not src_pos:
+                        continue
+                    sx, sy = src_pos
+                    x1 = sx + 130
+                    y1 = sy + 22
+                    x2 = tx
+                    y2 = ty + 22
+                    mid_x = (x1 + x2) / 2
+                    elements.append(
+                        f'<path d="M {x1} {y1} C {mid_x} {y1}, {mid_x} {y2}, {x2} {y2}" '
+                        'stroke="#64748b" stroke-width="2" fill="none" '
+                        'marker-end="url(#dag-arrow)"/>'
+                    )
+
+    for _d, items in layers.items():
+        for item in items:
+            pos = positions[item["name"]]
+            x, y = pos
+            if item["kind"] == "input":
+                bg = "#0369a1"
+                border = "#38bdf8"
+                label = f"in: {item['name']}"
+            else:
+                is_out = item.get("is_output", False)
+                bg = "#047857" if is_out else "#4338ca"
+                border = "#34d399" if is_out else "#818cf8"
+                label = f"{item['op']} ({item['name']})"
+
+            elements.append(
+                f'<rect x="{x}" y="{y}" width="130" height="44" rx="6" '
+                f'fill="{bg}" stroke="{border}" stroke-width="1.5"/>'
+            )
+            elements.append(
+                f'<text x="{x + 65}" y="{y + 26}" fill="#f8fafc" font-size="11" '
+                f'font-family="monospace" text-anchor="middle">{label}</text>'
+            )
+
+    svg_content = "\n".join(elements)
+    return (
+        f'<svg viewBox="0 0 {svg_width} {svg_height}" class="dag-svg" '
+        f'xmlns="http://www.w3.org/2000/svg" style="min-width: 100%; height: auto;">\n'
+        f"  <defs>\n"
+        f'    <marker id="dag-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" '
+        f'markerHeight="6" orient="auto-start-reverse">\n'
+        f'      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />\n'
+        f"    </marker>\n"
+        f"  </defs>\n"
+        f"  {svg_content}\n"
+        f"</svg>"
+    )
+
+
 def build_html_report(report: dict[str, Any]) -> str:
     """Generate a self-contained, interactive single-file HTML report with SVG diagnostics."""
     import html
@@ -177,6 +307,7 @@ def build_html_report(report: dict[str, Any]) -> str:
     interpretation = html.escape(str(report.get("interpretation", "")))
     confidence = html.escape(str(report.get("confidence", "")))
     raw_json_str = json.dumps(report, indent=2)
+    svg_dag = render_svg_dag(report.get("workload"))
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -436,6 +567,15 @@ def build_html_report(report: dict[str, Any]) -> str:
         <button id="copy-btn" class="copy-btn" onclick="copyRepro()">Copy</button>
       </div>
       <pre class="code-box"><code id="repro-code">{html.escape(repro)}</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row">
+        <h2>Computation Graph DAG</h2>
+      </div>
+      <div class="dag-container" style="overflow-x: auto; padding: 0.5rem 0;">
+        {svg_dag}
+      </div>
     </div>
 
     <div class="card">

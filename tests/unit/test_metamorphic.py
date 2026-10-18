@@ -53,6 +53,11 @@ def test_curated_properties_exactly_match_the_reviewed_registry() -> None:
         "mul-associativity-v1",
         "square-abs-multiplication-identity-v1",
         "cos-even-duality-v1",
+        "min-max-demorgan-v1",
+        "tanh-odd-symmetry-v1",
+        "sin-odd-symmetry-v1",
+        "abs-subtraction-symmetry-v1",
+        "maximum-minimum-sandwich-v1",
     ]
 
 

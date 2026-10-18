@@ -68,8 +68,18 @@ is deliberately narrower than software completion.
 | 59 | Developer ergonomics: pytest-xlaxiom | Implemented | First-class `pytest` plugin with markers (`@pytest.mark.xlaxiom`), fixtures, and HTML failure reports. |
 | 60 | Official CI Action: xlaxiom-action | Implemented | Turnkey GitHub Action (`.github/actions/xlaxiom-action/action.yml`) with automated step summaries. |
 | 61 | Full release test & type verification | Implemented | 100% test pass rate across 378+ tests, zero ruff violations, and clean strict `mypy src`. |
+| 62 | Dynamic shapes & symbolic dimensions | Implemented | `SymbolicDim`, `DynamicInputSpec`, dynamic bounds checking, and symbolic broadcast inference. |
+| 63 | StableHLO / MLIR text dialect exporter | Implemented | Pure `export_stablehlo` translates workloads directly to MLIR text format without external compiler bindings; CLI `xlaxiom hlo`. |
+| 64 | Higher-order automatic differentiation | Implemented | JVP, VJP, HVP forward-over-reverse autodiff, and analytic Hessian validation; CLI `xlaxiom gradient --higher-order`. |
+| 65 | Arithmetic intensity & roofline profiler | Implemented | Quantifies FLOPs, memory transfer, operational intensity (FLOPs/Byte), and roofline regimes (V100/A100/H100/TPU/CPU); CLI `xlaxiom efficiency`. |
+| 66 | Multi-device SPMD sharding simulator | Implemented | Simulates `DeviceMesh`, `PartitionSpec`, and AllReduce collectives, verifying replicated vs sharded numerical equivalence. |
+| 67 | PyTorch FX graph adapter | Implemented | Bidirectional `workload_from_fx` and `workload_to_fx` bridges PyTorch 2.0 / `torch.compile` graphs into XLAxiom IR. |
+| 68 | Interactive HTML Report 2.0 with SVG DAG | Implemented | Embeds zero-dependency, responsive SVG computation DAG visualizers directly into single-file offline HTML reports. |
+| 69 | Issue readiness pre-flight validator | Implemented | `xlaxiom readiness --preflight` audits cases for self-containment, privacy/path sanitization, and minimal reproduction scripts. |
+| 70 | Metamorphic corpus expansion (40 invariants) | Implemented | Expanded to 40 curated invariants with lattice dualities, metric distance symmetries, and verified mutation sharpness. |
+| 71 | Version 2.0.0 Release & Full QA | Implemented | Version 2.0.0 GA delivery with 100% green test passes across all suites, strict mypy typing, and clean ruff compliance. |
 
-All sixty-one software priorities are fully implemented and delivered for the **v1.0.0 General Availability** release.
+All seventy-one software priorities are fully implemented and verified for the **v2.0.0 Major Release**.
 Retained evidence closes the available Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, independent-host, and Google Cloud TPU v5e
 milestones. Apple Silicon and AMD ROCm discovery and execution paths are implemented with strict fail-closed semantics to ensure
 no silent CPU fallback occurs.

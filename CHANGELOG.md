@@ -1,5 +1,46 @@
 # Changelog
 
+## 2.0.0 - 2026-10-17
+
+- **Major v2.0.0 Strategic Compiler Verification Release**: Comprehensive delivery of next-generation compiler verification, dialect interoperability, distributed SPMD simulation, and higher-order automatic differentiation.
+- **Dynamic Shapes & Symbolic Dimensions Engine (`xlaxiom.symbolic` / Priority 62)**:
+  - First-class symbolic dimension abstractions (`SymbolicDim`, `DynamicInputSpec`) enabling compilation testing across parametric batch sizes, variable sequence lengths, and dynamic rank boundaries.
+  - Rigorous symbolic broadcast inference (`infer_symbolic_broadcast`) and concrete instance resolution (`instantiate_workload`) catching polyhedral and loop-bound compiler bugs.
+- **Pure Compiler IR Dialect Exporter: StableHLO / MLIR (`xlaxiom.stablehlo` / `xlaxiom hlo` / Priority 63)**:
+  - Direct, pure Python translation from XLAxiom `Workload` DAGs to canonical StableHLO MLIR module syntax (`@xlaxiom { func.func @main(...) -> ... }`).
+  - Native support for elementwise arithmetic, transcendentals, `stablehlo.dot_general`, `stablehlo.reshape`, and `stablehlo.reduce`.
+  - Enables zero-dependency integration into `stablehlo-opt`, `stablehlo-translate`, and upstream OpenXLA test suites.
+- **Higher-Order Automatic Differentiation Engine (`xlaxiom.gradients` / Priority 64)**:
+  - Forward-mode Jacobian-vector products (`compute_jvp`) and reverse-mode vector-Jacobian products (`compute_vjp`).
+  - Forward-over-reverse Hessian-vector products (`compute_hvp`) validated against analytic second-derivative references (`analytic_hessian`) and finite-difference triangulation.
+  - New CLI capability `xlaxiom gradient --higher-order` for automated second-order AD parity audits.
+- **Arithmetic Intensity & Roofline Efficiency Profiler (`xlaxiom.efficiency` / `xlaxiom efficiency` / Priority 65)**:
+  - Quantitative operational FLOP counting and minimal theoretical memory traffic accounting (FLOPs/Byte).
+  - Multi-target roofline classification against standard hardware profiles (NVIDIA V100/A100/H100, Google TPU v5e, and x86-64 AVX-512 CPU).
+  - Pinpoints memory-bound vs compute-bound operational regimes and calculates achievable peak GFLOPs.
+- **Multi-Device SPMD & Sharding Consistency Simulator (`xlaxiom.collective` / Priority 66)**:
+  - Single-host simulation of multi-dimensional logical device topologies (`DeviceMesh`) and tensor layout partitions (`PartitionSpec`).
+  - Collective reduction communication simulation (`simulate_all_reduce`) verifying distributed sharded computation against replicated single-device ground truth.
+- **PyTorch FX Graph Adapter (`xlaxiom.fx` / Priority 67)**:
+  - Bidirectional bridge between PyTorch 2.0 FX representations (`torch.fx.GraphModule`) and XLAxiom declarative `Workload` IR.
+  - Ingests `torch.compile` / `torch.export` graphs directly for metamorphic differential verification without manual bridges.
+- **Interactive Offline HTML Report 2.0 with Embedded SVG DAG Visualizer (`xlaxiom.reporting` / Priority 68)**:
+  - Generates self-contained, interactive SVG computation DAG visualizers embedded directly into offline HTML evidence reports.
+  - Features topological layer placement, color-coded node categories (inputs, operations, outputs), and responsive layout with zero external JavaScript dependencies.
+- **Automated Upstream Issue Readiness Pre-Flight Validator (`xlaxiom readiness --preflight` / Priority 69)**:
+  - Automated pre-submission audit validating artifact integrity, non-synthetic status, self-contained standalone reproduction scripts, and redaction of local host user paths and credentials.
+- **Expanded Metamorphic Corpus (40 Curated Invariants / Priority 70)**:
+  - Added five new reviewed algebraic and lattice invariants:
+    - Min-Max De Morgan negation duality (`min-max-demorgan-v1`): $\min(x, y) = -\max(-x, -y)$
+    - Hyperbolic tangent odd symmetry (`tanh-odd-symmetry-v1`): $\tanh(-x) = -\tanh(x)$
+    - Sine odd function symmetry (`sin-odd-symmetry-v1`): $\sin(-x) = -\sin(x)$
+    - Absolute distance subtraction symmetry (`abs-subtraction-symmetry-v1`): $|x - y| = |y - x|$
+    - Lattice min-max sandwich absorption (`maximum-minimum-sandwich-v1`): $\min(x, \max(x, y)) = x$
+  - 100% verified mutation sharpness and zero-discrepancy agreement across backends.
+- **Full QA & Version Bump (`xlaxiom._version` / Priority 71)**:
+  - Distribution version bumped to `2.0.0`.
+  - 100% green test passes across all suites, zero ruff violations, and strict typed mypy compliance.
+
 ## 1.0.0 - 2026-10-16
 
 - **General Availability & Full Release Milestone**: Complete delivery of all strategic compiler evidence capabilities, turning XLAxiom into an essential, universal developer tool across frameworks and accelerators.

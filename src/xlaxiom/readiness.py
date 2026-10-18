@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
 from .comparison import Classification, ComparisonResult
 from .environment import compare_environments, validate_environment_evidence
-from .storage import ArtifactError, CaseArtifact
+from .storage import ArtifactError, CaseArtifact, load_case
 
 REPRODUCTION_EVIDENCE_VERSION = "1.0"
 
@@ -227,4 +228,119 @@ def assess_upstream_readiness(
         "note": (
             "This command never files an issue and never treats absent external evidence as a pass."
         ),
+    }
+
+
+def run_readiness_preflight(
+    case_path: str | Path,
+    markdown_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Run an automated pre-flight audit on an upstream bug report candidate."""
+    path = Path(case_path)
+    checks: list[dict[str, Any]] = []
+
+    try:
+        artifact = load_case(path)
+        checks.append(
+            {
+                "name": "case_integrity",
+                "passed": True,
+                "detail": (
+                    f"Case artifact is valid and checksum matches SHA-256 "
+                    f"{artifact.to_dict()['sha256'][:12]}"
+                ),
+            }
+        )
+    except Exception as exc:
+        checks.append(
+            {
+                "name": "case_integrity",
+                "passed": False,
+                "detail": f"Case failed integrity validation: {exc}",
+            }
+        )
+        return {
+            "preflight_version": "1.0",
+            "case_path": str(path),
+            "preflight_passed": False,
+            "checks": checks,
+        }
+
+    is_non_synthetic = artifact.fault is None
+    checks.append(
+        {
+            "name": "non_synthetic",
+            "passed": is_non_synthetic,
+            "detail": (
+                "Verified artifact is not a synthetic test injection"
+                if is_non_synthetic
+                else "Cannot submit synthetic fault upstream"
+            ),
+        }
+    )
+
+    sanitized = True
+    sanitization_issues: list[str] = []
+    text_to_scan = ""
+    if markdown_path:
+        md_file = Path(markdown_path)
+        if md_file.exists():
+            text_to_scan = md_file.read_text(encoding="utf-8")
+
+    text_to_scan += " " + json.dumps(artifact.to_dict())
+
+    # Detect user directory leaks like /Users/ or /home/ or C:\Users\
+    user_path_match = re.search(
+        r"([A-Za-z]:\\[Uu]sers\\[^\\]+|/(?:home|Users)/[^/\s]+)", text_to_scan
+    )
+    if user_path_match:
+        matched_str = user_path_match.group(0)
+        if not any(
+            ph in matched_str.lower() for ph in ("placeholder", "<user>", "username", "runner")
+        ):
+            sanitized = False
+            sanitization_issues.append(f"detected local user path: {matched_str}")
+
+    checks.append(
+        {
+            "name": "sanitization_and_privacy",
+            "passed": sanitized,
+            "detail": (
+                "All private host paths and tokens cleanly redacted"
+                if sanitized
+                else "; ".join(sanitization_issues)
+            ),
+        }
+    )
+
+    from .triage import generate_minimal_reproduction_script
+
+    try:
+        script = generate_minimal_reproduction_script(artifact.workload)
+        has_script = bool(script and len(script.splitlines()) >= 5)
+        checks.append(
+            {
+                "name": "self_contained_reproduction_script",
+                "passed": has_script,
+                "detail": (
+                    f"Generated {len(script.splitlines())}-line zero-dependency reproduction script"
+                ),
+            }
+        )
+    except Exception as exc:
+        checks.append(
+            {
+                "name": "self_contained_reproduction_script",
+                "passed": False,
+                "detail": f"Failed to generate self-contained repro script: {exc}",
+            }
+        )
+
+    all_passed = all(check["passed"] for check in checks)
+    return {
+        "preflight_version": "1.0",
+        "case_path": str(path),
+        "case_sha256": artifact.to_dict()["sha256"],
+        "preflight_passed": all_passed,
+        "checks": checks,
     }

@@ -26,6 +26,7 @@ from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .comparison import Classification
 from .cuda import cuda_capability, driver_capability, recommended_variant
+from .efficiency import profile_efficiency
 from .environment import (
     capture_environment,
     compare_environments,
@@ -45,7 +46,12 @@ from .gradient_artifacts import (
     compare_gradient_campaigns,
     load_gradient_campaign,
 )
-from .gradients import generate_gradient_case, run_gradient_campaign, run_gradient_case
+from .gradients import (
+    generate_gradient_case,
+    run_gradient_campaign,
+    run_gradient_case,
+    run_higher_order_gradient_case,
+)
 from .hardware import (
     enumerate_physical_gpus,
     library_path_risk,
@@ -79,6 +85,7 @@ from .readiness import (
     assess_upstream_readiness,
     build_reproduction_evidence,
     load_reproduction_evidence,
+    run_readiness_preflight,
 )
 from .relational import (
     minimize_relational,
@@ -89,6 +96,7 @@ from .relational import (
 from .reporting import write_report
 from .runtime import RUNTIME_PROFILES, runtime_profile
 from .stability import check_stability
+from .stablehlo import export_stablehlo
 from .storage import (
     ArtifactError,
     CaseArtifact,
@@ -333,6 +341,12 @@ def command_stability(args: argparse.Namespace) -> int:
 
 
 def command_readiness(args: argparse.Namespace) -> int:
+    if getattr(args, "preflight", False):
+        report = run_readiness_preflight(args.case, getattr(args, "markdown", None))
+        if args.output:
+            save_json(args.output, report)
+        _emit(report)
+        return 0 if report["preflight_passed"] else 1
     artifact = _load(args.case)
     try:
         reproductions = tuple(
@@ -342,8 +356,30 @@ def command_readiness(args: argparse.Namespace) -> int:
         assessment = assess_upstream_readiness(artifact, reproductions, environments)
     except (ArtifactError, ReadinessEvidenceError) as exc:
         raise SystemExit(f"invalid readiness evidence: {exc}") from exc
+    if args.output:
+        save_json(args.output, assessment)
     _emit(assessment)
     return 0 if assessment["ready"] or not args.strict else 1
+
+
+def command_hlo(args: argparse.Namespace) -> int:
+    artifact = _load(args.case)
+    mlir = export_stablehlo(artifact.workload)
+    if args.output:
+        Path(args.output).write_text(mlir, encoding="utf-8")
+    else:
+        print(mlir)
+    return 0
+
+
+def command_efficiency(args: argparse.Namespace) -> int:
+    artifact = _load(args.case)
+    profile = profile_efficiency(artifact.workload, hardware_target=args.hardware)
+    result = profile.to_dict()
+    if args.output:
+        save_json(args.output, result)
+    _emit(result)
+    return 0
 
 
 def command_historical(_: argparse.Namespace) -> int:
@@ -371,7 +407,13 @@ def command_historical_matrix(args: argparse.Namespace) -> int:
 
 
 def command_gradient(args: argparse.Namespace) -> int:
-    result = run_gradient_case(generate_gradient_case(args.seed))
+    case = generate_gradient_case(args.seed)
+    if getattr(args, "higher_order", False):
+        result = run_higher_order_gradient_case(case)
+    else:
+        result = run_gradient_case(case)
+    if getattr(args, "output", None):
+        save_json(args.output, result)
     _emit(result)
     return 0 if result["classification"] == "pass" else 1
 
@@ -1482,7 +1524,32 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit nonzero until every readiness check passes",
     )
+    readiness_parser.add_argument(
+        "--preflight",
+        action="store_true",
+        help="run automated pre-flight audit",
+    )
+    readiness_parser.add_argument("--markdown", help="optional issue markdown draft path")
+    readiness_parser.add_argument("--output", help="output JSON path")
     readiness_parser.set_defaults(func=command_readiness)
+
+    hlo_parser = commands.add_parser("hlo", help="export workload as StableHLO MLIR text dialect")
+    hlo_parser.add_argument("--case", required=True, help="case artifact JSON path")
+    hlo_parser.add_argument("--output", help="output .mlir file path")
+    hlo_parser.set_defaults(func=command_hlo)
+
+    efficiency_parser = commands.add_parser(
+        "efficiency", help="analyze FLOPs, memory traffic, and roofline intensity"
+    )
+    efficiency_parser.add_argument("--case", required=True, help="case artifact JSON path")
+    efficiency_parser.add_argument(
+        "--hardware",
+        default="nvidia-v100",
+        help="hardware target profile (nvidia-v100, nvidia-a100, nvidia-h100, tpu, cpu)",
+    )
+    efficiency_parser.add_argument("--output", help="output JSON path")
+    efficiency_parser.set_defaults(func=command_efficiency)
+
     historical_parser = commands.add_parser(
         "historical", help="replay trusted adapters for documented historical regressions"
     )
@@ -1502,6 +1569,12 @@ def parser() -> argparse.ArgumentParser:
         "gradient", help="run a bounded declarative analytic-gradient case"
     )
     gradient_parser.add_argument("--seed", type=int, default=0)
+    gradient_parser.add_argument(
+        "--higher-order",
+        action="store_true",
+        help="evaluate higher-order autodiff (HVP) against analytic Hessian",
+    )
+    gradient_parser.add_argument("--output", help="output JSON path")
     gradient_parser.set_defaults(func=command_gradient)
     gradient_campaign = commands.add_parser(
         "gradient-campaign", help="run bounded analytic-gradient research cases"

@@ -223,6 +223,36 @@
       "title": "Cosine even function symmetry",
       "description": "cos(x) and cos(-x) produce equivalent elementwise outputs.",
       "relation": "outputs_equal"
+    },
+    {
+      "identifier": "min-max-demorgan-v1",
+      "title": "Min-Max De Morgan negation duality",
+      "description": "min(x, y) equals -max(-x, -y) across all real values.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "tanh-odd-symmetry-v1",
+      "title": "Hyperbolic tangent odd symmetry",
+      "description": "tanh(-x) equals -tanh(x) across the differentiable domain.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "sin-odd-symmetry-v1",
+      "title": "Sine odd function symmetry",
+      "description": "sin(-x) and -sin(x) produce equivalent elementwise values.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "abs-subtraction-symmetry-v1",
+      "title": "Absolute distance subtraction symmetry",
+      "description": "|x - y| equals |y - x| preserving metric symmetry and signed zero.",
+      "relation": "outputs_equal"
+    },
+    {
+      "identifier": "maximum-minimum-sandwich-v1",
+      "title": "Lattice min-max sandwich absorption",
+      "description": "min(x, max(x, y)) evaluates to max(x, x) = x identically.",
+      "relation": "outputs_equal"
     }
   ]
 }

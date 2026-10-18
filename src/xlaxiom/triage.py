@@ -79,6 +79,19 @@ def _generate_standalone_script(case_data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def generate_minimal_reproduction_script(case_or_workload: Any) -> str:
+    """Generate a zero-dependency standalone Python repro script from a case or workload."""
+    if isinstance(case_or_workload, dict):
+        data = case_or_workload
+    elif hasattr(case_or_workload, "payload"):
+        data = case_or_workload.payload()
+    elif hasattr(case_or_workload, "canonical_dict"):
+        data = {"workload": case_or_workload.canonical_dict()}
+    else:
+        data = {"workload": dict(case_or_workload)}
+    return _generate_standalone_script(data)
+
+
 def format_triage_issue(
     case_path: str | Path,
     target_tracker: str = "jax",

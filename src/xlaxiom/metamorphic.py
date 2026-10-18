@@ -999,6 +999,147 @@ def _cos_even_duality(seed: int) -> PropertyWorkloads:
     )
 
 
+def _min_max_demorgan(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "min-max-demorgan-v1",
+            seed,
+            inputs,
+            (Node("minimum", ("x", "y"), "out"),),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "min-max-demorgan-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "nx"),
+                Node("neg", ("y",), "ny"),
+                Node("maximum", ("nx", "ny"), "m"),
+                Node("neg", ("m",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _tanh_odd_symmetry(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "tanh-odd-symmetry-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "nx"),
+                Node("tanh", ("nx",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "tanh-odd-symmetry-v1",
+            seed,
+            inputs,
+            (
+                Node("tanh", ("x",), "tx"),
+                Node("neg", ("tx",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _sin_odd_symmetry(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)),)
+    return PropertyWorkloads(
+        _workload(
+            "sin-odd-symmetry-v1",
+            seed,
+            inputs,
+            (
+                Node("neg", ("x",), "nx"),
+                Node("sin", ("nx",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "sin-odd-symmetry-v1",
+            seed,
+            inputs,
+            (
+                Node("sin", ("x",), "sx"),
+                Node("neg", ("sx",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _abs_subtraction_symmetry(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "abs-subtraction-symmetry-v1",
+            seed,
+            inputs,
+            (
+                Node("sub", ("x", "y"), "d1"),
+                Node("abs", ("d1",), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "abs-subtraction-symmetry-v1",
+            seed,
+            inputs,
+            (
+                Node("sub", ("y", "x"), "d2"),
+                Node("abs", ("d2",), "out"),
+            ),
+            ("out",),
+            "right",
+        ),
+    )
+
+
+def _maximum_minimum_sandwich(seed: int) -> PropertyWorkloads:
+    rows, columns, _ = _dimensions(seed)
+    inputs = (InputSpec("x", (rows, columns)), InputSpec("y", (rows, columns)))
+    return PropertyWorkloads(
+        _workload(
+            "maximum-minimum-sandwich-v1",
+            seed,
+            inputs,
+            (
+                Node("maximum", ("x", "y"), "m"),
+                Node("minimum", ("x", "m"), "out"),
+            ),
+            ("out",),
+            "left",
+        ),
+        _workload(
+            "maximum-minimum-sandwich-v1",
+            seed,
+            inputs,
+            (Node("maximum", ("x", "x"), "out"),),
+            ("out",),
+            "right",
+        ),
+    )
+
+
 _BUILDERS: dict[str, PropertyBuilder] = {
     "add-commutativity-v1": _add_commutativity,
     "transpose-involution-v1": _transpose_involution,
@@ -1035,6 +1176,11 @@ _BUILDERS: dict[str, PropertyBuilder] = {
     "mul-associativity-v1": _mul_associativity,
     "square-abs-multiplication-identity-v1": _square_abs_multiplication_identity,
     "cos-even-duality-v1": _cos_even_duality,
+    "min-max-demorgan-v1": _min_max_demorgan,
+    "tanh-odd-symmetry-v1": _tanh_odd_symmetry,
+    "sin-odd-symmetry-v1": _sin_odd_symmetry,
+    "abs-subtraction-symmetry-v1": _abs_subtraction_symmetry,
+    "maximum-minimum-sandwich-v1": _maximum_minimum_sandwich,
 }
 
 
