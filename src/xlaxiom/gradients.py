@@ -280,4 +280,3 @@ def audit_higher_order_invariants(
         "all_invariants_satisfied": all_passed,
         "classification": "pass" if all_passed else "higher_order_invariant_violation",
     }
-

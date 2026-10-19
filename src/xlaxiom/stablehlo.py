@@ -193,4 +193,3 @@ def verify_stablehlo_roundtrip(workload: Workload) -> dict[str, Any]:
         "syntax_valid": syntax_valid,
         "return_valid": return_valid,
     }
-

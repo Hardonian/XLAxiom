@@ -381,7 +381,6 @@ def command_hlo(args: argparse.Namespace) -> int:
     return 0
 
 
-
 def command_efficiency(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
     if getattr(args, "empirical", False):
@@ -395,7 +394,6 @@ def command_efficiency(args: argparse.Namespace) -> int:
         save_json(args.output, result)
     _emit(result)
     return 0
-
 
 
 def command_historical(_: argparse.Namespace) -> int:
@@ -436,7 +434,6 @@ def command_gradient(args: argparse.Namespace) -> int:
         save_json(args.output, result)
     _emit(result)
     return 0 if result["classification"] == "pass" else 1
-
 
 
 def command_gradient_campaign(args: argparse.Namespace) -> int:
@@ -1563,7 +1560,6 @@ def parser() -> argparse.ArgumentParser:
     )
     hlo_parser.set_defaults(func=command_hlo)
 
-
     efficiency_parser = commands.add_parser(
         "efficiency", help="analyze FLOPs, memory traffic, and roofline intensity"
     )
@@ -1584,7 +1580,6 @@ def parser() -> argparse.ArgumentParser:
     )
     efficiency_parser.add_argument("--output", help="output JSON path")
     efficiency_parser.set_defaults(func=command_efficiency)
-
 
     historical_parser = commands.add_parser(
         "historical", help="replay trusted adapters for documented historical regressions"

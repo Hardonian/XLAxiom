@@ -202,7 +202,6 @@ def profile_efficiency_empirical(
         else 0.0
     )
 
-
     data = profile.to_dict()
     data.update(
         {
@@ -215,4 +214,3 @@ def profile_efficiency_empirical(
         }
     )
     return data
-

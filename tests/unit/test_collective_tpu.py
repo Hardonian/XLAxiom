@@ -60,4 +60,3 @@ def test_tpu_all_gather() -> None:
     gathered = simulate_all_gather(shards, mesh, axis_name="data", gather_dim=0)
     for _dev_id, g_arr in gathered.items():
         assert g_arr.shape == (4, 4)
-

@@ -57,4 +57,3 @@ def test_format_triage_issue_supports_tpu_tracker(tmp_path: Path) -> None:
     assert "#### StableHLO MLIR Dialect Representation" in issue_md
     assert "module @xlaxiom" in issue_md
     assert "backend='tpu'" in issue_md
-

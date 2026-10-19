@@ -24,7 +24,6 @@ def _sample_workload() -> Workload:
     )
 
 
-
 def test_parse_tpu_device_string() -> None:
     raw = "TPU_0(process=0,(0,0,0,0))"
     coord = parse_tpu_device_string(raw)
@@ -70,4 +69,3 @@ def test_audit_tpu_workload_equivalence() -> None:
     assert audit["cpu_status"] == "ok"
     assert audit["tpu_status"] == "ok"
     assert audit["classification"] == "pass"
-

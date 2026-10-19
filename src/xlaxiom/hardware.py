@@ -608,4 +608,3 @@ def hardware_report() -> dict[str, Any]:
             "ordinal and nvidia-smi index are both recorded for reconciliation."
         ),
     }
-

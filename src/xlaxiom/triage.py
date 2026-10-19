@@ -194,4 +194,3 @@ def format_triage_issue(
     ]
 
     return "\n".join(lines)
-

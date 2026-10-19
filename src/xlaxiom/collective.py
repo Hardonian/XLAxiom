@@ -260,4 +260,3 @@ def verify_sharding_equivalence(
     shards = shard_tensor(array, mesh, spec)
     reconstructed = reconstruct_tensor(shards, mesh, spec)
     return bool(np.array_equal(array, reconstructed))
-

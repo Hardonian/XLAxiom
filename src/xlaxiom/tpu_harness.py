@@ -155,6 +155,7 @@ def tpu_hardware_emulator(
     )
 
     import os
+
     prev_env = os.environ.get("XLAXIOM_EMULATE_TPU")
     os.environ["XLAXIOM_EMULATE_TPU"] = "1"
     try:
@@ -164,7 +165,6 @@ def tpu_hardware_emulator(
             os.environ.pop("XLAXIOM_EMULATE_TPU", None)
         else:
             os.environ["XLAXIOM_EMULATE_TPU"] = prev_env
-
 
 
 def audit_tpu_workload_equivalence(
@@ -203,5 +203,3 @@ def audit_tpu_workload_equivalence(
         "metrics": [asdict(m) for m in comparison.metrics] if comparison.metrics else [],
         "equivalent": comparison.classification == Classification.PASS,
     }
-
-

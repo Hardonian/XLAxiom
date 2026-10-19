@@ -9,6 +9,8 @@ param(
     [string]$AcceleratorType = "v5litepod-4",
     [string]$Version = "tpu-ubuntu2204-base",
     [string]$VmName = "xlaxiom-tpu-eval",
+    [ValidateRange(1, 120)]
+    [int]$RemoteTimeoutMinutes = 20,
     [switch]$Spot = $false,
     [switch]$KeepVm = $false
 )
@@ -18,6 +20,47 @@ $ErrorActionPreference = "Stop"
 if (-not (Get-Command gcloud -ErrorAction SilentlyContinue)) {
     Write-Error "Google Cloud SDK ('gcloud') is not installed or not in PATH."
     exit 1
+}
+
+function Invoke-GCloudWithTimeout {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, 7200)]
+        [int]$TimeoutSeconds,
+        [Parameter(Mandatory = $true)]
+        [string]$Operation
+    )
+
+    # A separate process lets us bound both gcloud and its ssh/scp child process. The
+    # remote command also receives OpenSSH keepalive limits below, so a lost connection
+    # cannot leave this job (and a billable TPU VM) waiting indefinitely.
+    $job = Start-Job -ScriptBlock {
+        param([string[]]$CommandArguments)
+
+        & gcloud @CommandArguments 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "gcloud exited with code $LASTEXITCODE."
+        }
+    } -ArgumentList (, $Arguments)
+
+    try {
+        $completedJob = Wait-Job -Job $job -Timeout $TimeoutSeconds
+        if ($null -eq $completedJob) {
+            Stop-Job -Job $job -ErrorAction SilentlyContinue
+            throw "$Operation timed out after $TimeoutSeconds seconds."
+        }
+
+        $output = Receive-Job -Job $job
+        $output | ForEach-Object { Write-Host $_ }
+        if ($job.State -ne "Completed") {
+            $reason = $job.ChildJobs[0].JobStateInfo.Reason
+            throw "$Operation failed: $reason"
+        }
+    } finally {
+        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # Resolve active GCP project if not supplied
@@ -123,11 +166,24 @@ python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu
 echo "=== Evidence Generation Complete ==="
 '@
 
-    # Execute remote commands via gcloud SSH
-    & gcloud compute tpus tpu-vm ssh $VmName --zone=$activeZone --project=$ProjectId --command=$remoteScript
-    if ($LASTEXITCODE -ne 0) {
-        throw "Remote TPU execution failed."
-    }
+    # Execute without interactive SSH prompts and fail quickly on a dead connection.
+    $sshArgs = @(
+        "compute", "tpus", "tpu-vm", "ssh", $VmName,
+        "--zone=$activeZone",
+        "--project=$ProjectId",
+        "--command=$remoteScript",
+        "--quiet",
+        "--strict-host-key-checking=no",
+        "--ssh-flag=-o BatchMode=yes",
+        "--ssh-flag=-o ConnectTimeout=30",
+        "--ssh-flag=-o ConnectionAttempts=3",
+        "--ssh-flag=-o ServerAliveInterval=15",
+        "--ssh-flag=-o ServerAliveCountMax=4"
+    )
+    Invoke-GCloudWithTimeout `
+        -Arguments $sshArgs `
+        -TimeoutSeconds ($RemoteTimeoutMinutes * 60) `
+        -Operation "Remote TPU execution"
 
     # 4. Pull evidence artifacts locally
     Write-Host "`n[4/5] Downloading evidence artifacts to ./evidence/tpu/..." -ForegroundColor Yellow
@@ -136,7 +192,23 @@ echo "=== Evidence Generation Complete ==="
         New-Item -ItemType Directory -Path $localTarget -Force | Out-Null
     }
 
-    & gcloud compute tpus tpu-vm scp --recurse "${VmName}:~/XLAxiom/evidence/tpu/*" $localTarget --zone=$activeZone --project=$ProjectId
+    $scpArgs = @(
+        "compute", "tpus", "tpu-vm", "scp", "--recurse",
+        "${VmName}:~/XLAxiom/evidence/tpu/*", $localTarget,
+        "--zone=$activeZone",
+        "--project=$ProjectId",
+        "--quiet",
+        "--strict-host-key-checking=no",
+        "--scp-flag=-o BatchMode=yes",
+        "--scp-flag=-o ConnectTimeout=30",
+        "--scp-flag=-o ConnectionAttempts=3",
+        "--scp-flag=-o ServerAliveInterval=15",
+        "--scp-flag=-o ServerAliveCountMax=4"
+    )
+    Invoke-GCloudWithTimeout `
+        -Arguments $scpArgs `
+        -TimeoutSeconds 300 `
+        -Operation "TPU evidence download"
     Write-Host "Evidence artifacts saved to $localTarget" -ForegroundColor Green
 
 } finally {
