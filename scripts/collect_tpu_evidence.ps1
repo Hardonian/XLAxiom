@@ -52,7 +52,9 @@ function Invoke-GCloudWithTimeout {
             throw "$Operation timed out after $TimeoutSeconds seconds."
         }
 
-        $output = Receive-Job -Job $job
+        # Preserve native stderr merged into the success stream, but do not let the
+        # job's terminating error prevent us from printing the useful diagnostics.
+        $output = Receive-Job -Job $job -ErrorAction SilentlyContinue
         $output | ForEach-Object { Write-Host $_ }
         if ($job.State -ne "Completed") {
             $reason = $job.ChildJobs[0].JobStateInfo.Reason
@@ -180,6 +182,42 @@ echo "=== Evidence Generation Complete ==="
         "--ssh-flag=-o ServerAliveInterval=15",
         "--ssh-flag=-o ServerAliveCountMax=4"
     )
+
+    # TPU creation can report READY before sshd and the propagated project key are
+    # usable. Probe first so the evidence run does not fail on that short race.
+    $sshReady = $false
+    for ($attempt = 1; $attempt -le 12; $attempt++) {
+        Write-Host "Waiting for TPU SSH readiness (attempt $attempt/12)..."
+        $probeArgs = @(
+            "compute", "tpus", "tpu-vm", "ssh", $VmName,
+            "--zone=$activeZone",
+            "--project=$ProjectId",
+            "--command=true",
+            "--quiet",
+            "--strict-host-key-checking=no",
+            "--ssh-flag=-o BatchMode=yes",
+            "--ssh-flag=-o ConnectTimeout=15",
+            "--ssh-flag=-o ConnectionAttempts=1"
+        )
+        try {
+            Invoke-GCloudWithTimeout `
+                -Arguments $probeArgs `
+                -TimeoutSeconds 45 `
+                -Operation "TPU SSH readiness probe"
+            $sshReady = $true
+            break
+        } catch {
+            if ($attempt -eq 12) {
+                throw "TPU SSH did not become ready after 12 attempts: $($_.Exception.Message)"
+            }
+            Start-Sleep -Seconds 15
+        }
+    }
+
+    if (-not $sshReady) {
+        throw "TPU SSH readiness probe ended without a usable connection."
+    }
+
     Invoke-GCloudWithTimeout `
         -Arguments $sshArgs `
         -TimeoutSeconds ($RemoteTimeoutMinutes * 60) `
