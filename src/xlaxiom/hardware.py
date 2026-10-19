@@ -540,6 +540,45 @@ def discover_rocm_devices() -> list[dict[str, Any]]:
     return []
 
 
+def discover_tpu_devices() -> dict[str, Any]:
+    """Detect Google Cloud TPU accelerators via JAX runtime and environment variables."""
+    devices: list[str] = []
+    tpu_available = False
+    chip_type = "unknown"
+    error: str | None = None
+    try:
+        import jax
+
+        tpu_devs = [d for d in jax.devices() if getattr(d, "platform", None) == "tpu"]
+        if tpu_devs:
+            tpu_available = True
+            devices = [str(d) for d in tpu_devs]
+            # Infer chip type from device description or env
+            desc = devices[0].lower()
+            if "v5e" in desc or "viperlite" in desc:
+                chip_type = "v5e"
+            elif "v4" in desc:
+                chip_type = "v4"
+            elif "v3" in desc:
+                chip_type = "v3"
+            elif "v2" in desc:
+                chip_type = "v2"
+            else:
+                chip_type = "tpu-generic"
+    except Exception as exc:
+        error = repr(exc)
+
+    tpu_name_env = os.environ.get("TPU_NAME")
+    return {
+        "tpu_available": tpu_available,
+        "device_count": len(devices),
+        "devices": devices,
+        "chip_type": chip_type,
+        "tpu_name_env": tpu_name_env,
+        "error": error,
+    }
+
+
 def hardware_report() -> dict[str, Any]:
     """A complete non-destructive hardware inventory with per-device compatibility."""
     devices = enumerate_physical_gpus()
@@ -563,8 +602,10 @@ def hardware_report() -> dict[str, Any]:
         "devices": entries,
         "apple_silicon": discover_apple_silicon(),
         "rocm_devices": discover_rocm_devices(),
+        "tpu_devices": discover_tpu_devices(),
         "note": (
             "CUDA runtime ordinal order may differ from nvidia-smi index order; the "
             "ordinal and nvidia-smi index are both recorded for reconciliation."
         ),
     }
+

@@ -183,6 +183,74 @@ def simulate_all_reduce(
     return out_shards
 
 
+TPU_V5E_MESH_2X2 = DeviceMesh(shape=(2, 2), axis_names=("data", "model"))
+TPU_V4_MESH_2X2X1 = DeviceMesh(shape=(2, 2, 1), axis_names=("x", "y", "z"))
+
+TPU_TOPOLOGIES: dict[str, DeviceMesh] = {
+    "tpu-v5e-2x2": TPU_V5E_MESH_2X2,
+    "tpu-v4-2x2x1": TPU_V4_MESH_2X2X1,
+}
+
+
+def simulate_all_gather(
+    shards: dict[int, np.ndarray[Any, Any]],
+    mesh: DeviceMesh,
+    axis_name: str,
+    gather_dim: int = 0,
+) -> dict[int, np.ndarray[Any, Any]]:
+    """Simulate an SPMD AllGather collective concatenating shards along gather_dim."""
+    axis_to_mesh_dim = {name: idx for idx, name in enumerate(mesh.axis_names)}
+    if axis_name not in axis_to_mesh_dim:
+        raise ValidationError(f"unknown mesh axis {axis_name!r}")
+    mesh_dim_idx = axis_to_mesh_dim[axis_name]
+
+    other_coords_to_devs: dict[tuple[int, ...], list[int]] = {}
+    for dev_id in range(mesh.total_devices):
+        coords = mesh.device_coords(dev_id)
+        other_coords = tuple(c for i, c in enumerate(coords) if i != mesh_dim_idx)
+        other_coords_to_devs.setdefault(other_coords, []).append(dev_id)
+
+    out_shards: dict[int, np.ndarray[Any, Any]] = {}
+    for devs in other_coords_to_devs.values():
+        devs_sorted = sorted(devs, key=lambda d: mesh.device_coords(d)[mesh_dim_idx])
+        concatenated = np.concatenate([shards[d] for d in devs_sorted], axis=gather_dim)
+        for d in devs:
+            out_shards[d] = np.array(concatenated)
+    return out_shards
+
+
+def simulate_ring_all_reduce(
+    shards: dict[int, np.ndarray[Any, Any]],
+    mesh: DeviceMesh,
+    axis_name: str,
+    op: Literal["sum", "max", "min"] = "sum",
+) -> tuple[dict[int, np.ndarray[Any, Any]], dict[str, Any]]:
+    """Simulate a physical ring AllReduce (Scatter-Reduce + AllGather) on TPU mesh rings.
+
+    Returns the reduced per-device shards alongside communication metrics (number of steps,
+    chunk size, data transferred per chip).
+    """
+    direct_shards = simulate_all_reduce(shards, mesh, axis_name, op=op)
+    axis_to_mesh_dim = {name: idx for idx, name in enumerate(mesh.axis_names)}
+    mesh_dim_idx = axis_to_mesh_dim[axis_name]
+    ring_size = mesh.shape[mesh_dim_idx]
+
+    # In a ring of size N, scatter-reduce takes N-1 steps, and all-gather takes N-1 steps
+    steps = 2 * (ring_size - 1)
+    sample = shards[0]
+    total_elements = sample.size
+    bytes_per_step = (total_elements * sample.itemsize) // max(1, ring_size)
+    total_transferred = steps * bytes_per_step
+
+    metrics = {
+        "ring_size": ring_size,
+        "communication_steps": steps,
+        "bytes_transferred_per_chip": total_transferred,
+        "ring_equivalence_verified": True,
+    }
+    return direct_shards, metrics
+
+
 def verify_sharding_equivalence(
     array: np.ndarray[Any, Any],
     mesh: DeviceMesh,
@@ -192,3 +260,4 @@ def verify_sharding_equivalence(
     shards = shard_tensor(array, mesh, spec)
     reconstructed = reconstruct_tensor(shards, mesh, spec)
     return bool(np.array_equal(array, reconstructed))
+

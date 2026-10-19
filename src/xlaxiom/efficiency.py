@@ -163,3 +163,56 @@ def profile_efficiency(
         attainable_gflops=min(attainable, hw.peak_gflops),
         regime=regime,
     )
+
+
+def profile_efficiency_empirical(
+    workload: Workload,
+    hardware_target: str = "nvidia-v100",
+    iterations: int = 10,
+    backend: str = "jax-jit",
+    limits: ResourceLimits = DEFAULT_LIMITS,
+) -> dict[str, Any]:
+    """Empirically measure runtime and compute achieved FLOPs and bandwidth
+    against roofline model.
+    """
+    profile = profile_efficiency(workload, hardware_target=hardware_target, limits=limits)
+    from .execution import execute_jax, execute_numpy
+
+    latencies_ms: list[float] = []
+    # Warmup
+    if backend == "numpy":
+        execute_numpy(workload)
+        for _ in range(iterations):
+            res = execute_numpy(workload)
+            latencies_ms.append(res.duration_ms)
+    else:
+        execute_jax(workload, jit=True, requested_platform="cpu")
+        for _ in range(iterations):
+            res = execute_jax(workload, jit=True, requested_platform="cpu")
+            latencies_ms.append(res.duration_ms)
+
+    median_ms = float(np.median(latencies_ms))
+    duration_s = max(median_ms * 1e-3, 1e-9)
+
+    achieved_gflops = (profile.total_flops / duration_s) / 1e9
+    achieved_bandwidth_gbs = (profile.minimal_memory_traffic_bytes / duration_s) / 1e9
+    percent_of_peak = (
+        (achieved_gflops / profile.attainable_gflops * 100.0)
+        if profile.attainable_gflops > 0
+        else 0.0
+    )
+
+
+    data = profile.to_dict()
+    data.update(
+        {
+            "empirical": True,
+            "measured_iterations": iterations,
+            "median_latency_ms": round(median_ms, 4),
+            "achieved_gflops": round(achieved_gflops, 4),
+            "achieved_bandwidth_gbs": round(achieved_bandwidth_gbs, 4),
+            "percent_of_roofline_peak": round(percent_of_peak, 4),
+        }
+    )
+    return data
+

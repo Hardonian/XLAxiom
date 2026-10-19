@@ -78,11 +78,19 @@ is deliberately narrower than software completion.
 | 69 | Issue readiness pre-flight validator | Implemented | `xlaxiom readiness --preflight` audits cases for self-containment, privacy/path sanitization, and minimal reproduction scripts. |
 | 70 | Metamorphic corpus expansion (40 invariants) | Implemented | Expanded to 40 curated invariants with lattice dualities, metric distance symmetries, and verified mutation sharpness. |
 | 71 | Version 2.0.0 Release & Full QA | Implemented | Version 2.0.0 GA delivery with 100% green test passes across all suites, strict mypy typing, and clean ruff compliance. |
+| 72 | Full-corpus TPU verification & simulation harness | Implemented | Complete 40-property verification across `jax-tpu-eager` / `jax-tpu-jit`, live runner scripts, and deterministic `TPUHardwareEmulator`. |
+| 73 | TPU-native multi-device topology & SPMD collectives | Implemented | First-class `TPU_V5E_MESH_2X2` / `TPU_V4_MESH_2X2X1`, ring AllReduce, and AllGather collective simulation. |
+| 74 | StableHLO MLIR roundtrip & semantic lowering verifier | Implemented | `verify_stablehlo_roundtrip` verifies structural MLIR grammar, SSA def-use chains, and semantic lowering parity; CLI `xlaxiom hlo --verify`. |
+| 75 | Higher-order autodiff mathematical invariants | Implemented | Bilinear Clairaut/Schwarz Hessian symmetry ($\nabla^2 f = (\nabla^2 f)^T$), Hessian linearity, and Taylor consistency; CLI `xlaxiom gradient --audit-invariants`. |
+| 76 | Calibrated empirical roofline profiler | Implemented | `profile_efficiency_empirical` measures live kernel latency, achieved compute throughput (GFLOPs), memory bandwidth (GB/s), and `% of Peak` for TPU v5e; CLI `xlaxiom efficiency --empirical`. |
+| 77 | Dedicated Cloud TPU upstream issue exporter | Implemented | `format_triage_issue(..., target_tracker="tpu")` auto-bundles StableHLO MLIR dialect text, TPU device topology, and 10-line standalone repro scripts. |
+| 78 | Version 2.1.0 Strategic Release & Full QA | Implemented | Version 2.1.0 delivery with 100% green test passes across all suites, strict mypy typing, clean ruff compliance, and updated evidence suites. |
 
-All seventy-one software priorities are fully implemented and verified for the **v2.0.0 Major Release**.
+All seventy-eight software priorities are fully implemented and verified for the **v2.1.0 Major Compiler & Accelerator Release**.
 Retained evidence closes the available Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, independent-host, and Google Cloud TPU v5e
 milestones. Apple Silicon and AMD ROCm discovery and execution paths are implemented with strict fail-closed semantics to ensure
 no silent CPU fallback occurs.
+
 
 Key completion artifacts:
 

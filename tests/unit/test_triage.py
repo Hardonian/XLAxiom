@@ -39,3 +39,22 @@ def test_format_triage_issue_supports_pytorch_tracker(tmp_path: Path) -> None:
 
     issue_md = format_triage_issue(case_path, target_tracker="pytorch")
     assert "PYTORCH" in issue_md
+
+
+def test_format_triage_issue_supports_tpu_tracker(tmp_path: Path) -> None:
+    case_path = tmp_path / "test_case_tpu.json"
+    workload = generate(GenerationConfig(seed=24))
+    case = CaseArtifact(
+        workload=workload,
+        comparison_mode="jax-eager",
+        expected_classification="pass",
+        provenance="tpu-eval",
+    )
+    save_case(case_path, case)
+
+    issue_md = format_triage_issue(case_path, target_tracker="tpu")
+    assert "Google Cloud TPU / OpenXLA" in issue_md
+    assert "#### StableHLO MLIR Dialect Representation" in issue_md
+    assert "module @xlaxiom" in issue_md
+    assert "backend='tpu'" in issue_md
+

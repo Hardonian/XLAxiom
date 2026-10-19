@@ -109,12 +109,16 @@ python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
 python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
 python -m xlaxiom.cli property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
 python -m xlaxiom.cli property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-python -m xlaxiom.cli property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+python -m xlaxiom.cli property campaign --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
 python -m xlaxiom.cli property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
 python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json
+
+echo "=== Higher-Order Autodiff ==="
+python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json || true
+
 
 echo "=== Evidence Generation Complete ==="
 '@

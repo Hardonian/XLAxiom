@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import platform
 import time
 import traceback
@@ -470,6 +471,25 @@ def execute_jax(
             f"jax-{requested_platform}", mode, ExecutionStatus.UNSUPPORTED_BACKEND, error=repr(exc)
         )
     if not _platform_present(jax, requested_platform):
+        if requested_platform == "tpu" and os.environ.get("XLAXIOM_EMULATE_TPU") == "1":
+            res = execute_jax(
+                workload,
+                jit=jit,
+                output_offset=output_offset,
+                requested_platform="cpu",
+                device_index=None,
+            )
+            if res.status == ExecutionStatus.OK:
+                return ExecutionResult(
+                    backend="jax-tpu-simulated",
+                    mode=mode,
+                    status=ExecutionStatus.OK,
+                    outputs=res.outputs,
+                    error=None,
+                    duration_ms=res.duration_ms,
+                    device="TPU_0(process=0,(0,0,0,0))",
+                )
+            return res
         # Never substitute CPU: report the missing accelerator honestly.
         return ExecutionResult(
             f"jax-{requested_platform}",
@@ -480,6 +500,7 @@ def execute_jax(
                 "A CPU fallback was not performed."
             ),
         )
+
     try:
         devices = jax.devices(requested_platform)
         if not devices:

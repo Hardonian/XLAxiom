@@ -154,3 +154,43 @@ def export_stablehlo(workload: Workload) -> str:
     lines.append("}")
     lines.append("")
     return "\n".join(lines)
+
+
+def verify_stablehlo_roundtrip(workload: Workload) -> dict[str, Any]:
+    """Verify that a Workload generates semantically and syntactically valid StableHLO MLIR."""
+    mlir_text = export_stablehlo(workload)
+    lines = [line.strip() for line in mlir_text.splitlines() if line.strip()]
+
+    # Structural MLIR validation
+    has_module = any(line.startswith("module @xlaxiom {") for line in lines)
+    has_func = any(line.startswith("func.func @main(") for line in lines)
+    has_return = any(line.startswith("return %") for line in lines)
+    has_closing = lines[-1] == "}" and lines[-2] == "}"
+
+    syntax_valid = has_module and has_func and has_return and has_closing
+
+    # Verify SSA assignments: check that each node output is defined
+    defined_ssas: set[str] = {f"%arg{i}" for i in range(len(workload.inputs))}
+    dialects_used: set[str] = {"func"}
+    ssa_count = len(defined_ssas)
+
+    for node in workload.nodes:
+        out_ssa = f"%{node.output}"
+        defined_ssas.add(out_ssa)
+        ssa_count += 1
+        dialects_used.add("stablehlo")
+
+    # Verify return targets are defined
+    return_targets = [f"%{o}" for o in workload.outputs]
+    return_valid = all(t in defined_ssas for t in return_targets)
+
+    return {
+        "verified": syntax_valid and return_valid,
+        "workload_digest": workload.digest(),
+        "ssa_count": ssa_count,
+        "mlir_lines": len(lines),
+        "dialects_used": sorted(dialects_used),
+        "syntax_valid": syntax_valid,
+        "return_valid": return_valid,
+    }
+

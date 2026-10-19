@@ -364,6 +364,15 @@ def command_readiness(args: argparse.Namespace) -> int:
 
 def command_hlo(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
+    if getattr(args, "verify", False):
+        from .stablehlo import verify_stablehlo_roundtrip
+
+        audit = verify_stablehlo_roundtrip(artifact.workload)
+        if args.output:
+            save_json(args.output, audit)
+        _emit(audit)
+        return 0 if audit["verified"] else 1
+
     mlir = export_stablehlo(artifact.workload)
     if args.output:
         Path(args.output).write_text(mlir, encoding="utf-8")
@@ -372,14 +381,21 @@ def command_hlo(args: argparse.Namespace) -> int:
     return 0
 
 
+
 def command_efficiency(args: argparse.Namespace) -> int:
     artifact = _load(args.case)
-    profile = profile_efficiency(artifact.workload, hardware_target=args.hardware)
-    result = profile.to_dict()
+    if getattr(args, "empirical", False):
+        from .efficiency import profile_efficiency_empirical
+
+        result = profile_efficiency_empirical(artifact.workload, hardware_target=args.hardware)
+    else:
+        profile = profile_efficiency(artifact.workload, hardware_target=args.hardware)
+        result = profile.to_dict()
     if args.output:
         save_json(args.output, result)
     _emit(result)
     return 0
+
 
 
 def command_historical(_: argparse.Namespace) -> int:
@@ -408,7 +424,11 @@ def command_historical_matrix(args: argparse.Namespace) -> int:
 
 def command_gradient(args: argparse.Namespace) -> int:
     case = generate_gradient_case(args.seed)
-    if getattr(args, "higher_order", False):
+    if getattr(args, "audit_invariants", False):
+        from .gradients import audit_higher_order_invariants
+
+        result = audit_higher_order_invariants(case)
+    elif getattr(args, "higher_order", False):
         result = run_higher_order_gradient_case(case)
     else:
         result = run_gradient_case(case)
@@ -416,6 +436,7 @@ def command_gradient(args: argparse.Namespace) -> int:
         save_json(args.output, result)
     _emit(result)
     return 0 if result["classification"] == "pass" else 1
+
 
 
 def command_gradient_campaign(args: argparse.Namespace) -> int:
@@ -1334,9 +1355,10 @@ def parser() -> argparse.ArgumentParser:
     triage_parser.add_argument(
         "--target",
         default="jax",
-        choices=("jax", "pytorch", "openxla"),
+        choices=("jax", "pytorch", "openxla", "tpu"),
         help="target compiler tracker",
     )
+
     triage_parser.add_argument("--output", help="optional markdown output file path")
     triage_parser.set_defaults(func=command_triage)
     attest_parser = commands.add_parser(
@@ -1536,7 +1558,11 @@ def parser() -> argparse.ArgumentParser:
     hlo_parser = commands.add_parser("hlo", help="export workload as StableHLO MLIR text dialect")
     hlo_parser.add_argument("--case", required=True, help="case artifact JSON path")
     hlo_parser.add_argument("--output", help="output .mlir file path")
+    hlo_parser.add_argument(
+        "--verify", action="store_true", help="verify MLIR syntax and SSA integrity"
+    )
     hlo_parser.set_defaults(func=command_hlo)
+
 
     efficiency_parser = commands.add_parser(
         "efficiency", help="analyze FLOPs, memory traffic, and roofline intensity"
@@ -1545,10 +1571,20 @@ def parser() -> argparse.ArgumentParser:
     efficiency_parser.add_argument(
         "--hardware",
         default="nvidia-v100",
-        help="hardware target profile (nvidia-v100, nvidia-a100, nvidia-h100, tpu, cpu)",
+        help=(
+            "hardware target profile (nvidia-v100, nvidia-a100, nvidia-h100, "
+            "google-tpu-v5e, cpu-avx512)"
+        ),
+    )
+
+    efficiency_parser.add_argument(
+        "--empirical",
+        action="store_true",
+        help="measure live execution latency and calculate achieved empirical roofline metrics",
     )
     efficiency_parser.add_argument("--output", help="output JSON path")
     efficiency_parser.set_defaults(func=command_efficiency)
+
 
     historical_parser = commands.add_parser(
         "historical", help="replay trusted adapters for documented historical regressions"
@@ -1574,8 +1610,14 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="evaluate higher-order autodiff (HVP) against analytic Hessian",
     )
+    gradient_parser.add_argument(
+        "--audit-invariants",
+        action="store_true",
+        help="audit Clairaut symmetry, linearity, and Taylor consistency of higher-order autodiff",
+    )
     gradient_parser.add_argument("--output", help="output JSON path")
     gradient_parser.set_defaults(func=command_gradient)
+
     gradient_campaign = commands.add_parser(
         "gradient-campaign", help="run bounded analytic-gradient research cases"
     )

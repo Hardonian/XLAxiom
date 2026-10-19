@@ -215,3 +215,69 @@ def run_higher_order_gradient_case(
         "rtol": rtol,
         "classification": "pass" if matches else "higher_order_discrepancy",
     }
+
+
+def audit_higher_order_invariants(
+    case: GradientCase,
+    u: float = 1.0,
+    v: float = 0.5,
+    rtol: float = 1e-4,
+    atol: float = 1e-5,
+) -> dict[str, Any]:
+    """Audit mathematical invariants of second-order autodiff (Clairaut symmetry,
+    linearity, Taylor).
+    """
+    case.validate()
+
+    # 1. Bilinear Clairaut Symmetry: u * HVP(v) == v * HVP(u)
+    hvp_v = compute_hvp(case.operation, case.value, v, dtype=case.dtype)
+    hvp_u = compute_hvp(case.operation, case.value, u, dtype=case.dtype)
+    u_Hv = u * hvp_v
+    v_Hu = v * hvp_u
+    symmetry_match = bool(np.isclose(u_Hv, v_Hu, rtol=rtol, atol=atol))
+
+    # 2. Linearity: HVP(u + v) == HVP(u) + HVP(v)
+    hvp_u_plus_v = compute_hvp(case.operation, case.value, u + v, dtype=case.dtype)
+    linearity_expected = hvp_u + hvp_v
+    linearity_match = bool(np.isclose(hvp_u_plus_v, linearity_expected, rtol=rtol, atol=atol))
+
+    # 3. Taylor second-order expansion consistency
+    import jax.numpy as jnp
+
+    fn = getattr(jnp, case.operation)
+    x = case.value
+    eps = 1e-3 if case.dtype == "float64" else 1e-2
+    dt = getattr(jnp, case.dtype)
+    f_center = float(fn(jnp.asarray(x, dtype=dt)))
+    f_plus = float(fn(jnp.asarray(x + eps * v, dtype=dt)))
+    f_minus = float(fn(jnp.asarray(x - eps * v, dtype=dt)))
+    taylor_fd_second = (f_plus - 2.0 * f_center + f_minus) / (eps * eps)
+    v_Hv = v * hvp_v
+    taylor_match = bool(np.isclose(taylor_fd_second, v_Hv, rtol=2e-2, atol=1e-3))
+
+    all_passed = symmetry_match and linearity_match and taylor_match
+
+    return {
+        "case": case.to_dict(),
+        "u": u,
+        "v": v,
+        "clairaut_symmetry": {
+            "u_Hv": u_Hv,
+            "v_Hu": v_Hu,
+            "diff": abs(u_Hv - v_Hu),
+            "satisfied": symmetry_match,
+        },
+        "hessian_linearity": {
+            "observed_hvp_sum": hvp_u_plus_v,
+            "expected_hvp_sum": linearity_expected,
+            "satisfied": linearity_match,
+        },
+        "taylor_consistency": {
+            "finite_difference_second": taylor_fd_second,
+            "v_Hv": v_Hv,
+            "satisfied": taylor_match,
+        },
+        "all_invariants_satisfied": all_passed,
+        "classification": "pass" if all_passed else "higher_order_invariant_violation",
+    }
+

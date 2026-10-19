@@ -1,6 +1,35 @@
 # Changelog
 
+## 2.1.0 - 2026-10-19
+
+- **Strategic Accelerator & Compiler Verification Release**: Comprehensive delivery of Google Cloud TPU full-corpus verification harness, multi-device TPU SPMD topologies, StableHLO semantic lowering verification, higher-order autodiff mathematical invariants, and calibrated empirical roofline efficiency.
+- **Full-Corpus Cloud TPU Harness & Hardware Simulation (`xlaxiom.tpu_harness` / Priority 72)**:
+  - Extends TPU verification from the 19-property baseline to the complete 40-property curated metamorphic corpus across `jax-tpu-eager` and `jax-tpu-jit`.
+  - Added deterministic `tpu_hardware_emulator` and `audit_tpu_workload_equivalence` for local testing and CI verification without requiring live cloud quota.
+  - Enhanced automated runner scripts (`scripts/collect_tpu_evidence.ps1` and `scripts/remote_tpu_runner.sh`) capturing metamorphic campaigns, higher-order autodiff, and readiness preflight audits.
+  - Added hardware discovery for TPU devices (`discover_tpu_devices`) integrated into non-destructive `xlaxiom doctor` and `xlaxiom hardware` reports.
+- **TPU-Native Multi-Device Topology & SPMD Collective Engine (`xlaxiom.collective` / Priority 73)**:
+  - Pre-configured 2D and 3D TPU pod topologies: `TPU_V5E_MESH_2X2` (Google Cloud TPU v5e ViperLite 4-chip pod) and `TPU_V4_MESH_2X2X1`.
+  - Added physical ring collective simulation (`simulate_ring_all_reduce`, `simulate_all_gather`) measuring communication steps and data transferred per chip.
+- **StableHLO MLIR Roundtrip & Semantic Lowering Verifier (`xlaxiom.stablehlo` / `xlaxiom hlo --verify` / Priority 74)**:
+  - Structural MLIR grammar and SSA assignment validation (`verify_stablehlo_roundtrip`), checking def-use chains, module encapsulation, and return signature integrity.
+  - New CLI capability `xlaxiom hlo --verify <case.json>` for automated OpenXLA MLIR verification.
+- **Higher-Order Autodiff Mathematical Invariants Suite (`xlaxiom.gradients` / `xlaxiom gradient --audit-invariants` / Priority 75)**:
+  - Validates second-order autograd against fundamental mathematical dualities:
+    - Bilinear Clairaut/Schwarz Hessian symmetry: $\langle u, \mathcal{H} v \rangle = \langle v, \mathcal{H} u \rangle$.
+    - Hessian-vector product linearity: $\text{HVP}(u + v) = \text{HVP}(u) + \text{HVP}(v)$.
+    - Taylor second-order expansion consistency against finite difference second derivatives.
+- **Calibrated Empirical Roofline Profiler (`xlaxiom.efficiency` / `xlaxiom efficiency --empirical` / Priority 76)**:
+  - Quantifies empirical execution duration, achieved GFLOPs/sec, achieved memory bandwidth (GB/sec), and `% of Peak` attained against Google Cloud TPU v5e (819 GB/s, 24 TFLOPS FP32) and CPU architectures.
+- **Dedicated Cloud TPU Upstream Issue & Repro Exporter (`xlaxiom.triage` / Priority 77)**:
+  - Formats GitHub Issue packages tailored specifically for `openxla/xla` and `google/jax` TPU bugs.
+  - Auto-embeds StableHLO MLIR dialect module text and explicit `backend='tpu'` standalone 10-line Python reproduction scripts.
+- **Full QA & Version Bump (`xlaxiom._version` / Priority 78)**:
+  - Distribution version bumped to `2.1.0`.
+  - 100% green test passes across all suites, strict typed mypy compliance, and zero ruff warnings.
+
 ## 2.0.0 - 2026-10-17
+
 
 - **Major v2.0.0 Strategic Compiler Verification Release**: Comprehensive delivery of next-generation compiler verification, dialect interoperability, distributed SPMD simulation, and higher-order automatic differentiation.
 - **Dynamic Shapes & Symbolic Dimensions Engine (`xlaxiom.symbolic` / Priority 62)**:
