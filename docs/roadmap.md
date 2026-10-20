@@ -86,10 +86,14 @@ is deliberately narrower than software completion.
 | 77 | Dedicated Cloud TPU upstream issue exporter | Implemented | `format_triage_issue(..., target_tracker="tpu")` auto-bundles StableHLO MLIR dialect text, TPU device topology, and 10-line standalone repro scripts. |
 | 78 | Version 2.1.0 Strategic Release & Full QA | Implemented | Version 2.1.0 delivery with 100% green test passes across all suites, strict mypy typing, clean ruff compliance, and updated evidence suites. |
 
-All seventy-eight software priorities are fully implemented and verified for the **v2.1.0 Major Compiler & Accelerator Release**.
+All seventy-eight software priorities are implemented for the **v2.1.0 Major Compiler & Accelerator Release**.
 Retained evidence closes the available Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, independent-host, and Google Cloud TPU v5e
 milestones. Apple Silicon and AMD ROCm discovery and execution paths are implemented with strict fail-closed semantics to ensure
 no silent CPU fallback occurs.
+
+The 2026-10-19 live TPU rerun passed 39 of 40 eager properties and correctly gated the float64 property because the collector had
+not enabled JAX x64. The collector is corrected to use `--x64`, remove stale cloned evidence before execution, and bypass gcloud's
+incompatible PuTTY transport on Windows. A fresh physical 40/40 run is still required before claiming full-corpus TPU verification.
 
 
 Key completion artifacts:

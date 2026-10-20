@@ -9,8 +9,8 @@
   "gpu_devices": [],
   "gpu_error": "RuntimeError(\"Unknown backend: 'gpu' requested, but no platforms that are instances of gpu are present. Platforms present are: tpu,cpu\")",
   "gpu_probe": "unsupported",
-  "jax": "0.11.2",
-  "jaxlib": "0.11.2",
+  "jax": "0.10.2",
+  "jaxlib": "0.10.2",
   "numpy": "2.5.4",
   "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
   "python": "3.12.15"

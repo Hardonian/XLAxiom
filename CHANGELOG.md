@@ -8,6 +8,7 @@
   - Added deterministic `tpu_hardware_emulator` and `audit_tpu_workload_equivalence` for local testing and CI verification without requiring live cloud quota.
   - Enhanced automated runner scripts (`scripts/collect_tpu_evidence.ps1` and `scripts/remote_tpu_runner.sh`) capturing metamorphic campaigns, higher-order autodiff, and readiness preflight audits.
   - Added hardware discovery for TPU devices (`discover_tpu_devices`) integrated into non-destructive `xlaxiom doctor` and `xlaxiom hardware` reports.
+  - Live validation on 2026-10-19 exposed an x64 launch gap: 39/40 eager properties passed and the float64 property correctly failed its environment gate. The collector now launches all property phases with `--x64`, clears stale cloned evidence, and uses native OpenSSH on Windows; a fresh physical 40/40 rerun remains pending.
 - **TPU-Native Multi-Device Topology & SPMD Collective Engine (`xlaxiom.collective` / Priority 73)**:
   - Pre-configured 2D and 3D TPU pod topologies: `TPU_V5E_MESH_2X2` (Google Cloud TPU v5e ViperLite 4-chip pod) and `TPU_V4_MESH_2X2X1`.
   - Added physical ring collective simulation (`simulate_ring_all_reduce`, `simulate_all_gather`) measuring communication steps and data transferred per chip.

@@ -1,5 +1,5 @@
 # Automated Physical TPU Evidence Collector for XLAxiom
-# Billed per second by Google Cloud; typical run is 3-5 minutes (< $0.20 total on v5e).
+# Billed per second by Google Cloud; typical run is bounded to limit v5e cost.
 # Automatically tears down the TPU VM in a finally block to prevent idle costs.
 
 [CmdletBinding()]
@@ -22,8 +22,10 @@ if (-not (Get-Command gcloud -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-function Invoke-GCloudWithTimeout {
+function Invoke-NativeCommandWithTimeout {
     param(
+        [Parameter(Mandatory = $true)]
+        [string]$Command,
         [Parameter(Mandatory = $true)]
         [string[]]$Arguments,
         [Parameter(Mandatory = $true)]
@@ -34,16 +36,16 @@ function Invoke-GCloudWithTimeout {
     )
 
     # A separate process lets us bound both gcloud and its ssh/scp child process. The
-    # remote command also receives OpenSSH keepalive limits below, so a lost connection
-    # cannot leave this job (and a billable TPU VM) waiting indefinitely.
+    # transport flags below also disable prompts and add keepalives where supported,
+    # so a lost connection cannot leave a billable TPU VM waiting indefinitely.
     $job = Start-Job -ScriptBlock {
-        param([string[]]$CommandArguments)
+        param([string]$Executable, [string[]]$CommandArguments)
 
-        & gcloud @CommandArguments 2>&1
+        & $Executable @CommandArguments 2>&1
         if ($LASTEXITCODE -ne 0) {
-            throw "gcloud exited with code $LASTEXITCODE."
+            throw "$Executable exited with code $LASTEXITCODE."
         }
-    } -ArgumentList (, $Arguments)
+    } -ArgumentList $Command, (, $Arguments)
 
     try {
         $completedJob = Wait-Job -Job $job -Timeout $TimeoutSeconds
@@ -85,7 +87,7 @@ Write-Host " Project:          $ProjectId"
 Write-Host " Candidate Zones:  $($candidateZones -join ', ')"
 Write-Host " Accelerator:      $AcceleratorType"
 Write-Host " VM Name:          $VmName"
-Write-Host " Estimated Cost:   < $0.35 (billed per-second, destroyed upon completion)"
+Write-Host " Estimated Cost:   < `$0.35 (billed per-second, destroyed upon completion)"
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Enable Cloud TPU API if needed
@@ -149,58 +151,77 @@ echo "=== Verifying Physical TPU Silicon ==="
 python -c "import jax; print('JAX Devices:', jax.devices()); assert any(d.platform == 'tpu' for d in jax.devices()), 'No TPU silicon found!'"
 
 echo "=== Executing Metamorphic Properties on TPU ==="
+rm -rf evidence/tpu
 mkdir -p evidence/tpu
 python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
 python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
-python -m xlaxiom.cli property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-python -m xlaxiom.cli property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-python -m xlaxiom.cli property campaign --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-python -m xlaxiom.cli property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
 python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json
 
 echo "=== Higher-Order Autodiff ==="
-python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json || true
+python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
 
 
 echo "=== Evidence Generation Complete ==="
 '@
 
-    # Execute without interactive SSH prompts and fail quickly on a dead connection.
-    $sshArgs = @(
-        "compute", "tpus", "tpu-vm", "ssh", $VmName,
-        "--zone=$activeZone",
-        "--project=$ProjectId",
-        "--command=$remoteScript",
-        "--quiet",
-        "--strict-host-key-checking=no",
-        "--ssh-flag=-o BatchMode=yes",
-        "--ssh-flag=-o ConnectTimeout=30",
-        "--ssh-flag=-o ConnectionAttempts=3",
-        "--ssh-flag=-o ServerAliveInterval=15",
-        "--ssh-flag=-o ServerAliveCountMax=4"
-    )
+    # Windows gcloud hardcodes a bundled PuTTY client which cannot consume
+    # OpenSSH safety options reliably. Use the OS OpenSSH client there.
+    $isWindowsPlatform = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
+    if ($isWindowsPlatform) {
+        $sshCommand = (Get-Command ssh.exe -ErrorAction Stop).Source
+        $sshKey = Join-Path $env:USERPROFILE ".ssh\google_compute_engine"
+        $externalIp = (& gcloud compute tpus tpu-vm describe $VmName `
+                --zone=$activeZone `
+                --project=$ProjectId `
+                --format="value(networkEndpoints[0].accessConfig.externalIp)").Trim()
+        if (-not $externalIp) {
+            throw "TPU VM has no external IP for native OpenSSH."
+        }
+        $sshUser = $env:USERNAME -replace "[^A-Za-z0-9_-]", "_"
+        $sshTarget = "${sshUser}@${externalIp}"
+        $sshBaseArgs = @(
+            "-T", "-i", $sshKey,
+            "-o", "BatchMode=yes",
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=4"
+        )
+        $probeArgs = $sshBaseArgs + @($sshTarget, "true")
+        $sshArgs = $sshBaseArgs + @($sshTarget, $remoteScript)
+    } else {
+        $sshCommand = "gcloud"
+        $gcloudSshBaseArgs = @(
+            "compute", "tpus", "tpu-vm", "ssh", $VmName,
+            "--zone=$activeZone",
+            "--project=$ProjectId",
+            "--quiet",
+            "--strict-host-key-checking=no",
+            "--ssh-flag=-o BatchMode=yes",
+            "--ssh-flag=-o ConnectTimeout=30",
+            "--ssh-flag=-o ConnectionAttempts=3",
+            "--ssh-flag=-o ServerAliveInterval=15",
+            "--ssh-flag=-o ServerAliveCountMax=4"
+        )
+        $probeArgs = $gcloudSshBaseArgs + "--command=true"
+        $sshArgs = $gcloudSshBaseArgs + "--command=$remoteScript"
+    }
 
     # TPU creation can report READY before sshd and the propagated project key are
     # usable. Probe first so the evidence run does not fail on that short race.
     $sshReady = $false
     for ($attempt = 1; $attempt -le 12; $attempt++) {
         Write-Host "Waiting for TPU SSH readiness (attempt $attempt/12)..."
-        $probeArgs = @(
-            "compute", "tpus", "tpu-vm", "ssh", $VmName,
-            "--zone=$activeZone",
-            "--project=$ProjectId",
-            "--command=true",
-            "--quiet",
-            "--strict-host-key-checking=no",
-            "--ssh-flag=-o BatchMode=yes",
-            "--ssh-flag=-o ConnectTimeout=15",
-            "--ssh-flag=-o ConnectionAttempts=1"
-        )
         try {
-            Invoke-GCloudWithTimeout `
+            Invoke-NativeCommandWithTimeout `
+                -Command $sshCommand `
                 -Arguments $probeArgs `
                 -TimeoutSeconds 45 `
                 -Operation "TPU SSH readiness probe"
@@ -218,7 +239,8 @@ echo "=== Evidence Generation Complete ==="
         throw "TPU SSH readiness probe ended without a usable connection."
     }
 
-    Invoke-GCloudWithTimeout `
+    Invoke-NativeCommandWithTimeout `
+        -Command $sshCommand `
         -Arguments $sshArgs `
         -TimeoutSeconds ($RemoteTimeoutMinutes * 60) `
         -Operation "Remote TPU execution"
@@ -230,20 +252,33 @@ echo "=== Evidence Generation Complete ==="
         New-Item -ItemType Directory -Path $localTarget -Force | Out-Null
     }
 
-    $scpArgs = @(
-        "compute", "tpus", "tpu-vm", "scp", "--recurse",
-        "${VmName}:~/XLAxiom/evidence/tpu/*", $localTarget,
-        "--zone=$activeZone",
-        "--project=$ProjectId",
-        "--quiet",
-        "--strict-host-key-checking=no",
-        "--scp-flag=-o BatchMode=yes",
-        "--scp-flag=-o ConnectTimeout=30",
-        "--scp-flag=-o ConnectionAttempts=3",
-        "--scp-flag=-o ServerAliveInterval=15",
-        "--scp-flag=-o ServerAliveCountMax=4"
-    )
-    Invoke-GCloudWithTimeout `
+    if ($isWindowsPlatform) {
+        $scpCommand = (Get-Command scp.exe -ErrorAction Stop).Source
+        $scpArgs = @(
+            "-i", $sshKey,
+            "-o", "BatchMode=yes",
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "ConnectTimeout=30",
+            "${sshTarget}:~/XLAxiom/evidence/tpu/*.json", $localTarget
+        )
+    } else {
+        $scpCommand = "gcloud"
+        $scpArgs = @(
+            "compute", "tpus", "tpu-vm", "scp", "--recurse",
+            "${VmName}:~/XLAxiom/evidence/tpu/*", $localTarget,
+            "--zone=$activeZone",
+            "--project=$ProjectId",
+            "--quiet",
+            "--strict-host-key-checking=no",
+            "--scp-flag=-o BatchMode=yes",
+            "--scp-flag=-o ConnectTimeout=30",
+            "--scp-flag=-o ConnectionAttempts=3",
+            "--scp-flag=-o ServerAliveInterval=15",
+            "--scp-flag=-o ServerAliveCountMax=4"
+        )
+    }
+    Invoke-NativeCommandWithTimeout `
+        -Command $scpCommand `
         -Arguments $scpArgs `
         -TimeoutSeconds 300 `
         -Operation "TPU evidence download"
@@ -254,7 +289,10 @@ echo "=== Evidence Generation Complete ==="
     if ($vmCreated -and (-not $KeepVm)) {
         Write-Host "`n[5/5] Tearing down Cloud TPU VM '$VmName' to prevent idle billing..." -ForegroundColor Yellow
         & gcloud compute tpus tpu-vm delete $VmName --zone=$activeZone --project=$ProjectId --quiet
-        Write-Host "Cloud TPU VM successfully destroyed. Total run time was under 5 minutes." -ForegroundColor Green
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "TPU VM deletion failed; delete '$VmName' manually to stop billing."
+        }
+        Write-Host "Cloud TPU VM successfully destroyed." -ForegroundColor Green
     } elseif ($KeepVm) {
         Write-Host "`nNotice: -KeepVm was passed. Cloud TPU VM '$VmName' is still running." -ForegroundColor Red
         Write-Host "Remember to delete it when done: gcloud compute tpus tpu-vm delete $VmName --zone=$activeZone --project=$ProjectId" -ForegroundColor Red
