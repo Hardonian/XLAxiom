@@ -70,17 +70,19 @@ uv pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_
 echo "=== Verifying Physical TPU Silicon ==="
 python -c "import jax; print(\"JAX Devices:\", jax.devices()); assert any(d.platform == \"tpu\" for d in jax.devices())"
 
+rm -rf evidence/tpu
 mkdir -p evidence/tpu
 python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
 python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
-python -m xlaxiom.cli property run --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-python -m xlaxiom.cli property run --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-python -m xlaxiom.cli property campaign --cases 25 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-python -m xlaxiom.cli property run --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
 python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json
+python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
 '
 
 echo "Downloading evidence artifacts to ./evidence/tpu/..."

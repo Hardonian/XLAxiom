@@ -7,6 +7,7 @@
 | PyTorch Eager/Inductor | Supported | Supports eager and `torch.compile` (Inductor) differential execution with recorded device placement. |
 | CUDA 12/13 | Verified, capability-gated | V100, P40, and RTX 3060 evidence is retained; every new host still requires its own bounded probe. |
 | TPU | Verified on Google Cloud TPU v5e | Retained physical evidence on 4-chip v5litepod-4 (`TPU_0`..`TPU_3`) confirms 19/19 metamorphic property equivalence against CPU JIT without CPU fallback. |
+| TPU simulation | Supported, non-physical | The offline qualification runs the full x64 corpus on CPU JIT with explicit simulation provenance; it cannot close physical TPU claims. |
 | Apple Silicon MPS | Implemented, fail-closed | Non-destructive hardware discovery via system profiler; commands execute without synthetic CPU fallback. |
 | AMD ROCm / HIP | Implemented, fail-closed | GPU discovery via `rocm-smi` and sysfs; fails closed on missing driver or hardware. |
 | JAX x64 | Supported on configured hosts | `property run --x64` re-execs before JAX import and records x64 state. |

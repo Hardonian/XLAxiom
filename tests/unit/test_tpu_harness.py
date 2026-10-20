@@ -60,6 +60,10 @@ def test_tpu_hardware_emulator() -> None:
         assert res.status.value == "ok"
         assert "tpu" in res.backend
         assert res.device is not None
+        assert res.environment is not None
+        assert res.environment["requested_platform"] == "tpu"
+        assert res.environment["simulated"] == "true"
+        assert res.environment["simulation_backend"] == "cpu"
 
 
 def test_audit_tpu_workload_equivalence() -> None:

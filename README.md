@@ -16,6 +16,7 @@ It is independently developed and is not affiliated with, sponsored by, or endor
 | Investigate a real numerical discrepancy | Follow the [artifact handoff workflow](docs/artifacts.md). |
 | Add bounded regression coverage to CI | Run the [curated property corpus](docs/corpus.md). |
 | Compare CPU, GPU, or version-specific evidence | Use the [support matrix](docs/support.md) and [quickstart](docs/quickstart.md). |
+| Qualify TPU workflows without accelerator cost | Run the [offline TPU qualification](docs/offline-tpu.md). |
 | Install from source or a verified wheel | Read the [installation guide](docs/installation.md). |
 
 ## Five-minute confidence check

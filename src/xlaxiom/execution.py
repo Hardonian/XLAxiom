@@ -480,6 +480,14 @@ def execute_jax(
                 device_index=None,
             )
             if res.status == ExecutionStatus.OK:
+                simulated_environment = dict(res.environment or {})
+                simulated_environment.update(
+                    {
+                        "requested_platform": "tpu",
+                        "simulated": "true",
+                        "simulation_backend": "cpu",
+                    }
+                )
                 return ExecutionResult(
                     backend="jax-tpu-simulated",
                     mode=mode,
@@ -488,6 +496,7 @@ def execute_jax(
                     error=None,
                     duration_ms=res.duration_ms,
                     device="TPU_0(process=0,(0,0,0,0))",
+                    environment=simulated_environment,
                 )
             return res
         # Never substitute CPU: report the missing accelerator honestly.
