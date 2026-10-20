@@ -2,8 +2,8 @@
 
 ## Release state
 
-The source tree is prepared for version 1.0.0. It becomes a release only when the
-annotated `v1.0.0` tag passes the `Release verification` workflow and its GitHub Release
+The source tree is prepared for version 2.1.0. It becomes a release only when the
+annotated `v2.1.0` tag passes the `Release verification` workflow and its GitHub Release
 is published. Do not describe a source-only or merely tagged version as published until
 the PyPI publishing job has succeeded. Citation metadata is versioned with the release
 candidate so the tagged source, wheel, source distribution, and citation agree.
@@ -24,7 +24,7 @@ and manual dispatch. It repeats
 lint, format, typing, and test gates, verifies that a tag equals the packaged version,
 validates package metadata, installs the wheel under Python 3.11–3.13 and the source
 distribution under Python 3.12, exercises package data through the CLI, verifies
-repeat builds byte-for-byte,
+repeat builds byte-for-byte, generates signed Sigstore build-provenance attestations,
 and retains both wheel and source distribution as workflow artifacts. It deliberately
 does not create a GitHub release.
 
@@ -45,8 +45,11 @@ the package version:
 ```console
 uv build --out-dir .release-dist
 uv run twine check .release-dist/*
-uv run python scripts/verify_distribution.py --dist-dir .release-dist --tag v1.0.0
+uv run python scripts/verify_distribution.py --dist-dir .release-dist --tag v2.1.0
 ```
+
+Published artifacts can be checked against the repository's signed provenance with
+`gh attestation verify <artifact> --repo Hardonian/XLAxiom`.
 
 Publishing a GitHub Release activates a separate, minimal PyPI job only after the
 verification job passes. That job downloads the verified distributions and uses OIDC
@@ -55,10 +58,11 @@ token. Before the first publication, a maintainer must configure a PyPI pending
 publisher for `Hardonian/XLAxiom`, workflow `release.yml`, environment `pypi`, and must
 configure required reviewers on that GitHub environment.
 
-Version 1.0.0 delivers General Availability across 61 strategic priorities, including
-graph tracing, compiler version bisection, upstream triage generation, 35 curated metamorphic
-properties with verified mutation sharpness, PyTorch Inductor compilation, and Apple Silicon/ROCm
-discovery. Physical TPU and macOS execution retain fail-closed boundaries; see [`support.md`](support.md).
+Version 2.1.0 delivers all 78 strategic priorities, including graph tracing, compiler
+version bisection, upstream triage generation, 40 curated metamorphic properties, PyTorch
+Inductor support, StableHLO verification, higher-order autodiff, and accelerator discovery.
+Physical 4-chip Google Cloud TPU v5e evidence is retained; untested hardware remains
+fail-closed as described in [`support.md`](support.md).
 
 ## Schema compatibility
 

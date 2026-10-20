@@ -15,6 +15,10 @@ jobs:
   package:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -62,6 +66,10 @@ jobs:
           fi
           uv run python scripts/verify_distribution.py --dist-dir dist "${tag_arguments[@]}"
       - run: uvx twine check dist/*
+      - name: Generate signed build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/*
       - name: Smoke-test installed wheel
         shell: bash
         run: |
