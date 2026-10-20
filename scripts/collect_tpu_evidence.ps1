@@ -178,22 +178,56 @@ python -c "import jax; print('JAX Devices:', jax.devices()); assert any(d.platfo
 echo "=== Executing Metamorphic Properties on TPU ==="
 rm -rf evidence/tpu
 mkdir -p evidence/tpu
-python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
-python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
-python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
-python -m xlaxiom.cli property compare \
+status_tsv=evidence/tpu/stage-status.tsv
+: > "$status_tsv"
+failed=0
+run_stage() {
+    stage="$1"
+    shift
+    echo "--- Running stage: $stage ---"
+    set +e
+    "$@" >"evidence/tpu/${stage}.log" 2>&1
+    code=$?
+    set -e
+    printf '%s\t%s\n' "$stage" "$code" >> "$status_tsv"
+    if [ "$code" -ne 0 ]; then
+        failed=1
+        echo "Stage '$stage' failed with exit code $code; retaining evidence and continuing."
+        tail -n 20 "evidence/tpu/${stage}.log"
+    else
+        echo "Stage '$stage' passed."
+    fi
+}
+
+run_stage doctor env PYTHONWARNINGS=ignore python -m xlaxiom.cli doctor
+cp evidence/tpu/doctor.log evidence/tpu/doctor.json
+run_stage environment python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
+run_stage tpu-eager python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+run_stage tpu-jit python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+run_stage tpu-campaign python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+run_stage cpu-jit env JAX_PLATFORMS=cpu python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+run_stage cpu-compare python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json
+run_stage higher-order python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
 
-echo "=== Higher-Order Autodiff ==="
-python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
+STATUS_TSV="$status_tsv" python - <<'PY'
+import json
+import os
+from pathlib import Path
 
+rows = []
+for line in Path(os.environ["STATUS_TSV"]).read_text().splitlines():
+    stage, code = line.split("\t", 1)
+    rows.append({"stage": stage, "exit_code": int(code), "passed": code == "0"})
+Path("evidence/tpu/stage-status.json").write_text(
+    json.dumps({"kind": "physical-tpu-stage-status", "passed": all(row["passed"] for row in rows), "stages": rows}, indent=2) + "\n"
+)
+PY
 
-echo "=== Evidence Generation Complete ==="
+echo "=== Evidence Generation Complete (status=$failed) ==="
+exit "$failed"
 '@
 
     # Windows gcloud hardcodes a bundled PuTTY client which cannot consume
@@ -263,18 +297,25 @@ echo "=== Evidence Generation Complete ==="
         throw "TPU SSH readiness probe ended without a usable connection."
     }
 
-    Invoke-NativeCommandWithTimeout `
-        -Command $sshCommand `
-        -Arguments $sshArgs `
-        -TimeoutSeconds ($RemoteTimeoutMinutes * 60) `
-        -Operation "Remote TPU execution"
+    $remoteExecutionError = $null
+    try {
+        Invoke-NativeCommandWithTimeout `
+            -Command $sshCommand `
+            -Arguments $sshArgs `
+            -TimeoutSeconds ($RemoteTimeoutMinutes * 60) `
+            -Operation "Remote TPU execution"
+    } catch {
+        $remoteExecutionError = $_
+        Write-Warning "Remote execution reported a failure; downloading retained evidence before teardown."
+    }
 
     # 4. Pull evidence artifacts locally
     Write-Host "`n[4/5] Downloading evidence artifacts to ./evidence/tpu/..." -ForegroundColor Yellow
     $localTarget = Join-Path (Get-Location) "evidence\tpu"
-    if (-not (Test-Path $localTarget)) {
-        New-Item -ItemType Directory -Path $localTarget -Force | Out-Null
+    if (Test-Path $localTarget) {
+        Get-ChildItem -LiteralPath $localTarget -Force | Remove-Item -Recurse -Force
     }
+    New-Item -ItemType Directory -Path $localTarget -Force | Out-Null
 
     if ($isWindowsPlatform) {
         $scpCommand = (Get-Command scp.exe -ErrorAction Stop).Source
@@ -309,6 +350,9 @@ echo "=== Evidence Generation Complete ==="
         -TimeoutSeconds 300 `
         -Operation "TPU evidence download"
     Write-Host "Evidence artifacts saved to $localTarget" -ForegroundColor Green
+    if ($remoteExecutionError) {
+        throw $remoteExecutionError
+    }
 
 } finally {
     # 5. Teardown TPU VM to avoid ongoing charges

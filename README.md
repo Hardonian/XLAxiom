@@ -16,6 +16,7 @@ It is independently developed and is not affiliated with, sponsored by, or endor
 | Investigate a real numerical discrepancy | Follow the [artifact handoff workflow](docs/artifacts.md). |
 | Add bounded regression coverage to CI | Run the [curated property corpus](docs/corpus.md). |
 | Compare CPU, GPU, or version-specific evidence | Use the [support matrix](docs/support.md) and [quickstart](docs/quickstart.md). |
+| Inspect physical TPU qualification | Review the [retained 4-chip TPU evidence](evidence/tpu/manifest.json). |
 | Qualify TPU workflows without accelerator cost | Run the [offline TPU qualification](docs/offline-tpu.md). |
 | Install from source or a verified wheel | Read the [installation guide](docs/installation.md). |
 
@@ -67,8 +68,8 @@ The [artifact lifecycle](docs/artifacts.md) has the exact command-level process.
 The repository is designed to make scope visible rather than inflate it:
 
 - The CPU path, checksummed artifacts, failure containment, and reviewed property corpus are covered by automated tests and release verification.
-- The curated corpus contains thirty-five explicit relations across ordinary, extreme, signed-zero, non-finite, integer, mixed-dtype, and x64 inputs with verified mutation sharpness.
-- Windows/Linux and selected CUDA evidence are retained as concrete records; GPU, TPU, and macOS claims remain capability- and evidence-gated.
+- The curated corpus contains forty explicit relations across ordinary, extreme, signed-zero, non-finite, integer, mixed-dtype, and x64 inputs with verified mutation sharpness.
+- Windows/Linux, selected CUDA, and 4-chip Google Cloud TPU v5e evidence are retained as concrete records; untested hardware remains capability- and evidence-gated.
 
 See the [support and verification matrix](docs/support.md) for what is supported versus merely implemented, and the [experiment records](docs/experiments/) for the underlying evidence—not a condensed lab notebook in this README.
 

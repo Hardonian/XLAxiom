@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Automated Physical TPU Evidence Collector for XLAxiom
-# Billed per second by Google Cloud; typical run is 3-5 minutes (< $0.20 total on v5e).
+# Billed per second by Google Cloud; destroy the VM immediately after collection.
 # Automatically tears down the TPU VM in a trap/exit block to prevent idle costs.
 
 set -euo pipefail
@@ -24,7 +24,7 @@ echo " Project:          ${PROJECT_ID}"
 echo " Zone:             ${ZONE}"
 echo " Accelerator:      ${ACCELERATOR_TYPE}"
 echo " VM Name:          ${VM_NAME}"
-echo " Estimated Cost:   < \$0.35 (billed per-second, destroyed on exit)"
+echo " Estimated Cost:   depends on zone/pricing mode (destroyed on exit)"
 echo "=========================================================="
 
 # Ensure TPU API is enabled
@@ -51,6 +51,7 @@ gcloud compute tpus tpu-vm create "${VM_NAME}" \
 VM_CREATED=1
 
 echo "Setting up JAX with libtpu and executing XLAxiom test suite on TPU..."
+REMOTE_STATUS=0
 gcloud compute tpus tpu-vm ssh "${VM_NAME}" --zone="${ZONE}" --project="${PROJECT_ID}" --command='
 set -euo pipefail
 
@@ -72,21 +73,38 @@ python -c "import jax; print(\"JAX Devices:\", jax.devices()); assert any(d.plat
 
 rm -rf evidence/tpu
 mkdir -p evidence/tpu
-python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
-python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
-python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
-python -m xlaxiom.cli property compare \
+status_tsv=evidence/tpu/stage-status.tsv
+: > "$status_tsv"
+failed=0
+run_stage() {
+    stage="$1"
+    shift
+    set +e
+    "$@" >"evidence/tpu/${stage}.log" 2>&1
+    code=$?
+    set -e
+    printf "%s\t%s\n" "$stage" "$code" >> "$status_tsv"
+    if [ "$code" -ne 0 ]; then failed=1; tail -n 20 "evidence/tpu/${stage}.log"; fi
+}
+run_stage doctor env PYTHONWARNINGS=ignore python -m xlaxiom.cli doctor
+cp evidence/tpu/doctor.log evidence/tpu/doctor.json
+run_stage environment python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
+run_stage tpu-eager python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+run_stage tpu-jit python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+run_stage tpu-campaign python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+run_stage cpu-jit env JAX_PLATFORMS=cpu python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+run_stage cpu-compare python -m xlaxiom.cli property compare \
     --baseline evidence/tpu/cpu-jit-evidence.json \
     --comparison evidence/tpu/tpu-jit-evidence.json \
     --output evidence/tpu/tpu-vs-cpu-comparison.json
-python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
-'
+run_stage higher-order python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
+STATUS_TSV="$status_tsv" python -c "import json, os, pathlib; rows=[dict(stage=s, exit_code=int(c), passed=c == \"0\") for s,c in (line.split(chr(9),1) for line in pathlib.Path(os.environ[\"STATUS_TSV\"]).read_text().splitlines())]; pathlib.Path(\"evidence/tpu/stage-status.json\").write_text(json.dumps(dict(kind=\"physical-tpu-stage-status\", passed=all(r[\"passed\"] for r in rows), stages=rows), indent=2) + chr(10))"
+exit "$failed"
+' || REMOTE_STATUS=$?
 
 echo "Downloading evidence artifacts to ./evidence/tpu/..."
 mkdir -p evidence/tpu
 gcloud compute tpus tpu-vm scp --recurse "${VM_NAME}:~/XLAxiom/evidence/tpu/*" ./evidence/tpu/ --zone="${ZONE}" --project="${PROJECT_ID}"
 
-echo "Evidence artifacts collected successfully in ./evidence/tpu/"
+echo "Evidence artifacts collected in ./evidence/tpu/"
+exit "${REMOTE_STATUS}"

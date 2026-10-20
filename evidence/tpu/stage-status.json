@@ -1,0 +1,46 @@
+{
+  "kind": "physical-tpu-stage-status",
+  "passed": true,
+  "stages": [
+    {
+      "stage": "doctor",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "environment",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "tpu-eager",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "tpu-jit",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "tpu-campaign",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "cpu-jit",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "cpu-compare",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "stage": "higher-order",
+      "exit_code": 0,
+      "passed": true
+    }
+  ]
+}

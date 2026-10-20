@@ -4,13 +4,13 @@
   "counts": {
     "compilation_failure": 0,
     "dtype_mismatch": 0,
-    "environment_failure": 1,
+    "environment_failure": 0,
     "execution_failure": 0,
     "inconclusive": 0,
     "invalid_workload": 0,
     "nondeterminism": 0,
     "numerical_discrepancy": 0,
-    "pass": 39,
+    "pass": 40,
     "performance_regression": 0,
     "shape_mismatch": 0,
     "timeout": 0,
@@ -31,12 +31,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 4564.7292,
+          "duration_ms": 4560.6248,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -80,12 +80,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 1.1205,
+          "duration_ms": 1.1983,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -132,12 +132,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.4123,
+          "duration_ms": 0.4413,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -181,12 +181,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 26.9317,
+          "duration_ms": 27.6032,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -233,12 +233,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.3881,
+          "duration_ms": 0.4239,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -282,12 +282,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 45.4238,
+          "duration_ms": 46.9653,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -334,12 +334,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 25.723,
+          "duration_ms": 26.0584,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -383,12 +383,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8443,
+          "duration_ms": 0.8975,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -435,12 +435,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.3656,
+          "duration_ms": 0.3866,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -484,12 +484,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 22.6451,
+          "duration_ms": 23.3285,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -536,12 +536,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 24.0966,
+          "duration_ms": 24.812,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -585,12 +585,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.749,
+          "duration_ms": 0.7601,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -637,12 +637,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 22.7292,
+          "duration_ms": 23.4032,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -686,12 +686,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5509,
+          "duration_ms": 0.5896,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -738,12 +738,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 23.2843,
+          "duration_ms": 23.484,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -787,12 +787,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6675,
+          "duration_ms": 0.7104,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -834,17 +834,17 @@
     {
       "backend": "jax-tpu-eager",
       "comparison": {
-        "classification": "environment_failure",
-        "explanation": "the float64 relation requires JAX x64; rerun the property command with --x64",
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6656,
+          "duration_ms": 33.6471,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -852,7 +852,7 @@
           "mode": "eager",
           "outputs": [
             {
-              "dtype": "float32",
+              "dtype": "float64",
               "finite": 4,
               "shape": [
                 2,
@@ -862,7 +862,22 @@
           ],
           "status": "ok"
         },
-        "metrics": [],
+        "metrics": [
+          {
+            "dtype": "float64",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
         "policy": {
           "atol": 2e-06,
           "check_signed_zero": true,
@@ -873,12 +888,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6348,
+          "duration_ms": 0.6992,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -886,7 +901,7 @@
           "mode": "eager",
           "outputs": [
             {
-              "dtype": "float32",
+              "dtype": "float64",
               "finite": 4,
               "shape": [
                 2,
@@ -915,7 +930,7 @@
       "requires_x64": true,
       "right_workload_sha256": "6ceaed4e1570d3a67a3c095b321eba15468a49231b0bb3a614224006bd3a244b",
       "seed": 0,
-      "triage": "execution_or_environment_failure"
+      "triage": "pass"
     },
     {
       "backend": "jax-tpu-eager",
@@ -925,12 +940,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 23.8074,
+          "duration_ms": 24.3342,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -974,12 +989,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 23.7741,
+          "duration_ms": 24.2025,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1026,12 +1041,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.3816,
+          "duration_ms": 0.3865,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1075,12 +1090,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.569,
+          "duration_ms": 0.5868,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1127,12 +1142,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5278,
+          "duration_ms": 0.5654,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1176,12 +1191,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5418,
+          "duration_ms": 0.5588,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1228,12 +1243,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.4937,
+          "duration_ms": 0.5096,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1277,12 +1292,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5316,
+          "duration_ms": 0.558,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1329,12 +1344,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 23.1718,
+          "duration_ms": 23.292,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1378,12 +1393,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6485,
+          "duration_ms": 0.6701,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1430,12 +1445,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 23.0795,
+          "duration_ms": 23.1588,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1479,12 +1494,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6548,
+          "duration_ms": 0.6857,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1531,12 +1546,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6286,
+          "duration_ms": 0.645,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1580,12 +1595,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8175,
+          "duration_ms": 0.855,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1632,12 +1647,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 22.534,
+          "duration_ms": 22.5382,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1681,12 +1696,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 22.9024,
+          "duration_ms": 22.8505,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1733,12 +1748,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5024,
+          "duration_ms": 0.5216,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1782,12 +1797,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5527,
+          "duration_ms": 0.5601,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1834,12 +1849,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 25.73,
+          "duration_ms": 25.1115,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1877,12 +1892,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 48.4385,
+          "duration_ms": 47.8638,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1926,12 +1941,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6828,
+          "duration_ms": 0.6705,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -1975,12 +1990,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6288,
+          "duration_ms": 0.6508,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2027,12 +2042,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.85,
+          "duration_ms": 0.8521,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2076,12 +2091,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6226,
+          "duration_ms": 0.6489,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2128,12 +2143,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5405,
+          "duration_ms": 0.5631,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2177,12 +2192,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5027,
+          "duration_ms": 0.5106,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2229,12 +2244,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.681,
+          "duration_ms": 0.7394,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2278,12 +2293,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.69,
+          "duration_ms": 0.7166,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2330,12 +2345,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 25.0021,
+          "duration_ms": 24.9427,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2373,12 +2388,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5775,
+          "duration_ms": 0.6021,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2422,12 +2437,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5439,
+          "duration_ms": 0.6189,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2471,12 +2486,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.4877,
+          "duration_ms": 0.5099,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2523,12 +2538,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5113,
+          "duration_ms": 0.5229,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2572,12 +2587,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5091,
+          "duration_ms": 0.531,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2624,12 +2639,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7349,
+          "duration_ms": 0.7178,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2673,12 +2688,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7005,
+          "duration_ms": 0.7184,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2725,12 +2740,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7123,
+          "duration_ms": 0.7392,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2774,12 +2789,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7238,
+          "duration_ms": 0.7816,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2826,12 +2841,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 22.4191,
+          "duration_ms": 22.844,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2875,12 +2890,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.515,
+          "duration_ms": 0.5318,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2927,12 +2942,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 26.7021,
+          "duration_ms": 26.488,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -2970,12 +2985,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5662,
+          "duration_ms": 0.6026,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3019,12 +3034,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8139,
+          "duration_ms": 0.8501,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3068,12 +3083,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8677,
+          "duration_ms": 0.8921,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3120,12 +3135,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8045,
+          "duration_ms": 0.8415,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3169,12 +3184,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7972,
+          "duration_ms": 0.8277,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3221,12 +3236,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8043,
+          "duration_ms": 0.8261,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3270,12 +3285,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.8248,
+          "duration_ms": 0.8565,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3322,12 +3337,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.539,
+          "duration_ms": 0.5818,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3371,12 +3386,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5693,
+          "duration_ms": 0.6013,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3423,12 +3438,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 24.7128,
+          "duration_ms": 24.55,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3472,12 +3487,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.56,
+          "duration_ms": 0.6056,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3524,12 +3539,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6267,
+          "duration_ms": 0.6485,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3573,12 +3588,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7995,
+          "duration_ms": 0.8402,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3625,12 +3640,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 22.6537,
+          "duration_ms": 22.7119,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3674,12 +3689,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.5796,
+          "duration_ms": 0.5877,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3726,12 +3741,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 24.2783,
+          "duration_ms": 24.5813,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3775,12 +3790,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.563,
+          "duration_ms": 0.5887,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3827,12 +3842,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.7742,
+          "duration_ms": 0.7458,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3876,12 +3891,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6861,
+          "duration_ms": 0.7103,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3928,12 +3943,12 @@
         "left": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6752,
+          "duration_ms": 0.7405,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },
@@ -3977,12 +3992,12 @@
         "right": {
           "backend": "jax-tpu",
           "device": "TPU_0(process=0,(0,0,0,0))",
-          "duration_ms": 0.6299,
+          "duration_ms": 0.656,
           "environment": {
             "actual_devices": "TPU_0(process=0,(0,0,0,0))",
             "device_index": "",
             "jax": "0.10.2",
-            "jax_enable_x64": "false",
+            "jax_enable_x64": "true",
             "platform": "Linux-5.19.0-1022-gcp-x86_64-with-glibc2.35",
             "requested_platform": "tpu"
           },

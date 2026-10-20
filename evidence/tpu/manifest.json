@@ -1,0 +1,58 @@
+{
+  "accelerator": "Google Cloud TPU v5e ViperLite",
+  "artifacts": {
+    "cpu-jit-evidence.json": {
+      "bytes": 126687,
+      "sha256": "09733bb1573e5e4fd79b1c7c0a86408ea7c498ab1a77d57206a473709d5eb919"
+    },
+    "doctor.json": {
+      "bytes": 532,
+      "sha256": "20772e4f8315dfb8313eb22ad57f76a8726b63f5bf71c01daa03b808e610fbb0"
+    },
+    "environment.json": {
+      "bytes": 731,
+      "sha256": "e5da3cd83435dfce3abd120064c2beaff9774d0764e5c13a0c364c5ba456747a"
+    },
+    "stage-status.json": {
+      "bytes": 753,
+      "sha256": "5b70f1726bd948e2e1e901e37e6c1247c472d00551996f86ade2d84a7841b7ab"
+    },
+    "tpu-campaign.json": {
+      "bytes": 7340835,
+      "sha256": "0f0fd7d6c4ef3ac504ccc7c6d2374a79c5a660bc8210a567d2363a6badcc50d4"
+    },
+    "tpu-eager-evidence.json": {
+      "bytes": 130460,
+      "sha256": "22108ff5cf0b6f4e297327b42c5854797f5d06fe85cf07b7284133c699bda376"
+    },
+    "tpu-higher-order.json": {
+      "bytes": 309,
+      "sha256": "1040c72a7e5f06efbb2ff9898da2e8854209752ab615d7b63cacb3be6d924193"
+    },
+    "tpu-jit-evidence.json": {
+      "bytes": 130221,
+      "sha256": "451283a34cfbc690e716776c8438d468d1783a9dffa8e284a5bb3882201ab43b"
+    },
+    "tpu-vs-cpu-comparison.json": {
+      "bytes": 16686,
+      "sha256": "8997bf1cac258986ccde495f595e09674f34365ca8b3aab1ddc1ab39cf328a67"
+    }
+  },
+  "checks": {
+    "campaign_2000_of_2000": true,
+    "cpu_comparison_40_of_40": true,
+    "eager_40_of_40": true,
+    "higher_order_pass": true,
+    "jit_40_of_40": true,
+    "physical_tpu_provenance": true,
+    "stage_status_all_pass": true,
+    "x64_enabled_for_properties": true
+  },
+  "chips": 4,
+  "collected_on": "2026-10-19",
+  "kind": "physical-tpu-qualification",
+  "mode": "physical",
+  "passed": true,
+  "schema_version": "physical-tpu-qualification-v1",
+  "zone": "us-south1-a"
+}

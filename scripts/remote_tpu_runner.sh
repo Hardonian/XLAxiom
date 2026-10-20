@@ -25,17 +25,50 @@ python -c "import jax; print('JAX Version:', jax.__version__); print('JAX Device
 echo "=== Step 6: Evidence Generation ==="
 rm -rf evidence/tpu
 mkdir -p evidence/tpu
-python -m xlaxiom.cli doctor > evidence/tpu/doctor.json
-python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
+status_tsv=evidence/tpu/stage-status.tsv
+: > "$status_tsv"
+failed=0
+run_stage() {
+    stage="$1"
+    shift
+    echo "--- Running stage: $stage ---"
+    set +e
+    "$@" >"evidence/tpu/${stage}.log" 2>&1
+    code=$?
+    set -e
+    printf '%s\t%s\n' "$stage" "$code" >> "$status_tsv"
+    if [ "$code" -ne 0 ]; then
+        failed=1
+        echo "Stage '$stage' failed with exit code $code; retaining evidence and continuing."
+        tail -n 20 "evidence/tpu/${stage}.log"
+    else
+        echo "Stage '$stage' passed."
+    fi
+}
 
-echo "Running 40-property metamorphic suite on TPU eager & JIT..."
-python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
-python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
-python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
-python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
-python -m xlaxiom.cli property compare --baseline evidence/tpu/cpu-jit-evidence.json --comparison evidence/tpu/tpu-jit-evidence.json --output evidence/tpu/tpu-vs-cpu-comparison.json
+run_stage doctor env PYTHONWARNINGS=ignore python -m xlaxiom.cli doctor
+cp evidence/tpu/doctor.log evidence/tpu/doctor.json
+run_stage environment python -m xlaxiom.cli environment capture --label "google-cloud-tpu-v5e-viperlite" --output evidence/tpu/environment.json
+run_stage tpu-eager python -m xlaxiom.cli property run --x64 --backend jax-tpu-eager --output evidence/tpu/tpu-eager-evidence.json
+run_stage tpu-jit python -m xlaxiom.cli property run --x64 --backend jax-tpu-jit --output evidence/tpu/tpu-jit-evidence.json
+run_stage tpu-campaign python -m xlaxiom.cli property campaign --x64 --cases 50 --backend jax-tpu-jit --output evidence/tpu/tpu-campaign.json
+run_stage cpu-jit env JAX_PLATFORMS=cpu python -m xlaxiom.cli property run --x64 --backend jax-jit --output evidence/tpu/cpu-jit-evidence.json
+run_stage cpu-compare python -m xlaxiom.cli property compare --baseline evidence/tpu/cpu-jit-evidence.json --comparison evidence/tpu/tpu-jit-evidence.json --output evidence/tpu/tpu-vs-cpu-comparison.json
+run_stage higher-order python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
 
-echo "Running Higher-Order Autodiff on TPU..."
-python -m xlaxiom.cli gradient --higher-order --seed 0 --output evidence/tpu/tpu-higher-order.json
+STATUS_TSV="$status_tsv" python - <<'PY'
+import json
+import os
+from pathlib import Path
 
-echo "=== TPU EVIDENCE RUN COMPLETED SUCCESSFULLY ==="
+rows = []
+for line in Path(os.environ["STATUS_TSV"]).read_text().splitlines():
+    stage, code = line.split("\t", 1)
+    rows.append({"stage": stage, "exit_code": int(code), "passed": code == "0"})
+Path("evidence/tpu/stage-status.json").write_text(
+    json.dumps({"kind": "physical-tpu-stage-status", "passed": all(row["passed"] for row in rows), "stages": rows}, indent=2) + "\n"
+)
+PY
+
+echo "=== TPU EVIDENCE RUN COMPLETED (status=$failed) ==="
+exit "$failed"

@@ -38,7 +38,7 @@ is deliberately narrower than software completion.
 | 29 | Nondeterminism detection | Implemented | `xlaxiom stability` records repeated executions and pairwise comparisons. |
 | 30 | Performance baselines | Implemented | Benchmark records compare matching workload identities conservatively. |
 | 31 | Isolated accelerator campaigns | Implemented | CUDA validation uses isolated interpreters and no CPU fallback. |
-| 32 | TPU validation | Verified | Physical TPU v5e (ViperLite) evidence retained under evidence/tpu/; confirms 19/19 metamorphic property equivalence against CPU JIT without CPU fallback. |
+| 32 | TPU validation | Verified | Physical 4-chip TPU v5e evidence retained under `evidence/tpu/`; confirms 40/40 eager, 40/40 JIT, 2,000/2,000 campaign evaluations, CPU/TPU classification equivalence, x64 execution, and higher-order autodiff. |
 | 33 | Multi-GPU consistency | Verified | All 13 checksummed relations match on V100 and P40, with physical identity and placement retained. |
 | 34 | CUDA/JAX compatibility matrix | Verified | CUDA 12/13 was physically probed across V100, P40, and RTX 3060; supported and rejected SM combinations are retained. |
 | 35 | GPU provenance | Verified | Driver, CUDA variant, host/runtime ordinals, redacted UUID, compute capability, and bounded-memory policy are retained. |
@@ -78,7 +78,7 @@ is deliberately narrower than software completion.
 | 69 | Issue readiness pre-flight validator | Implemented | `xlaxiom readiness --preflight` audits cases for self-containment, privacy/path sanitization, and minimal reproduction scripts. |
 | 70 | Metamorphic corpus expansion (40 invariants) | Implemented | Expanded to 40 curated invariants with lattice dualities, metric distance symmetries, and verified mutation sharpness. |
 | 71 | Version 2.0.0 Release & Full QA | Implemented | Version 2.0.0 GA delivery with 100% green test passes across all suites, strict mypy typing, and clean ruff compliance. |
-| 72 | Full-corpus TPU verification & simulation harness | Implemented | Complete 40-property verification across `jax-tpu-eager` / `jax-tpu-jit`, live runner scripts, and deterministic `TPUHardwareEmulator`. |
+| 72 | Full-corpus TPU verification & simulation harness | Verified | Complete 40-property physical verification across `jax-tpu-eager` / `jax-tpu-jit`, a 50-case campaign, hardened live runners, retained evidence, and deterministic `TPUHardwareEmulator`. |
 | 73 | TPU-native multi-device topology & SPMD collectives | Implemented | First-class `TPU_V5E_MESH_2X2` / `TPU_V4_MESH_2X2X1`, ring AllReduce, and AllGather collective simulation. |
 | 74 | StableHLO MLIR roundtrip & semantic lowering verifier | Implemented | `verify_stablehlo_roundtrip` verifies structural MLIR grammar, SSA def-use chains, and semantic lowering parity; CLI `xlaxiom hlo --verify`. |
 | 75 | Higher-order autodiff mathematical invariants | Implemented | Bilinear Clairaut/Schwarz Hessian symmetry ($\nabla^2 f = (\nabla^2 f)^T$), Hessian linearity, and Taylor consistency; CLI `xlaxiom gradient --audit-invariants`. |
@@ -91,11 +91,10 @@ Retained evidence closes the available Windows/Linux, V100/P40/RTX 3060, CUDA 12
 milestones. Apple Silicon and AMD ROCm discovery and execution paths are implemented with strict fail-closed semantics to ensure
 no silent CPU fallback occurs.
 
-The 2026-10-19 live TPU rerun passed 39 of 40 eager properties and correctly gated the float64 property because the collector had
-not enabled JAX x64. The collector is corrected to use `--x64`, remove stale cloned evidence before execution, and bypass gcloud's
-incompatible PuTTY transport on Windows. A fresh physical 40/40 run is still required before claiming full-corpus TPU verification.
-The retained zero-cost offline qualification passes all 40 eager properties, all 40 JIT properties, and 2,000/2,000 campaign
-evaluations with explicit CPU-simulation provenance; it validates orchestration and evidence integrity, not physical TPU behavior.
+The 2026-10-19 physical TPU v5e rerun passed all 40 eager properties, all 40 JIT properties, and 2,000/2,000 campaign evaluations
+with JAX x64 enabled. The retained CPU baseline and TPU evidence match classifications for all 40 checksummed workloads, and the
+higher-order autodiff check passed. The zero-cost offline qualification remains available for orchestration and evidence-integrity
+testing when physical TPU access is unavailable, with explicit CPU-simulation provenance.
 
 
 Key completion artifacts:
@@ -109,3 +108,4 @@ Key completion artifacts:
 - [`tpu-vs-cpu-comparison.json`](../evidence/tpu/tpu-vs-cpu-comparison.json)
 - [`tpu-jit-evidence.json`](../evidence/tpu/tpu-jit-evidence.json)
 - [`tpu-campaign.json`](../evidence/tpu/tpu-campaign.json)
+- [`manifest.json`](../evidence/tpu/manifest.json)
