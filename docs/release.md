@@ -2,11 +2,11 @@
 
 ## Release state
 
-The source tree is prepared for version 2.1.0. It becomes a release only when the
-annotated `v2.1.0` tag passes the `Release verification` workflow and its GitHub Release
-is published. Do not describe a source-only or merely tagged version as published until
-the PyPI publishing job has succeeded. Citation metadata is versioned with the release
-candidate so the tagged source, wheel, source distribution, and citation agree.
+Version 2.1.0 was published on 2026-10-20 UTC after the annotated `v2.1.0` tag passed
+the `Release verification` workflow, its GitHub Release was published, and the protected
+Trusted Publishing job uploaded the wheel and source distribution to PyPI. Citation
+metadata is versioned with each release candidate so the tagged source, distributions,
+and citation agree.
 
 ## Release criteria
 
@@ -54,9 +54,8 @@ Published artifacts can be checked against the repository's signed provenance wi
 Publishing a GitHub Release activates a separate, minimal PyPI job only after the
 verification job passes. That job downloads the verified distributions and uses OIDC
 Trusted Publishing from the protected `pypi` environment; it stores no long-lived PyPI
-token. Before the first publication, a maintainer must configure a PyPI pending
-publisher for `Hardonian/XLAxiom`, workflow `release.yml`, environment `pypi`, and must
-configure required reviewers on that GitHub environment.
+token. The PyPI publisher is bound to `Hardonian/XLAxiom`, workflow `release.yml`, and
+environment `pypi`; that GitHub environment requires maintainer review before deployment.
 
 Version 2.1.0 delivers all 78 strategic priorities, including graph tracing, compiler
 version bisection, upstream triage generation, 40 curated metamorphic properties, PyTorch
