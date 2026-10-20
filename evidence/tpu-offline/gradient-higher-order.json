@@ -1,0 +1,16 @@
+{
+  "analytic_hessian": -0.0,
+  "case": {
+    "dtype": "float32",
+    "identifier": "gradient-tanh-0",
+    "operation": "tanh",
+    "seed": 0,
+    "value": 0.0
+  },
+  "classification": "pass",
+  "expected_hvp": -0.0,
+  "finite_difference_hvp": 0.0,
+  "observed_hvp": 0.0,
+  "rtol": 0.0001,
+  "tangent": 1.0
+}

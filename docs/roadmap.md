@@ -94,6 +94,8 @@ no silent CPU fallback occurs.
 The 2026-10-19 live TPU rerun passed 39 of 40 eager properties and correctly gated the float64 property because the collector had
 not enabled JAX x64. The collector is corrected to use `--x64`, remove stale cloned evidence before execution, and bypass gcloud's
 incompatible PuTTY transport on Windows. A fresh physical 40/40 run is still required before claiming full-corpus TPU verification.
+The retained zero-cost offline qualification passes all 40 eager properties, all 40 JIT properties, and 2,000/2,000 campaign
+evaluations with explicit CPU-simulation provenance; it validates orchestration and evidence integrity, not physical TPU behavior.
 
 
 Key completion artifacts:

@@ -1,0 +1,59 @@
+{
+  "artifacts": {
+    "cpu-jit-evidence.json": {
+      "bytes": 128595,
+      "sha256": "ba198e5ef2e01f8ba0c8e39039a70f637fa0d714ec5d6f18beedf2c8548290d7"
+    },
+    "gradient-higher-order.json": {
+      "bytes": 325,
+      "sha256": "78f6acc1e9665a16d82648cb43b1e4343045b3c82dd5e7852d3dd8ac797cf845"
+    },
+    "gradient-invariants.json": {
+      "bytes": 575,
+      "sha256": "8f33ae6b56a9103f1faa46007d0bcfb4f28de4396c335311343050686d783ce7"
+    },
+    "simulated-tpu-audit.json": {
+      "bytes": 1529,
+      "sha256": "9735b3a258495f820a5ae745b62c212e27423dc40de210000eca4f6c548dce92"
+    },
+    "simulated-tpu-campaign.json": {
+      "bytes": 7730950,
+      "sha256": "fc186093abb1af42483963d9fbfbb5db73edbcd3ded5a5d32d1ad3aba462921c"
+    },
+    "simulated-tpu-eager.json": {
+      "bytes": 137562,
+      "sha256": "54dc70b1185bcf80a7eb683423064def1e081fe73fb076fade4f0ad08d04554e"
+    },
+    "simulated-tpu-jit.json": {
+      "bytes": 137326,
+      "sha256": "5d6c7778be37b917a0e013f4994c8d3b4f7e11cc70c7016d842d4c349186086c"
+    },
+    "simulated-tpu-vs-cpu.json": {
+      "bytes": 17029,
+      "sha256": "8a213482b644cc3e7d165ffd614212e6429006e3302a1b34d693ef17208d8af2"
+    }
+  },
+  "cases": 50,
+  "checks": {
+    "audit_equivalent": true,
+    "campaign_all_pass": true,
+    "cpu_comparison_equivalent": true,
+    "eager_40_of_40": true,
+    "higher_order_pass": true,
+    "invariants_pass": true,
+    "jit_40_of_40": true,
+    "simulation_disclosed": true
+  },
+  "created_at": "2026-10-20T00:35:41.268289+00:00",
+  "kind": "offline-tpu-qualification",
+  "limitations": [
+    "Execution used JAX CPU eager/JIT with explicit TPU simulation metadata.",
+    "This does not validate libtpu, TPU compiler lowering, physical collectives, or TPU performance.",
+    "A physical TPU run is required before claiming full-corpus hardware verification."
+  ],
+  "mode": "simulated",
+  "passed": true,
+  "platform": "Windows-11-10.0.29683-SP0",
+  "python": "3.13.9",
+  "schema_version": "offline-tpu-qualification-v1"
+}
