@@ -22,6 +22,21 @@ if (-not (Get-Command gcloud -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# On Windows, gcloud's TPU SSH command delegates to bundled PuTTY. Provision the
+# existing Compute Engine OpenSSH key directly so native ssh.exe can be used without
+# depending on gcloud's SSH side effects or project-wide metadata changes.
+$isWindowsPlatform = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
+if ($isWindowsPlatform) {
+    $sshUser = $env:USERNAME -replace "[^A-Za-z0-9_-]", "_"
+    $sshKey = Join-Path $env:USERPROFILE ".ssh\google_compute_engine"
+    $sshPublicKeyPath = "$sshKey.pub"
+    if (-not (Test-Path $sshKey) -or -not (Test-Path $sshPublicKeyPath)) {
+        throw "Compute Engine OpenSSH key pair not found at '$sshKey'."
+    }
+    $sshPublicKey = (Get-Content $sshPublicKeyPath -Raw).Trim()
+    $sshMetadata = "${sshUser}:$sshPublicKey"
+}
+
 function Invoke-NativeCommandWithTimeout {
     param(
         [Parameter(Mandatory = $true)]
@@ -35,35 +50,41 @@ function Invoke-NativeCommandWithTimeout {
         [string]$Operation
     )
 
-    # A separate process lets us bound both gcloud and its ssh/scp child process. The
-    # transport flags below also disable prompts and add keepalives where supported,
-    # so a lost connection cannot leave a billable TPU VM waiting indefinitely.
-    $job = Start-Job -ScriptBlock {
-        param([string]$Executable, [string[]]$CommandArguments)
+    # ProcessStartInfo.ArgumentList preserves every argument boundary exactly. This
+    # matters on Windows: PowerShell background jobs serialize string arrays, which
+    # can collapse OpenSSH's `-o value` pairs into an invalid single command line.
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $Command
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        $startInfo.ArgumentList.Add($argument)
+    }
 
-        & $Executable @CommandArguments 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            throw "$Executable exited with code $LASTEXITCODE."
-        }
-    } -ArgumentList $Command, (, $Arguments)
-
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
     try {
-        $completedJob = Wait-Job -Job $job -Timeout $TimeoutSeconds
-        if ($null -eq $completedJob) {
-            Stop-Job -Job $job -ErrorAction SilentlyContinue
+        if (-not $process.Start()) {
+            throw "$Operation failed to start '$Command'."
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            $process.Kill($true)
+            $process.WaitForExit()
             throw "$Operation timed out after $TimeoutSeconds seconds."
         }
-
-        # Preserve native stderr merged into the success stream, but do not let the
-        # job's terminating error prevent us from printing the useful diagnostics.
-        $output = Receive-Job -Job $job -ErrorAction SilentlyContinue
-        $output | ForEach-Object { Write-Host $_ }
-        if ($job.State -ne "Completed") {
-            $reason = $job.ChildJobs[0].JobStateInfo.Reason
-            throw "$Operation failed: $reason"
+        $process.WaitForExit()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        if ($stdout) { Write-Host $stdout.TrimEnd() }
+        if ($stderr) { Write-Host $stderr.TrimEnd() }
+        if ($process.ExitCode -ne 0) {
+            throw "$Operation failed: $Command exited with code $($process.ExitCode)."
         }
     } finally {
-        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+        $process.Dispose()
     }
 }
 
@@ -87,7 +108,8 @@ Write-Host " Project:          $ProjectId"
 Write-Host " Candidate Zones:  $($candidateZones -join ', ')"
 Write-Host " Accelerator:      $AcceleratorType"
 Write-Host " VM Name:          $VmName"
-Write-Host " Estimated Cost:   < `$0.35 (billed per-second, destroyed upon completion)"
+$costCeiling = if ($Spot) { "< `$0.46 Spot" } else { "< `$1.90 on-demand" }
+Write-Host " Estimated Cost:   $costCeiling (20-minute remote ceiling; destroyed upon completion)"
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Enable Cloud TPU API if needed
@@ -111,6 +133,9 @@ try {
         )
         if ($Spot) {
             $createArgs += "--spot"
+        }
+        if ($isWindowsPlatform) {
+            $createArgs += "--metadata=ssh-keys=$sshMetadata"
         }
 
         & gcloud @createArgs
@@ -173,10 +198,8 @@ echo "=== Evidence Generation Complete ==="
 
     # Windows gcloud hardcodes a bundled PuTTY client which cannot consume
     # OpenSSH safety options reliably. Use the OS OpenSSH client there.
-    $isWindowsPlatform = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
     if ($isWindowsPlatform) {
         $sshCommand = (Get-Command ssh.exe -ErrorAction Stop).Source
-        $sshKey = Join-Path $env:USERPROFILE ".ssh\google_compute_engine"
         $externalIp = (& gcloud compute tpus tpu-vm describe $VmName `
                 --zone=$activeZone `
                 --project=$ProjectId `
@@ -184,12 +207,13 @@ echo "=== Evidence Generation Complete ==="
         if (-not $externalIp) {
             throw "TPU VM has no external IP for native OpenSSH."
         }
-        $sshUser = $env:USERNAME -replace "[^A-Za-z0-9_-]", "_"
         $sshTarget = "${sshUser}@${externalIp}"
         $sshBaseArgs = @(
             "-T", "-i", $sshKey,
             "-o", "BatchMode=yes",
             "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=NUL",
+            "-o", "GlobalKnownHostsFile=NUL",
             "-o", "ConnectTimeout=30",
             "-o", "ServerAliveInterval=15",
             "-o", "ServerAliveCountMax=4"
@@ -258,6 +282,8 @@ echo "=== Evidence Generation Complete ==="
             "-i", $sshKey,
             "-o", "BatchMode=yes",
             "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=NUL",
+            "-o", "GlobalKnownHostsFile=NUL",
             "-o", "ConnectTimeout=30",
             "${sshTarget}:~/XLAxiom/evidence/tpu/*.json", $localTarget
         )
