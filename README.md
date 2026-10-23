@@ -8,6 +8,8 @@
 
 It is independently developed and is not affiliated with, sponsored by, or endorsed by Google.
 
+> **Portfolio signal:** XLAxiom is the ML-infrastructure flagship: a reproducible testing and evidence pipeline for turning JAX/OpenXLA numerical discrepancies into small, reviewable engineering cases.
+
 ## Pick your path
 
 | If you need to… | Start here |
