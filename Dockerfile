@@ -40,3 +40,4 @@ USER 10001:10001
 
 ENTRYPOINT ["xlaxiom"]
 CMD ["doctor"]
+

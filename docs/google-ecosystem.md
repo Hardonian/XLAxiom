@@ -209,3 +209,4 @@ Emits structured JSON logs conforming to Google Cloud Logging formats and traces
 
 ### Hardened Containerization
 Includes a multi-stage distroless `Dockerfile` and automated `cloudbuild.yaml` for compiling, verifying, and publishing secure, non-root container images to Google Artifact Registry (`pkg.dev`).
+
