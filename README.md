@@ -88,6 +88,9 @@ See the [support and verification matrix](docs/support.md) for what is supported
 | Test known relations | `property list`, `property run`, `property campaign`, `relation` |
 | Compare changes safely | `matrix run`, `property compare`, `historical-study` |
 | Validate accelerators | `gpu doctor`, `gpu validate`, `gpu campaign` |
+| Google Ecosystem & Cloud TPUs | `cloud tpu-run`, `cloud tpu-status`, `cloud vertex-spec`, `cloud xpk-spec` |
+| Developer surfaces & Colab | `colab`, `xla pass-isolate` |
+| Enterprise Governance & Telemetry | `bigquery schema`, `bigquery export`, `kms sign`, `kms verify` |
 
 Run `xlaxiom <command> --help` for the complete interface. The [documentation index](docs/index.md) routes each workflow to the right level of detail.
 
