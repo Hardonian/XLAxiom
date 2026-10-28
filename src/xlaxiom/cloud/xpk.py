@@ -56,4 +56,3 @@ def generate_xpk_workload_spec(
         docker_image=docker_image,
         command=command,
     )
-

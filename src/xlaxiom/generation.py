@@ -7,7 +7,7 @@ from typing import Literal
 
 import numpy as np
 
-from .model import DTYPES, InputSpec, Node, Workload
+from .model import InputSpec, Node, Workload
 from .operations import BINARY_OPS, OPERATION_SPECS, REDUCTION_OPS, UNARY_OPS
 
 
@@ -30,7 +30,8 @@ class GenerationConfig:
             raise ValueError("max_dim must be between 2 and 32")
         if not 1 <= self.max_nodes <= 64:
             raise ValueError("max_nodes must be between 1 and 64")
-        if self.dtype not in DTYPES:
+        generation_dtypes = {"float32", "float64", "int32", "int64"}
+        if self.dtype not in generation_dtypes:
             raise ValueError(f"unsupported generation dtype {self.dtype!r}")
         if self.input_mode not in {
             "random",

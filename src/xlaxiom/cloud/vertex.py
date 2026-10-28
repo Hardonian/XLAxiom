@@ -98,4 +98,3 @@ implementation:
       --strict
     ]
 """
-

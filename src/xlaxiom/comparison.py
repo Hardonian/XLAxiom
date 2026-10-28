@@ -102,45 +102,6 @@ class ComparisonResult:
             "  </table>"
             "</div>"
         )
-    def _repr_html_(self) -> str:
-        """Render interactive HTML card for Google Colab and Jupyter Notebooks."""
-        is_pass = self.classification == Classification.PASS
-        badge_color = "#10b981" if is_pass else "#ef4444"
-        rows = "".join(
-            f"<tr><td>Output {idx}</td><td>{m.shape}</td><td>{m.dtype}</td>"
-            f"<td>{m.max_absolute_error:.2e}</td><td>{m.max_relative_error:.2e}</td>"
-            f"<td>{m.finite_mismatches}</td></tr>"
-            for idx, m in enumerate(self.metrics)
-        )
-        return f"""
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 12px 0; background: #ffffff;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <h3 style="margin: 0; color: #1e293b; font-size: 16px;">Differential Comparison Verdict</h3>
-                <span style="background: {badge_color}; color: #ffffff; padding: 4px 10px; border-radius: 9999px; font-weight: 600; font-size: 12px;">
-                    {self.classification.value.upper()}
-                </span>
-            </div>
-            <p style="margin: 4px 0 12px 0; font-size: 13px; color: #475569;">
-                <b>Explanation</b>: {self.explanation}
-            </p>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #e2e8f0; text-align: left; color: #475569;">
-                        <th style="padding: 6px;">Output</th>
-                        <th style="padding: 6px;">Shape</th>
-                        <th style="padding: 6px;">Dtype</th>
-                        <th style="padding: 6px;">Max Abs Error</th>
-                        <th style="padding: 6px;">Max Rel Error</th>
-                        <th style="padding: 6px;">Mismatches</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows}
-                </tbody>
-            </table>
-        </div>
-        """
 
 
 def _status_classification(result: ExecutionResult) -> Classification:

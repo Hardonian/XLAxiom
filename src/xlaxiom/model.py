@@ -17,8 +17,31 @@ from .operations import OPERATION_SPECS
 from .operations import OPS as OPS
 from .operations import UNARY_OPS as UNARY_OPS
 
+try:
+    import ml_dtypes  # noqa: F401
+
+    HAS_ML_DTYPES = True
+except ImportError:
+    HAS_ML_DTYPES = False
+
+LOW_PRECISION_DTYPES: set[str] = {"float16"}
+if HAS_ML_DTYPES:
+    LOW_PRECISION_DTYPES |= {"bfloat16", "float8_e4m3fn", "float8_e5m2"}
+
 SCHEMA_VERSION = "1.0"
-DTYPES = {"float32", "float64", "int32", "int64"}
+DTYPES = {"float32", "float64", "int32", "int64"} | LOW_PRECISION_DTYPES
+
+
+def _get_finfo(dtype: np.dtype[Any]) -> Any:
+    """Return floating point limits, supporting standard NumPy and ml_dtypes."""
+    try:
+        return np.finfo(dtype)
+    except (ValueError, TypeError):
+        if HAS_ML_DTYPES:
+            import ml_dtypes
+
+            return ml_dtypes.finfo(dtype)
+        raise
 
 
 class ValidationError(ValueError):
@@ -457,11 +480,16 @@ def materialize_inputs(workload: Workload) -> dict[str, NDArray[np.generic]]:
             else:
                 value = rng.normal(0.0, 1.0, size=spec.shape).astype(dtype)
                 flat = value.reshape(-1)
+                info = _get_finfo(dtype)
                 if spec.value_mode == "finite_edges":
-                    edges = np.array([0.0, -0.0, 1e-20, 1e10, 1.0, -1.0], dtype=dtype)
+                    max_half = float(info.max) / 2.0
+                    tiny_val = float(info.tiny)
+                    edges = np.array(
+                        [0.0, -0.0, tiny_val, min(1e10, max_half), 1.0, -1.0],
+                        dtype=dtype,
+                    )
                     flat[: min(flat.size, len(edges))] = edges[: flat.size]
                 elif spec.value_mode == "extreme_finite":
-                    info = np.finfo(dtype)
                     edges = np.array(
                         [
                             info.max / 4,

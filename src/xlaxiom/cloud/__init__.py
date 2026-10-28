@@ -30,4 +30,3 @@ __all__ = [
     "read_gcs_text",
     "write_gcs_text",
 ]
-

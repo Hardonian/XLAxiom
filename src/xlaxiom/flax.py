@@ -37,6 +37,26 @@ def trace_flax_module(
     )
 
 
+def trace_flax_nnx_module(
+    module: Any,
+    *sample_inputs: Any,
+    identifier: str = "flax-nnx-module-v1",
+    seed: int = 42,
+    policy: ComparisonPolicy | None = None,
+) -> Workload:
+    """Trace a Flax NNX stateful module callable into a verified Workload DAG."""
+    if not callable(module):
+        raise TypeError(f"expected callable Flax NNX module, received {type(module).__name__}")
+
+    return trace_jax(
+        module,
+        *sample_inputs,
+        identifier=identifier,
+        seed=seed,
+        policy=policy,
+    )
+
+
 def build_synthetic_attention_block(
     seq_len: int = 16,
     d_model: int = 64,

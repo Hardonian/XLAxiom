@@ -359,3 +359,72 @@ def test_cli_google_ecosystem_commands(tmp_path: Path) -> None:
 
     ret = main(["kms", "verify", "--attestation", str(att_path), "--key", key])
     assert ret == 0
+
+
+def test_low_precision_dtypes() -> None:
+    from xlaxiom.model import DTYPES, InputSpec, Node, Workload, materialize_inputs
+
+    assert "float16" in DTYPES
+    target_dtype = "bfloat16" if "bfloat16" in DTYPES else "float16"
+
+    workload = Workload(
+        identifier="low-prec-test",
+        seed=123,
+        inputs=(
+            InputSpec("x", (4, 4), dtype=target_dtype, value_mode="random"),
+            InputSpec("y", (4, 4), dtype=target_dtype, value_mode="finite_edges"),
+        ),
+        nodes=(Node("add", ("x", "y"), "out"),),
+        outputs=("out",),
+    )
+    workload.validate()
+    inputs = materialize_inputs(workload)
+    assert inputs["x"].shape == (4, 4)
+    assert str(inputs["x"].dtype) == target_dtype
+    assert inputs["y"].shape == (4, 4)
+
+
+def test_flax_nnx_tracing() -> None:
+    from typing import Any
+
+    import numpy as np
+
+    from xlaxiom.flax import trace_flax_nnx_module
+
+    class DummyNNXModule:
+        def __call__(self, x: Any) -> Any:
+            import jax.numpy as jnp
+
+            return jnp.sin(x)
+
+    module = DummyNNXModule()
+    x = np.ones((4, 4), dtype=np.float32)
+    workload = trace_flax_nnx_module(module, x, identifier="nnx-test")
+    assert workload.identifier == "nnx-test"
+    assert len(workload.nodes) >= 1
+
+    with pytest.raises(TypeError, match="expected callable"):
+        trace_flax_nnx_module("not_a_module", x)  # type: ignore[arg-type]
+
+
+def test_colab_examples_and_bigquery_views() -> None:
+    import json
+    from pathlib import Path
+
+    colab_dir = Path("examples/colab")
+    assert colab_dir.exists()
+    notebooks = list(colab_dir.glob("*.ipynb"))
+    assert len(notebooks) >= 3
+
+    for nb_path in notebooks:
+        with open(nb_path, encoding="utf-8") as f:
+            data = json.load(f)
+            assert data["nbformat"] == 4
+            assert len(data["cells"]) >= 3
+
+    sql_path = Path("sql/bigquery_views.sql")
+    assert sql_path.exists()
+    sql_text = sql_path.read_text(encoding="utf-8")
+    assert "v_daily_campaign_health" in sql_text
+    assert "v_tpu_roofline_efficiency" in sql_text
+    assert "v_metamorphic_sharpness" in sql_text
