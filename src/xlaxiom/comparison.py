@@ -71,6 +71,38 @@ class ComparisonResult:
         )
         return repr((self.classification.value, kinds))
 
+    def _repr_html_(self) -> str:
+        """Render interactive HTML card for Google Colab and Jupyter Notebooks."""
+        is_pass = self.classification == Classification.PASS
+        badge_color = "#10b981" if is_pass else "#ef4444"
+        rows = "".join(
+            f"<tr><td>Output {idx}</td><td>{m.shape}</td><td>{m.dtype}</td>"
+            f"<td>{m.max_absolute_error:.2e}</td><td>{m.max_relative_error:.2e}</td>"
+            f"<td>{m.finite_mismatches}</td></tr>"
+            for idx, m in enumerate(self.metrics)
+        )
+        card_style = (
+            "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; "
+            "border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 12px 0; "
+            "background: #ffffff;"
+        )
+        badge_style = (
+            f"background: {badge_color}; color: #ffffff; padding: 4px 10px; "
+            "border-radius: 9999px; font-weight: 600; font-size: 12px;"
+        )
+        return (
+            f'<div style="{card_style}">'
+            '  <div style="display: flex; align-items: center; justify-content: space-between;">'
+            '    <h3 style="margin: 0; color: #1e293b; font-size: 16px;">Comparison Verdict</h3>'
+            f'    <span style="{badge_style}">{self.classification.value.upper()}</span>'
+            "  </div>"
+            f'  <p style="margin: 4px 0 12px 0; font-size: 13px;">{self.explanation}</p>'
+            '  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">'
+            f"    <tbody>{rows}</tbody>"
+            "  </table>"
+            "</div>"
+        )
+
 
 def _status_classification(result: ExecutionResult) -> Classification:
     return {

@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.2.0 - 2026-10-27
+
+- **Major Google Ecosystem & Enterprise Product Readiness Release**: Full end-to-end integration across Google Cloud Platform (GCP), Cloud TPUs (v4, v5e, v5p, v6e Trillium), Vertex AI, GKE (`xpk`), OpenXLA StableHLO reference interpreter, XLA compiler pass isolation, Google model architectures (Flax, MaxText), Google Colab, BigQuery, and Google Cloud KMS.
+- **Transparent Google Cloud Storage (GCS) `gs://` URI Layer (`xlaxiom.cloud.storage` / Priority 79)**:
+  - Direct reading and writing of checksummed cases, relational artifacts, campaign ledgers, and attestations to/from `gs://bucket/blob` URIs without local disk staging.
+  - Transparent integration with `load_case`, `save_case`, `load_relational_case`, `save_relational_case`, and `load_artifact`.
+- **Multi-Generation Cloud TPU Matrix Support (`xlaxiom.cloud.tpu` / Priority 80)**:
+  - First-class specifications, memory bandwidth, peak compute FLOPs (FP32, BF16, FP8), and mesh topology models for TPU v4, TPU v5e (ViperLite), TPU v5p, and TPU v6e (Trillium).
+  - CLI `xlaxiom cloud tpu-status` and `xlaxiom cloud tpu-run`.
+- **Multi-Host TPU Pod Slice Orchestration (`MultiHostTPUOrchestrator` / Priority 81)**:
+  - Dynamic coordination environment generator for multi-host TPU slices (v4-16..v4-4096, v5e-16, v6e-256) via JAX distributed coordination.
+  - Simulated inter-host ring all-reduce latency and bandwidth over TPU Inter-Chip Interconnect (ICI).
+- **Vertex AI Custom Jobs & KFP Pipeline Component (`xlaxiom.cloud.vertex` / Priority 82)**:
+  - Programmatic generation of production Vertex AI Custom Training Job specifications (`create_vertex_job_spec` / `xlaxiom cloud vertex-spec`).
+  - Turnkey Kubeflow Pipelines component YAML (`generate_kfp_component_yaml`) for automated compiler verification in MLOps CI/CD.
+- **GKE Accelerated Processing Kit (`xpk`) Generator (`xlaxiom.cloud.xpk` / Priority 83)**:
+  - Declarative workload configuration and CLI generator (`generate_xpk_workload_spec` / `xlaxiom cloud xpk-spec`) for dispatching campaigns on GKE TPU clusters.
+- **OpenXLA StableHLO Pure Reference Interpreter Oracle (`xlaxiom.stablehlo_interpreter` / Priority 84)**:
+  - Pure-Python reference interpreter strictly following the official OpenXLA StableHLO specification.
+  - Registered as a first-class execution oracle backend (`backend="stablehlo-interpreter"`).
+- **XLA Compiler Optimization Pass Isolation & Bisection (`xlaxiom.xla_passes` / Priority 85)**:
+  - Pinpoints the exact XLA compiler pass (algebraic-simplifier, dot-decomposer, instruction-fusion, layout-assignment, rematerialization) introducing numerical discrepancies.
+  - CLI subcommand `xlaxiom xla pass-isolate`.
+- **Google Model Framework Adapters: Flax & MaxText (`xlaxiom.flax` / Priority 86)**:
+  - Tracing and subgraph extraction for Flax Linen and Flax NNX modules.
+  - Synthetic computational block builders for Transformer Multi-Head Self-Attention, RMSNorm, and SwiGLU MLP layers as used in Google MaxText and Gemma.
+- **Interactive Google Colab Notebooks & Rich Display Protocols (`xlaxiom.colab` / Priority 87)**:
+  - One-click Jupyter/Colab `.ipynb` generator with automated hardware accelerator provisioning and visual diagnostics (`xlaxiom colab`).
+  - Official "Open in Colab" markdown badge generation (`colab_badge_markdown`).
+  - First-class `_repr_html_()` methods across `CaseArtifact`, `RelationalArtifact`, `ComparisonResult`, `BisectResult`, `XLAPassIsolationResult`, and `CloudTPUJobResult`.
+- **Enterprise Governance: Cloud KMS, SLSA v1.0 & BigQuery (`xlaxiom.kms` & `xlaxiom.bigquery` / Priority 88)**:
+  - Google Cloud KMS asymmetric signing and verification (`sign_kms_attestation`, `verify_kms_attestation` / `xlaxiom kms sign`, `xlaxiom kms verify`).
+  - in-toto SLSA v1.0 build provenance generation (`generate_slsa_provenance`).
+  - BigQuery table schemas for campaign ledgers, metamorphic properties, and empirical roofline metrics, with streaming export (`xlaxiom bigquery schema`, `xlaxiom bigquery export`).
+  - Structured Google Cloud Logging (`format_cloud_log`) and OpenTelemetry trace spans (`trace_compiler_span`).
+  - Multi-stage hardened distroless container `Dockerfile` and automated Google `cloudbuild.yaml`.
+
 ## 2.1.0 - 2026-10-19
 
 - **Strategic Accelerator & Compiler Verification Release**: Comprehensive delivery of Google Cloud TPU full-corpus verification harness, multi-device TPU SPMD topologies, StableHLO semantic lowering verification, higher-order autodiff mathematical invariants, and calibrated empirical roofline efficiency.

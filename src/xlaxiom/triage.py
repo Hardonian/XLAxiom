@@ -119,6 +119,8 @@ def format_triage_issue(
         target_name = "Google Cloud TPU / OpenXLA"
     elif target_lower == "jax":
         target_name = "Google JAX"
+    elif target_lower == "buganizer":
+        target_name = "Google Internal Issue (Buganizer)"
     else:
         target_name = target_tracker.upper()
 
@@ -178,6 +180,9 @@ def format_triage_issue(
         f"| Python Version | `{platform.python_version()}` |",
         f"| JAX Version | `{jax_version}` |",
         f"| Backend / Device | `{device_str}` |",
+        "",
+        "#### Interactive Reproduction in Google Colab",
+        "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Hardonian/XLAxiom)",
         "",
         "#### Standalone Reproduction Script",
         "```python",

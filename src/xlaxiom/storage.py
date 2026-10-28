@@ -24,6 +24,13 @@ class ArtifactError(ValueError):
 
 def atomic_write_text(path: str | Path, contents: str) -> Path:
     """Write complete UTF-8 text beside its destination, then atomically replace it."""
+    path_str = str(path)
+    if path_str.startswith("gs://"):
+        from .cloud.storage import write_gcs_text
+
+        write_gcs_text(path_str, contents)
+        return Path(path_str)
+
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary_path: Path | None = None
@@ -98,15 +105,53 @@ class CaseArtifact:
         except (TypeError, ValueError, KeyError) as exc:
             raise ArtifactError(f"malformed case artifact: {exc}") from exc
 
+    def _repr_html_(self) -> str:
+        """Render interactive HTML card for Google Colab and Jupyter Notebooks."""
+        from .reporting import render_svg_dag
+
+        svg_html = render_svg_dag(self.workload.canonical_dict())
+        fault_info = (
+            f"Fault: <code>{self.fault.output_offset}</code>" if self.fault else "Fault: None"
+        )
+        card_style = (
+            "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; "
+            "border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 12px 0; "
+            "background: #ffffff;"
+        )
+        badge_style = (
+            "background: #3b82f6; color: #ffffff; padding: 4px 10px; "
+            "border-radius: 9999px; font-weight: 600; font-size: 12px;"
+        )
+        return (
+            f'<div style="{card_style}">'
+            '  <div style="display: flex; align-items: center; justify-content: space-between;">'
+            '    <h3 style="margin: 0; color: #1e293b; font-size: 16px;">XLAxiom Case Artifact</h3>'
+            f'    <span style="{badge_style}">{self.comparison_mode.upper()}</span>'
+            "  </div>"
+            '  <p style="margin: 4px 0; font-size: 13px; color: #64748b;">'
+            f"    Digest: <code>{self.workload.digest()}</code> | "
+            f"Provenance: <code>{self.provenance}</code> | {fault_info}"
+            "  </p>"
+            f'  <div style="margin: 12px 0; padding: 8px; background: #f8fafc;">{svg_html}</div>'
+            "</div>"
+        )
+
 
 def save_case(path: str | Path, artifact: CaseArtifact) -> Path:
     return atomic_write_text(path, json.dumps(artifact.to_dict(), indent=2, sort_keys=True) + "\n")
 
 
 def load_case(path: str | Path) -> CaseArtifact:
+    path_str = str(path)
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        if path_str.startswith("gs://"):
+            from .cloud.storage import read_gcs_text
+
+            text = read_gcs_text(path_str)
+        else:
+            text = Path(path).read_text(encoding="utf-8")
+        data = json.loads(text)
+    except (OSError, json.JSONDecodeError, RuntimeError, ValueError) as exc:
         raise ArtifactError(f"cannot read case artifact: {exc}") from exc
     if not isinstance(data, dict):
         raise ArtifactError("case artifact must be a JSON object")
@@ -183,6 +228,34 @@ class RelationalArtifact:
                 raise
             raise ArtifactError(f"malformed relational artifact: {exc}") from exc
 
+    def _repr_html_(self) -> str:
+        """Render interactive HTML card for Google Colab and Jupyter Notebooks."""
+        from .reporting import render_svg_dag
+
+        left_svg = render_svg_dag(self.left.canonical_dict())
+        right_svg = render_svg_dag(self.right.canonical_dict())
+        card_style = (
+            "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; "
+            "border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 12px 0; "
+            "background: #ffffff;"
+        )
+        badge_style = (
+            "background: #8b5cf6; color: #ffffff; padding: 4px 10px; "
+            "border-radius: 9999px; font-weight: 600; font-size: 12px;"
+        )
+        return (
+            f'<div style="{card_style}">'
+            '  <div style="display: flex; align-items: center; justify-content: space-between;">'
+            f'    <h3 style="margin: 0; color: #1e293b; font-size: 16px;">{self.identifier}</h3>'
+            f'    <span style="{badge_style}">{self.relation}</span>'
+            "  </div>"
+            '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">'
+            f'    <div style="padding: 8px; background: #f8fafc;">{left_svg}</div>'
+            f'    <div style="padding: 8px; background: #f8fafc;">{right_svg}</div>'
+            "  </div>"
+            "</div>"
+        )
+
 
 Artifact = CaseArtifact | RelationalArtifact
 
@@ -192,9 +265,16 @@ def save_relational_case(path: str | Path, artifact: RelationalArtifact) -> Path
 
 
 def load_relational_case(path: str | Path) -> RelationalArtifact:
+    path_str = str(path)
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        if path_str.startswith("gs://"):
+            from .cloud.storage import read_gcs_text
+
+            text = read_gcs_text(path_str)
+        else:
+            text = Path(path).read_text(encoding="utf-8")
+        data = json.loads(text)
+    except (OSError, json.JSONDecodeError, RuntimeError, ValueError) as exc:
         raise ArtifactError(f"cannot read relational case artifact: {exc}") from exc
     if not isinstance(data, dict):
         raise ArtifactError("relational case artifact must be a JSON object")
@@ -209,9 +289,16 @@ def artifact_from_dict(data: dict[str, Any]) -> Artifact:
 
 
 def load_artifact(path: str | Path) -> Artifact:
+    path_str = str(path)
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        if path_str.startswith("gs://"):
+            from .cloud.storage import read_gcs_text
+
+            text = read_gcs_text(path_str)
+        else:
+            text = Path(path).read_text(encoding="utf-8")
+        data = json.loads(text)
+    except (OSError, json.JSONDecodeError, RuntimeError, ValueError) as exc:
         raise ArtifactError(f"cannot read artifact: {exc}") from exc
     if not isinstance(data, dict):
         raise ArtifactError("artifact must be a JSON object")

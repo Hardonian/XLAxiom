@@ -32,6 +32,8 @@ PROPERTY_BACKENDS = (
     "jax-gpu-jit",
     "jax-tpu-eager",
     "jax-tpu-jit",
+    "stablehlo-interpreter",
+    "torch-xla",
 )
 
 
@@ -1274,6 +1276,10 @@ def _execute(workload: Workload, backend: str) -> ExecutionResult:
         return execute_jax(workload, requested_platform="tpu")
     if backend == "jax-tpu-jit":
         return execute_jax(workload, jit=True, requested_platform="tpu")
+    if backend == "stablehlo-interpreter":
+        from .stablehlo_interpreter import interpret_stablehlo
+
+        return interpret_stablehlo(workload)
     raise MetamorphicPropertyError(f"unsupported property backend {backend!r}")
 
 

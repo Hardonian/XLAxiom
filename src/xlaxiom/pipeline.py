@@ -66,6 +66,10 @@ def run_comparison(
             output_offset=fault.output_offset if fault else None,
             **device,
         )
+    elif mode == "stablehlo-interpreter":
+        from .stablehlo_interpreter import interpret_stablehlo
+
+        candidate = interpret_stablehlo(workload)
     else:
         raise ValueError(f"unsupported comparison mode {mode}")
     return compare(candidate, reference, workload.policy)
@@ -80,4 +84,8 @@ def run_backend(
         return execute_jax(workload, **_kwargs(target))
     if backend == "jax-jit":
         return execute_jax(workload, jit=True, **_kwargs(target))
+    if backend == "stablehlo-interpreter":
+        from .stablehlo_interpreter import interpret_stablehlo
+
+        return interpret_stablehlo(workload)
     raise ValueError(f"unsupported backend {backend}")

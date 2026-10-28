@@ -1310,6 +1310,130 @@ def command_triage(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_colab(args: argparse.Namespace) -> int:
+    from .colab import generate_colab_notebook, save_colab_notebook
+
+    case = _load(args.case)
+    notebook = generate_colab_notebook(case, accelerator=args.accelerator)
+    if args.output:
+        out = save_colab_notebook(notebook, args.output)
+        _emit({"status": "ok", "notebook_path": str(out), "accelerator": args.accelerator})
+    else:
+        _emit(notebook)
+    return 0
+
+
+def command_cloud_tpu_run(args: argparse.Namespace) -> int:
+    from .cloud.tpu import CloudTPUManager
+
+    mgr = CloudTPUManager(
+        project_id=args.project,
+        zone=args.zone,
+        accelerator_type=args.accelerator,
+    )
+    result = mgr.run_evidence_suite(cases=args.cases, dry_run=args.dry_run)
+    if args.output:
+        save_json(args.output, result.to_dict())
+    _emit(result.to_dict())
+    return 0 if result.passed else 1
+
+
+def command_cloud_tpu_status(args: argparse.Namespace) -> int:
+    from .cloud.tpu import CloudTPUManager
+
+    mgr = CloudTPUManager(
+        project_id=args.project,
+        zone=args.zone,
+        accelerator_type=args.accelerator,
+    )
+    spec = mgr.get_spec()
+    _emit(spec.to_dict())
+    return 0
+
+
+def command_cloud_vertex_spec(args: argparse.Namespace) -> int:
+    from .cloud.vertex import create_vertex_job_spec
+
+    spec = create_vertex_job_spec(
+        display_name=args.display_name,
+        accelerator=args.accelerator,
+    )
+    if args.output:
+        save_json(args.output, spec.to_dict())
+    _emit(spec.to_dict())
+    return 0
+
+
+def command_cloud_xpk_spec(args: argparse.Namespace) -> int:
+    from .cloud.xpk import generate_xpk_workload_spec
+
+    spec = generate_xpk_workload_spec(
+        workload_name=args.workload,
+        cluster_name=args.cluster,
+        device_type=args.device_type,
+    )
+    _emit({"cli_command": spec.to_cli_command(), "spec": spec.to_dict()})
+    return 0
+
+
+def command_xla_pass_isolate(args: argparse.Namespace) -> int:
+    from .xla_passes import isolate_xla_compiler_pass
+
+    case = _load(args.case)
+    res = isolate_xla_compiler_pass(case.workload)
+    if args.output:
+        save_json(args.output, res.to_dict())
+    _emit(res.to_dict())
+    return 0
+
+
+def command_bigquery_schema(args: argparse.Namespace) -> int:
+    from .bigquery import CAMPAIGN_TABLE_SCHEMA, PROPERTY_TABLE_SCHEMA, ROOFLINE_TABLE_SCHEMA
+
+    table = getattr(args, "table", "campaign").lower()
+    if table == "property":
+        _emit(PROPERTY_TABLE_SCHEMA)
+    elif table == "roofline":
+        _emit(ROOFLINE_TABLE_SCHEMA)
+    else:
+        _emit(CAMPAIGN_TABLE_SCHEMA)
+    return 0
+
+
+def command_bigquery_export(args: argparse.Namespace) -> int:
+    from .bigquery import export_to_bigquery, format_campaign_rows
+
+    with open(args.data, encoding="utf-8") as f:
+        data = json.load(f)
+    rows = format_campaign_rows(data)
+    count = export_to_bigquery(rows, table_id=args.table)
+    _emit({"exported_rows": count, "table": args.table})
+    return 0
+
+
+def command_kms_sign(args: argparse.Namespace) -> int:
+    from .kms import generate_slsa_provenance, sign_kms_attestation
+
+    att = sign_kms_attestation(args.subject, args.key, mock_mode=args.mock)
+    if args.slsa:
+        digest = att.get("subject_sha256", "")
+        att["slsa_provenance"] = generate_slsa_provenance(Path(args.subject).name, digest)
+    if args.output:
+        save_json(args.output, att)
+    _emit(att)
+    return 0
+
+
+def command_kms_verify(args: argparse.Namespace) -> int:
+    from .kms import verify_kms_attestation
+
+    with open(args.attestation, encoding="utf-8") as f:
+        att = json.load(f)
+    valid = verify_kms_attestation(att, args.key)
+    _emit({"verified": valid, "key": args.key})
+    return 0 if valid else 1
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         prog="xlaxiom", description="Evidence-first numerical differential testing for JAX/OpenXLA."
@@ -1872,6 +1996,116 @@ def parser() -> argparse.ArgumentParser:
     gpu_historical_parser.add_argument("--output", help="JSON evidence path")
     gpu_historical_parser.add_argument("--allow-busy", action="store_true")
     gpu_historical_parser.set_defaults(func=command_gpu_historical)
+
+    colab_parser = commands.add_parser(
+        "colab", help="generate interactive Google Colab reproduction notebook"
+    )
+    colab_parser.add_argument("--case", required=True, help="case artifact path")
+    colab_parser.add_argument("--output", help="output notebook .ipynb path")
+    colab_parser.add_argument(
+        "--accelerator", default="TPU", choices=["TPU", "GPU", "CPU"], help="target accelerator"
+    )
+    colab_parser.set_defaults(func=command_colab)
+
+    cloud_parser = commands.add_parser(
+        "cloud", help="Google Cloud Platform (GCP) and accelerator orchestration"
+    )
+    cloud_commands = cloud_parser.add_subparsers(dest="cloud_command", required=True)
+
+    tpu_run = cloud_commands.add_parser("tpu-run", help="run evidence campaign on Cloud TPU")
+    tpu_run.add_argument("--project", default="xlaxiom-eval", help="GCP project ID")
+    tpu_run.add_argument("--zone", default="us-south1-a", help="GCP zone")
+    tpu_run.add_argument(
+        "--accelerator", default="v5litepod-4", help="TPU accelerator type (v4, v5e, v5p, v6e)"
+    )
+    tpu_run.add_argument("--cases", type=int, default=50, help="number of campaign cases")
+    tpu_run.add_argument(
+        "--dry-run", action="store_true", help="perform dry run without allocating cloud resources"
+    )
+    tpu_run.add_argument("--output", help="output manifest path")
+    tpu_run.set_defaults(func=command_cloud_tpu_run)
+
+    tpu_status = cloud_commands.add_parser(
+        "tpu-status", help="show TPU generation specifications and mesh topology"
+    )
+    tpu_status.add_argument("--project", default="xlaxiom-eval", help="GCP project ID")
+    tpu_status.add_argument("--zone", default="us-south1-a", help="GCP zone")
+    tpu_status.add_argument("--accelerator", default="v5litepod-4", help="TPU accelerator type")
+    tpu_status.set_defaults(func=command_cloud_tpu_status)
+
+    vertex_spec = cloud_commands.add_parser(
+        "vertex-spec", help="generate Vertex AI Custom Job specification"
+    )
+    vertex_spec.add_argument(
+        "--display-name", default="xlaxiom-compiler-audit", help="Vertex job display name"
+    )
+    vertex_spec.add_argument("--accelerator", default="TPU_V5E", help="Vertex accelerator type")
+    vertex_spec.add_argument("--output", help="output spec JSON path")
+    vertex_spec.set_defaults(func=command_cloud_vertex_spec)
+
+    xpk_spec = cloud_commands.add_parser(
+        "xpk-spec", help="generate GKE Accelerated Processing Kit (xpk) workload command"
+    )
+    xpk_spec.add_argument("--workload", default="xlaxiom-tpu-eval", help="workload name")
+    xpk_spec.add_argument("--cluster", default="tpu-cluster-v5e", help="GKE cluster name")
+    xpk_spec.add_argument("--device-type", default="v5litepod-4", help="device type")
+    xpk_spec.set_defaults(func=command_cloud_xpk_spec)
+
+    xla_parser = commands.add_parser("xla", help="OpenXLA compiler pass isolation and analysis")
+    xla_commands = xla_parser.add_subparsers(dest="xla_command", required=True)
+
+    xla_isolate = xla_commands.add_parser(
+        "pass-isolate", help="isolate divergent XLA compiler optimization pass"
+    )
+    xla_isolate.add_argument("--case", required=True, help="case artifact path")
+    xla_isolate.add_argument("--output", help="output result JSON path")
+    xla_isolate.set_defaults(func=command_xla_pass_isolate)
+
+    bigquery_parser = commands.add_parser(
+        "bigquery", help="Google BigQuery schema and telemetry export"
+    )
+    bigquery_commands = bigquery_parser.add_subparsers(dest="bigquery_command", required=True)
+
+    bq_schema = bigquery_commands.add_parser("schema", help="emit BigQuery table schema")
+    bq_schema.add_argument(
+        "--table",
+        default="campaign",
+        choices=["campaign", "property", "roofline"],
+        help="table type",
+    )
+    bq_schema.set_defaults(func=command_bigquery_schema)
+
+    bq_export = bigquery_commands.add_parser(
+        "export", help="export campaign ledger to BigQuery format"
+    )
+    bq_export.add_argument("--data", required=True, help="campaign ledger JSON path")
+    bq_export.add_argument(
+        "--table", default="project.dataset.xlaxiom_campaigns", help="BigQuery table ID"
+    )
+    bq_export.set_defaults(func=command_bigquery_export)
+
+    kms_parser = commands.add_parser(
+        "kms", help="Google Cloud KMS asymmetric attestation and SLSA provenance"
+    )
+    kms_commands = kms_parser.add_subparsers(dest="kms_command", required=True)
+
+    kms_sign = kms_commands.add_parser("sign", help="sign evidence artifact using Google Cloud KMS")
+    kms_sign.add_argument("--subject", required=True, help="subject file to sign")
+    kms_sign.add_argument("--key", required=True, help="KMS crypto key resource name")
+    kms_sign.add_argument(
+        "--slsa", action="store_true", help="attach in-toto SLSA v1.0 provenance statement"
+    )
+    kms_sign.add_argument(
+        "--mock", action="store_true", help="use deterministic simulation for testing"
+    )
+    kms_sign.add_argument("--output", help="output attestation JSON path")
+    kms_sign.set_defaults(func=command_kms_sign)
+
+    kms_verify = kms_commands.add_parser("verify", help="verify Google Cloud KMS attestation")
+    kms_verify.add_argument("--attestation", required=True, help="attestation JSON file path")
+    kms_verify.add_argument("--key", required=True, help="expected KMS crypto key name")
+    kms_verify.set_defaults(func=command_kms_verify)
+
     return root
 
 

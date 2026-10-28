@@ -1,0 +1,41 @@
+# Google Cloud Build pipeline for XLAxiom container builds and Artifact Registry publication
+steps:
+  # 1. Run strict test suite and type verification
+  - name: 'python:3.12-slim'
+    id: 'verify-suite'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --upgrade pip
+        pip install uv
+        uv sync --extra dev --frozen
+        uv run pytest
+        uv run ruff check .
+        uv run mypy src
+
+  # 2. Build multi-arch container image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args: [
+      'build',
+      '-t', '$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/xlaxiom-runner:$COMMIT_SHA',
+      '-t', '$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/xlaxiom-runner:latest',
+      '.'
+    ]
+
+  # 3. Push container image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args: [
+      'push',
+      '--all-tags',
+      '$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/xlaxiom-runner'
+    ]
+
+substitutions:
+  _LOCATION: 'us-central1'
+  _REPOSITORY: 'xlaxiom'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -8,6 +8,7 @@
 - [Curated corpus](corpus.md) — run and compare the reviewed metamorphic relations.
 - [Support matrix](support.md) — distinguish supported, verified, and hardware-unverified paths.
 - [Offline TPU qualification](offline-tpu.md) — maximize local coverage without claiming physical TPU execution.
+- [Google Ecosystem integration](google-ecosystem.md) — full product readiness guide for GCP, Cloud TPUs, Vertex AI, OpenXLA, Colab, BigQuery, and KMS.
 
 ## Understand the system
 

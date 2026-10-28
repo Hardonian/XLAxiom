@@ -20,6 +20,7 @@ It is independently developed and is not affiliated with, sponsored by, or endor
 | Compare CPU, GPU, or version-specific evidence | Use the [support matrix](docs/support.md) and [quickstart](docs/quickstart.md). |
 | Inspect physical TPU qualification | Review the [retained 4-chip TPU evidence](evidence/tpu/manifest.json). |
 | Qualify TPU workflows without accelerator cost | Run the [offline TPU qualification](docs/offline-tpu.md). |
+| Integrate with Google Cloud, TPUs & Colab | Read the [Google Ecosystem guide](docs/google-ecosystem.md). |
 | Install from source or a verified wheel | Read the [installation guide](docs/installation.md). |
 
 ## Five-minute confidence check
