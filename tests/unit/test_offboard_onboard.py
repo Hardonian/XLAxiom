@@ -118,4 +118,3 @@ def test_marketplace_and_publish_manifests() -> None:
     pub_text = pub_path.read_text(encoding="utf-8")
     assert "gh-action-pypi-publish" in pub_text
     assert "attest-build-provenance" in pub_text
-
