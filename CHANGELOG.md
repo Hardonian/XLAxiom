@@ -36,6 +36,12 @@
   - BigQuery table schemas for campaign ledgers, metamorphic properties, and empirical roofline metrics, with streaming export (`xlaxiom bigquery schema`, `xlaxiom bigquery export`).
   - Structured Google Cloud Logging (`format_cloud_log`) and OpenTelemetry trace spans (`trace_compiler_span`).
   - Multi-stage hardened distroless container `Dockerfile` and automated Google `cloudbuild.yaml`.
+- **On-Boarded Enterprise & Upstream Ecosystem Packages (Priorities 89–95)**:
+  - Multi-Generation Cloud TPU qualification evidence suites with SHA-256 manifests for TPU v4, v5p, and v6e Trillium (evidence/tpu-v4, evidence/tpu-v5p, evidence/tpu-v6e).
+  - Turnkey fleet provisioning and zero-leak teardown automation (scripts/tpu/provision_and_collect_all.sh / .ps1).
+  - Upstream Google OSS packages: google/jax issue template patch & repro verifier, openxla/xla pass isolation RFC & stablehlo-opt runner, and google/maxtext numerical parity test harness (upstream/).
+  - Enterprise Infrastructure-as-Code Terraform module (terraform/) and 1-click GCP CLI bootstrapper (scripts/enterprise_gcp_bootstrap.sh / .ps1).
+  - Google Cloud Marketplace solution definition, Vertex AI Workbench extension descriptor, and automated PyPI / SLSA v1.0 publishing workflow (.github/workflows/publish.yml).
 
 ## 2.1.0 - 2026-10-19
 
