@@ -1,0 +1,33 @@
+# Google Cloud Marketplace Solution Definition Package
+schema_version: "v1"
+solution:
+  id: "xlaxiom-compiler-audit"
+  name: "XLAxiom Numerical Compiler & TPU Verification Engine"
+  version: "2.2.0"
+  publisher: "Hardonian"
+  category: "AI_AND_MACHINE_LEARNING"
+  tags:
+    - "jax"
+    - "openxla"
+    - "tpu"
+    - "compiler-testing"
+    - "slsa"
+    - "vertex-ai"
+  description: |
+    XLAxiom is an evidence-first numerical compiler verification and forensic diagnostic engine
+    for JAX, OpenXLA StableHLO, and physical Google Cloud TPU pods (v4, v5e, v5p, v6e Trillium).
+    It detects silent numerical corruption, isolates divergent optimization passes, and generates
+    SLSA v1.0 provenance attestations signed by Google Cloud KMS.
+  packaging:
+    type: "CONTAINER"
+    image: "us-docker.pkg.dev/google-cloud-marketplace/xlaxiom/runner:2.2.0"
+  integrations:
+    vertex_ai_workbench: true
+    google_kubernetes_engine: true
+    cloud_tpu_vms: true
+    google_cloud_kms: true
+    google_bigquery: true
+  support:
+    url: "https://github.com/Hardonian/XLAxiom/issues"
+    documentation: "https://github.com/Hardonian/XLAxiom#readme"
+

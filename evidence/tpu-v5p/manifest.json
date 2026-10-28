@@ -1,0 +1,55 @@
+{
+  "accelerator": "v5p-8",
+  "artifacts": {
+    "cpu-jit-evidence.json": {
+      "bytes": 128603,
+      "sha256": "d94b8f0700a161ccf7ab563b7b58ca15386ff63313298b3c8d18df9670e6271b"
+    },
+    "gradient-higher-order.json": {
+      "bytes": 325,
+      "sha256": "78f6acc1e9665a16d82648cb43b1e4343045b3c82dd5e7852d3dd8ac797cf845"
+    },
+    "gradient-invariants.json": {
+      "bytes": 575,
+      "sha256": "8f33ae6b56a9103f1faa46007d0bcfb4f28de4396c335311343050686d783ce7"
+    },
+    "hardware-topology.json": {
+      "bytes": 529,
+      "sha256": "21bab0e6dfaa2bc3f6f63d79471da57dac9e2afc25ad798087a67d2367d8d49d"
+    },
+    "simulated-tpu-audit.json": {
+      "bytes": 1529,
+      "sha256": "9735b3a258495f820a5ae745b62c212e27423dc40de210000eca4f6c548dce92"
+    },
+    "simulated-tpu-campaign.json": {
+      "bytes": 774177,
+      "sha256": "f507175fe743a753f6985efb771f6ded85cb25f4265184fc8a088bcc8a2a8254"
+    },
+    "simulated-tpu-eager.json": {
+      "bytes": 137568,
+      "sha256": "129eb04e3163333f27b0332e2b6d98acba3cc99deea0590408c46cc12522b825"
+    },
+    "simulated-tpu-jit.json": {
+      "bytes": 137322,
+      "sha256": "87299e66a995e959e18d19e1734df8952e0eff88bf2208fe6ed91bf662956f78"
+    },
+    "simulated-tpu-vs-cpu.json": {
+      "bytes": 17029,
+      "sha256": "44db5a0d3afa9cea509bcfd372ace1d2ceb1308fec34a58978433926d14a07db"
+    }
+  },
+  "created_at": "2026-10-28T00:48:11.621665+00:00",
+  "generation": "v5p",
+  "kind": "offline-tpu-v5p-qualification",
+  "limitations": [
+    "Execution simulated TPU v5p (v5p-8) on CPU with disclosed emulation metadata.",
+    "Validates DAG generation, shape invariants, numerical tolerances, and collective mesh bindings.",
+    "Physical TPU allocation is required before claiming full physical hardware verification."
+  ],
+  "mode": "simulated",
+  "passed": true,
+  "platform": "Windows-11-10.0.29695-SP0",
+  "python": "3.13.9",
+  "schema_version": "offline-tpu-qualification-v1",
+  "topology": "2x2x2 3D Torus"
+}

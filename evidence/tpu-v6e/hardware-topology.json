@@ -1,0 +1,22 @@
+{
+  "accelerator": "v6e-4",
+  "architecture_details": {
+    "chip_architecture": "Trillium Tensor Core",
+    "default_mesh": [
+      2,
+      4
+    ],
+    "generation": "v6e",
+    "memory_bandwidth_gbps": 1638.0,
+    "memory_per_chip_gb": 32.0,
+    "name": "Google TPU v6e (Trillium)",
+    "peak_tflops_bf16": 918.0,
+    "peak_tflops_fp32": 918.0,
+    "peak_tflops_fp8": 1836.0,
+    "topology_type": "2D/3D Torus"
+  },
+  "chips": 4,
+  "generation": "v6e",
+  "memory_per_chip_gb": 32,
+  "topology": "2x2 2D Mesh"
+}

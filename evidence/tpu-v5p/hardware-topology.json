@@ -1,0 +1,23 @@
+{
+  "accelerator": "v5p-8",
+  "architecture_details": {
+    "chip_architecture": "Tensor Core v5p",
+    "default_mesh": [
+      2,
+      2,
+      2
+    ],
+    "generation": "v5p",
+    "memory_bandwidth_gbps": 4800.0,
+    "memory_per_chip_gb": 95.0,
+    "name": "Google TPU v5p",
+    "peak_tflops_bf16": 459.0,
+    "peak_tflops_fp32": 459.0,
+    "peak_tflops_fp8": 918.0,
+    "topology_type": "3D Torus"
+  },
+  "chips": 4,
+  "generation": "v5p",
+  "memory_per_chip_gb": 95,
+  "topology": "2x2x2 3D Torus"
+}

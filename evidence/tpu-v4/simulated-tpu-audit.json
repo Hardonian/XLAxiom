@@ -1,0 +1,78 @@
+{
+  "classification": "pass",
+  "cpu_status": "ok",
+  "equivalent": true,
+  "metrics": [
+    {
+      "dtype": "float32",
+      "finite_mismatches": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error": 0.0,
+      "mean_absolute_error": 0.0,
+      "nonfinite_mismatches": 0,
+      "rms_error": 0.0,
+      "shape": [
+        2,
+        2
+      ],
+      "signed_zero_mismatches": 0
+    }
+  ],
+  "topology": {
+    "chip_type": "v5e",
+    "coordinates": [
+      {
+        "coords": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ordinal": 0,
+        "process_id": 0,
+        "raw_str": "TPU_0(process=0,(0,0,0,0))"
+      },
+      {
+        "coords": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "ordinal": 1,
+        "process_id": 0,
+        "raw_str": "TPU_1(process=0,(1,0,0,0))"
+      },
+      {
+        "coords": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "ordinal": 2,
+        "process_id": 0,
+        "raw_str": "TPU_2(process=0,(0,1,0,0))"
+      },
+      {
+        "coords": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "ordinal": 3,
+        "process_id": 0,
+        "raw_str": "TPU_3(process=0,(1,1,0,0))"
+      }
+    ],
+    "is_simulated": true,
+    "mesh_shape": [
+      2,
+      2
+    ],
+    "num_devices": 4
+  },
+  "tpu_status": "ok",
+  "workload_sha256": "f30c6ca7efc657284b4c2bfc9b19bdfe2529f1cb4c7f2e86f8fe051d5b3f5117"
+}

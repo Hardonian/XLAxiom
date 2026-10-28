@@ -1,0 +1,4244 @@
+{
+  "backend": "jax-tpu-jit",
+  "corpus_version": "1.0",
+  "counts": {
+    "compilation_failure": 0,
+    "dtype_mismatch": 0,
+    "environment_failure": 0,
+    "execution_failure": 0,
+    "inconclusive": 0,
+    "invalid_workload": 0,
+    "nondeterminism": 0,
+    "numerical_discrepancy": 0,
+    "pass": 40,
+    "performance_regression": 0,
+    "shape_mismatch": 0,
+    "timeout": 0,
+    "unsupported_backend": 0
+  },
+  "evidence_version": "1.0",
+  "execution": {
+    "platform": "Windows-11-10.0.29695-SP0",
+    "requested_platform": "tpu"
+  },
+  "kind": "metamorphic-corpus-evidence",
+  "properties": [
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 159.3176,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 42.6332,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "f30c6ca7efc657284b4c2bfc9b19bdfe2529f1cb4c7f2e86f8fe051d5b3f5117",
+      "property": {
+        "description": "x + y and y + x produce equivalent elementwise outputs.",
+        "identifier": "add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise addition commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "f7bdc9ef963786c129acff40051891b4e4307f127e2b9a81219be2e56c76a923",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 14.6615,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 18.4218,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "d1154fa844d5a82189845e52cbf1681f66c84c0538632243c42f1f862d4e1e72",
+      "property": {
+        "description": "Transposing a rank-two tensor twice restores the original tensor.",
+        "identifier": "transpose-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Double transpose is identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "13deba9a38ba92f1dc2b7048d49d796b8187f7305dacddb2adb01fb491c8d1a4",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 16.1067,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 17.6353,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "8d68c21cf55434a56ce4a8077de8bc03bb5b3084c994f923acd29a05b0569fc5",
+      "property": {
+        "description": "Flattening and restoring a rank-two tensor preserves every element.",
+        "identifier": "reshape-roundtrip-v1",
+        "relation": "outputs_equal",
+        "title": "Reshape round trip is identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "811fd9752155cece7b9307e8e1b34b56a3340b83bbff5a9231383b1532db53e7",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 24.237,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 27.8901,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "abd2c2b1dc31d74e4b91a9890ab379a486b1cd2bfbcf1845806560843eecb3b1",
+      "property": {
+        "description": "(x @ y).T and y.T @ x.T produce equivalent outputs.",
+        "identifier": "matmul-transpose-v1",
+        "relation": "outputs_equal",
+        "title": "Matrix product transpose rule"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "53dc2f56593ac9628f77c3116ba4d277adecaeb651135467a96c4e8f93526b74",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 18.8917,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 17.8825,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "942886dc3179927780a832fbb7b69f36c3e0c052f2b85c150942ac62fe16892f",
+      "property": {
+        "description": "Negating a tensor twice preserves values and signed zero.",
+        "identifier": "negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Double negation is identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "0f43e35c7ea628ed597b9ea54dec0c88f3358a79580c3a2db09c997148f62382",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 46.376,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 50.0539,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "825d19ba1463510dae57ec27c5972937e60fedc26344d3390c1a28036205c53e",
+      "property": {
+        "description": "x - y and x + (-y) produce equivalent elementwise outputs.",
+        "identifier": "subtraction-as-addition-v1",
+        "relation": "outputs_equal",
+        "title": "Subtraction is addition of negation"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "b20c0680cd6b85d9e76126f432112f5f71f2795be41b69c5bbd16847950786ba",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 44.6931,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 48.1677,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "238f19267665682ff1601a56e7f953f49b253ce93ef03bee20d13389360b3709",
+      "property": {
+        "description": "abs(x) and abs(abs(x)) produce equivalent outputs.",
+        "identifier": "absolute-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value is idempotent"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "111e9ff91cbaa4538c6b44992fa7f9efa364df038dd54099f5d83ce50e0fb1d5",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 54.0452,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "int32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "int32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 51.2919,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "int32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "1d2050aea44a098a6fada73dca4521b6e1ea4defe9a773b64f30d0c40b1281d9",
+      "property": {
+        "description": "int32 x + y and y + x produce equivalent elementwise outputs.",
+        "identifier": "integer-add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Integer elementwise addition commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "8c95fc161d3082f0ed14f0b74646eb5e6a65c4edcc7a2ea0e50971eb33e800e0",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 58.0405,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float64",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float64",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 49.9378,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float64",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "71f51f56bfe65ef9c4baae4df2bb2f817757d4cb1b9323085436b968e1638e5f",
+      "property": {
+        "description": "float64 x + y and y + x produce equivalent outputs in an explicit JAX x64 process.",
+        "identifier": "float64-add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Float64 elementwise addition commutes"
+      },
+      "requires_x64": true,
+      "right_workload_sha256": "6ceaed4e1570d3a67a3c095b321eba15468a49231b0bb3a614224006bd3a244b",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 46.2665,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 44.5147,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "24d3573056dbcb1b7f43900cc7e637f4686178ddef724868202a41b3ccfe42d2",
+      "property": {
+        "description": "int32 x + float32 y and float32 y + int32 x use same-operation promotion semantics consistently.",
+        "identifier": "mixed-dtype-add-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Mixed int32/float32 addition commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "ef147cdb1b20adfc40ba95329cb51c1fc281398adbd2c679b8700ebce107b6e2",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 13.8295,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 13.7153,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "3b9be5a5eed677d1a0ef35bc48bc09fa311a946c27afae6265eb4e0ff19e623c",
+      "property": {
+        "description": "Negating signed-zero inputs twice preserves both values and zero signs.",
+        "identifier": "signed-zero-negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Double negation preserves signed zero"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "dcfcaf0ebb9f5116ed2112d78e362333632872c88f89b7cbef91ac436fe2fc09",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 37.0344,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 37.6687,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "ca548c11295c89b846da74f8a04420a97277370ae05b32d241f2d2a5fc5c4557",
+      "property": {
+        "description": "abs(x) and abs(abs(x)) agree for NaN, infinities, and signed zero under the explicit policy.",
+        "identifier": "nonfinite-absolute-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value is idempotent for non-finite inputs"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "0f31b361ff73201b26adadd92d4e07b529148d2bc87e90a037405db576d34c58",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 38.5635,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 38.2945,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "bb4c89b76d496900c1482d397b2932d2da18c493e62986afefb8ee5bd14a43d9",
+      "property": {
+        "description": "abs(x) and abs(abs(x)) agree for finite values spanning normal and subnormal boundaries.",
+        "identifier": "extreme-finite-absolute-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value is idempotent for finite extremes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "800eb9b3a2344dc232252cb2ecc57457eed9dfe5e7164712537ff9202e3aca69",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 41.6479,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 39.6146,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "466e0af6c39444dd5f1ca0f358ee128eda9c0681dc4ae20b41be957381d7f872",
+      "property": {
+        "description": "maximum(x, y) and maximum(y, x) produce equivalent elementwise outputs.",
+        "identifier": "maximum-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise maximum commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "a5c703131c100c95d9f2c82378a4be8c06da93f39b2fc1c33bbc19f736bc2ab3",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 41.9488,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 41.6251,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "07ed83c6c0c56102340028fe94379c70950dd04e89b1f5996ccb1f2f9b234690",
+      "property": {
+        "description": "minimum(x, y) and minimum(y, x) produce equivalent elementwise outputs.",
+        "identifier": "minimum-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise minimum commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "f829fda60ea744690cd5c6cefeeac66096d691f4566da2979a75941f66d83031",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 52.6972,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 45.9337,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "9b965d21c4f88ac78a0b859338aaf49a9b4ec36aa32cae9508edf024b73d3f1b",
+      "property": {
+        "description": "minimum(x, y) equals -maximum(-x, -y) elementwise.",
+        "identifier": "min-max-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Min-max duality relation"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "94e429d8b40483a0c6fb7507e833d2bfdaf3619d68412989477dd1d65175a6b7",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 44.1991,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 39.8159,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "0100713e82d4cfc30ca14340a77fa2dfa7451b755e0e81478f3e6339a4247429",
+      "property": {
+        "description": "square(x) and mul(x, x) produce equivalent elementwise outputs.",
+        "identifier": "square-as-multiplication-v1",
+        "relation": "outputs_equal",
+        "title": "Square is self-multiplication"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "13b7055a6374bf84c9c48831ca847a3f628434b0eee705d0a9d4520b7fc3333c",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 38.1335,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 39.232,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "078609b7f2b0cec3eb218e9034d00d485dee7df4e9488c75cb18665fd743d8c9",
+      "property": {
+        "description": "square(x) and square(-x) produce equivalent elementwise outputs.",
+        "identifier": "square-negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Square of negation is identity with square"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "e0827ff5b81cf87f813bcdefd553e3a5cc17272913f8952f2a47133ebb8e406e",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 36.1284,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 35.2184,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "194780d9c33c6e6fa94e8810eb6b5c69a8bdee62a8604d56bcfe61d4f7daa15f",
+      "property": {
+        "description": "min(x) and -max(-x) produce equivalent reduction outputs.",
+        "identifier": "min-max-reduction-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Min-max global reduction duality"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "30db669f31f4a52df3a15db889477e03d505e4af06a7471a38d6b54fcd87ff29",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 40.8601,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 47.0319,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "20857ad0e3a495e0621745b58bd8696d448b6c8f831c67d3388de14d60069be1",
+      "property": {
+        "description": "x * y and y * x produce equivalent elementwise outputs.",
+        "identifier": "mul-commutativity-v1",
+        "relation": "outputs_equal",
+        "title": "Elementwise multiplication commutes"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "16963043e3deb488ce810f8ba0184bd857922b68d91c3cd196135858fff754b0",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 46.2303,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 41.0165,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "ea0bf1bc6749650478e41ca13d7c329c58cbff2b5f641752bfe3e34db98a306d",
+      "property": {
+        "description": "minimum(x, y) + maximum(x, y) equals x + y elementwise.",
+        "identifier": "min-max-addition-identity-v1",
+        "relation": "outputs_equal",
+        "title": "Minimum and maximum sum identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "aeb0de069c90a0244d39984c9dc12eb5b84ab049c4a9eef3087652a2b4966d06",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 41.8687,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 37.4865,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "ece9fc817763060c398e2f93293394230b91ed75a755d2dcb63223f34927fcfb",
+      "property": {
+        "description": "square(abs(x)) and square(x) produce equivalent elementwise outputs.",
+        "identifier": "square-absolute-identity-v1",
+        "relation": "outputs_equal",
+        "title": "Square of absolute value is square"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "cd800bdd7bde3bc66ad7e73970d62a1cfc1bf25d7a6b2bac7cef85568d8db28b",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 40.8046,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 42.1795,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "2396cbab156971e2c1a4af489aed0ee3e71d377d4b915cd4fa74d677fee881a3",
+      "property": {
+        "description": "(-x) * y equals -(x * y) elementwise.",
+        "identifier": "negation-multiplication-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Multiplication negation duality"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "c59cf8399407f49f25141f3ffbc90f950208e3ffa02fa4c25dbb5286b0552181",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 35.7796,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 38.518,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "227ee2b4552463cc4de85c55e20ff994b50d7fad0cfac28cd1ed5096fe74ebd2",
+      "property": {
+        "description": "sum(-x) equals -sum(x) for global reduction.",
+        "identifier": "sum-negation-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Global sum reduction negation duality"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "f8b013977de9965dd044be3a88f375de13e72ffa25f4f98b1886853cf56f6247",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 40.188,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 41.4471,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "058d60e90e6ca3d3c0b7f51391ff9dca02766485d10d7d479610c9183363166c",
+      "property": {
+        "description": "abs(-x) and abs(x) produce equivalent elementwise outputs preserving signed zero.",
+        "identifier": "abs-negation-involution-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value of negation is absolute value"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "bdb0319ffa1aec619073f7953f1b951d07e50c1bc85aadff8b23553fc74c7467",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 14.417,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 15.4493,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "b827383d9db04b046221b5caa0b51a085cb4320b86456dfc54104da5df58265a",
+      "property": {
+        "description": "maximum(x, x) and minimum(x, x) produce equivalent elementwise outputs equal to x.",
+        "identifier": "maximum-idempotence-v1",
+        "relation": "outputs_equal",
+        "title": "Maximum and minimum idempotence"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "092339c7d427b2e80f9c427c33f12b2a41aa31fb416c691b2689bdeb17adcd18",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 44.0915,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 45.8708,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "ffd4749d6c5301ceda15d44ebf28d4a3658a61b8c2f21dc64b224665c058eb21",
+      "property": {
+        "description": "maximum(x, minimum(x, y)) and minimum(x, maximum(x, y)) produce equivalent elementwise outputs equal to x.",
+        "identifier": "lattice-absorption-v1",
+        "relation": "outputs_equal",
+        "title": "Lattice min-max absorption identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "bb25b6991bd89d7f523173c2e596f46324a4a9b005831a05904ae485a3ae821b",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 49.4402,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 46.9586,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "e28de12d883175660b0422f4590205b96259b2d0deb518c4b08f2054638310bc",
+      "property": {
+        "description": "abs(x * y) and abs(x) * abs(y) produce equivalent elementwise outputs.",
+        "identifier": "abs-multiplication-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute value product distributivity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "d925c04d95809bed9cfa5b83e35b1cd3744d65d76dd8f16774c33e5a25a2bc27",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 40.1947,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 39.8024,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "32833b26b83d8c852630a75130366111b32a9047d4c96e57fa7c9b2f4a8a3add",
+      "property": {
+        "description": "sqrt(square(x)) and abs(x) produce equivalent elementwise outputs.",
+        "identifier": "sqrt-square-identity-v1",
+        "relation": "outputs_equal",
+        "title": "Square root of square identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "4c40d3596b483fdb956dd3ab0e33d565dead2fd2af1e733ee480078955c13304",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 35.6897,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 36.9027,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 1,
+              "shape": []
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "82be96c5983f606553bb4e7754d5be3f0a345e07c3dab920219dbd51ec16a775",
+      "property": {
+        "description": "mean(-x) and -mean(x) produce equivalent reduction outputs.",
+        "identifier": "mean-negation-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Global mean reduction negation duality"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "248ae5cc21135dbeb435e95465a9704e934c04a3bec34936b6517aa6a3db45ba",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 43.5058,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 45.0892,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "b14e29dc0006dfa49acd0a78e169b59955ef4057ee171f3a37ff032c92041b3e",
+      "property": {
+        "description": "x * (y + z) and (x * y) + (x * z) produce equivalent elementwise outputs.",
+        "identifier": "distributivity-mul-add-v1",
+        "relation": "outputs_equal",
+        "title": "Multiplication distributes over addition"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "0015d10fec9f8ab0b41e05c37a5c0c88e233a8bafc94608713b7c9edfe47d745",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 46.7619,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 46.4442,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "89672bcec022815f1dff00f8c341631988e60c01b0dbda5b6491b596cfae086c",
+      "property": {
+        "description": "(x + y) + z and x + (y + z) produce equivalent elementwise outputs.",
+        "identifier": "add-associativity-v1",
+        "relation": "outputs_equal",
+        "title": "Addition associativity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "3a29348fad97754191dc3a945bb160d21d0ee9e94330cb9189079b78c60d645b",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 47.1806,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 44.4741,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "0e81b5a897f58ebf3103207fb410e3ecf9ca58d04ac183f801d4f0258911fea1",
+      "property": {
+        "description": "(x * y) * z and x * (y * z) produce equivalent elementwise outputs.",
+        "identifier": "mul-associativity-v1",
+        "relation": "outputs_equal",
+        "title": "Multiplication associativity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "b79419c66610b3dac0509845eeca2d4829b377c39a44eabd384f19f7ce9c3516",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 44.0824,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 48.8855,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "970748afc5d19becb96a9b6cc16ec8baea723fcd69beef75454a205b4fac4ba7",
+      "property": {
+        "description": "abs(x * x) and square(abs(x)) produce equivalent elementwise outputs.",
+        "identifier": "square-abs-multiplication-identity-v1",
+        "relation": "outputs_equal",
+        "title": "Square absolute self-multiplication identity"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "af121b86735fa7b722b9713adeee85642539066156114a5e804753a03806fd05",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 55.2173,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 51.9748,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "e03a794713938ace9d0b1f47206814e1935e7d00ac822cc9b68b438474ae2c14",
+      "property": {
+        "description": "cos(x) and cos(-x) produce equivalent elementwise outputs.",
+        "identifier": "cos-even-duality-v1",
+        "relation": "outputs_equal",
+        "title": "Cosine even function symmetry"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "da6170f13fb16627f49991939cf34c50c4f8ef5b3409c645636566fb83f8a6a8",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 61.7935,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 52.7021,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "7e891a6363926fb612e05c03fb2bb3607a4295c60b550f5bac0143fc37531c99",
+      "property": {
+        "description": "min(x, y) equals -max(-x, -y) across all real values.",
+        "identifier": "min-max-demorgan-v1",
+        "relation": "outputs_equal",
+        "title": "Min-Max De Morgan negation duality"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "76a70532bfa2e072880be4d882d8df7590b9b41a9934619fe2b472d465748cb3",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 52.3276,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 48.2034,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "9f6261d492459594f9c3487f802efd086ff172cabae5915f6f773c0bfc29db5a",
+      "property": {
+        "description": "tanh(-x) equals -tanh(x) across the differentiable domain.",
+        "identifier": "tanh-odd-symmetry-v1",
+        "relation": "outputs_equal",
+        "title": "Hyperbolic tangent odd symmetry"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "a795312de9fbf8ad27e6e32ef4b3ae1a2dfa734a9a7046076d665f8068933098",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 51.5419,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 47.9282,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "dd26eca4126c23ae6f17cb2f6a4db84bb5e5867987a64a7a63cd992c3d97a934",
+      "property": {
+        "description": "sin(-x) and -sin(x) produce equivalent elementwise values.",
+        "identifier": "sin-odd-symmetry-v1",
+        "relation": "outputs_equal",
+        "title": "Sine odd function symmetry"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "027bad770bb328c8f97f30bc9f6ac8bb49683085f12f7028105b1d3435a157bd",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 51.3067,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 49.8692,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "8cb3dd234f453e06846a639efdf19d94c27a5a855ac4d5f2649f20d0ed8909cf",
+      "property": {
+        "description": "|x - y| equals |y - x| preserving metric symmetry and signed zero.",
+        "identifier": "abs-subtraction-symmetry-v1",
+        "relation": "outputs_equal",
+        "title": "Absolute distance subtraction symmetry"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "9147ce4ffebd522d4f2a9939b1c3621ddefefcedcbe7932d6922cac6899a8ff6",
+      "seed": 0,
+      "triage": "pass"
+    },
+    {
+      "backend": "jax-tpu-jit",
+      "comparison": {
+        "classification": "pass",
+        "explanation": "outputs agree under the configured policy",
+        "left": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 50.3695,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        },
+        "metrics": [
+          {
+            "dtype": "float32",
+            "finite_mismatches": 0,
+            "max_absolute_error": 0.0,
+            "max_relative_error": 0.0,
+            "mean_absolute_error": 0.0,
+            "nonfinite_mismatches": 0,
+            "rms_error": 0.0,
+            "shape": [
+              2,
+              2
+            ],
+            "signed_zero_mismatches": 0
+          }
+        ],
+        "policy": {
+          "atol": 2e-06,
+          "check_signed_zero": true,
+          "equal_nan": true,
+          "identifier": "dtype-aware-v1",
+          "rtol": 2e-05
+        },
+        "right": {
+          "backend": "jax-tpu-simulated",
+          "device": "TPU_0(process=0,(0,0,0,0))",
+          "duration_ms": 19.7229,
+          "environment": {
+            "actual_devices": "cpu:0",
+            "device_index": "",
+            "jax": "0.10.2",
+            "jax_enable_x64": "true",
+            "platform": "Windows-11-10.0.29695-SP0",
+            "requested_platform": "tpu",
+            "simulated": "true",
+            "simulation_backend": "cpu"
+          },
+          "error": null,
+          "mode": "jit",
+          "outputs": [
+            {
+              "dtype": "float32",
+              "finite": 4,
+              "shape": [
+                2,
+                2
+              ]
+            }
+          ],
+          "status": "ok"
+        }
+      },
+      "corpus_version": "1.0",
+      "evidence_version": "1.0",
+      "execution": {
+        "platform": "Windows-11-10.0.29695-SP0",
+        "requested_platform": "tpu"
+      },
+      "interpretation": "A passing property confirms this relation for the recorded bounded input and backend only; a discrepancy is an observation requiring ordinary evidence review.",
+      "kind": "metamorphic-property-evidence",
+      "left_workload_sha256": "30cde39bfbcbbdd6c9862edada87f5b0edf44f7e81512a9d1c671e87796cb2a9",
+      "property": {
+        "description": "min(x, max(x, y)) evaluates to max(x, x) = x identically.",
+        "identifier": "maximum-minimum-sandwich-v1",
+        "relation": "outputs_equal",
+        "title": "Lattice min-max sandwich absorption"
+      },
+      "requires_x64": false,
+      "right_workload_sha256": "c4f7da420c8d840f30536b877beab557bb99e9c6637f77df3cedec87e0536db1",
+      "seed": 0,
+      "triage": "pass"
+    }
+  ],
+  "requested_properties": [
+    "add-commutativity-v1",
+    "transpose-involution-v1",
+    "reshape-roundtrip-v1",
+    "matmul-transpose-v1",
+    "negation-involution-v1",
+    "subtraction-as-addition-v1",
+    "absolute-idempotence-v1",
+    "integer-add-commutativity-v1",
+    "float64-add-commutativity-v1",
+    "mixed-dtype-add-commutativity-v1",
+    "signed-zero-negation-involution-v1",
+    "nonfinite-absolute-idempotence-v1",
+    "extreme-finite-absolute-idempotence-v1",
+    "maximum-commutativity-v1",
+    "minimum-commutativity-v1",
+    "min-max-duality-v1",
+    "square-as-multiplication-v1",
+    "square-negation-involution-v1",
+    "min-max-reduction-duality-v1",
+    "mul-commutativity-v1",
+    "min-max-addition-identity-v1",
+    "square-absolute-identity-v1",
+    "negation-multiplication-duality-v1",
+    "sum-negation-duality-v1",
+    "abs-negation-involution-v1",
+    "maximum-idempotence-v1",
+    "lattice-absorption-v1",
+    "abs-multiplication-v1",
+    "sqrt-square-identity-v1",
+    "mean-negation-duality-v1",
+    "distributivity-mul-add-v1",
+    "add-associativity-v1",
+    "mul-associativity-v1",
+    "square-abs-multiplication-identity-v1",
+    "cos-even-duality-v1",
+    "min-max-demorgan-v1",
+    "tanh-odd-symmetry-v1",
+    "sin-odd-symmetry-v1",
+    "abs-subtraction-symmetry-v1",
+    "maximum-minimum-sandwich-v1"
+  ],
+  "seed": 0,
+  "warning": "This corpus contains reviewed metamorphic relations, not newly discovered compiler findings. It does not establish correctness beyond the recorded executions."
+}

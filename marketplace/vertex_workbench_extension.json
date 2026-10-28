@@ -1,0 +1,19 @@
+{
+  "$schema": "https://cloud.google.com/vertex-ai/docs/workbench/user-managed/extension-schema.json",
+  "name": "xlaxiom-workbench-extension",
+  "version": "2.2.0",
+  "displayName": "XLAxiom Compiler & TPU Diagnostics",
+  "description": "Interactive compiler verification, pass isolation, and TPU roofline diagnostics directly within Vertex AI Workbench.",
+  "publisher": "Hardonian",
+  "entrypoint": "jupyterlab-xlaxiom",
+  "categories": [
+    "AI Tools",
+    "Model Evaluation",
+    "Hardware Diagnostics"
+  ],
+  "requirements": {
+    "python": ">=3.11",
+    "accelerators": ["TPU_V4", "TPU_V5E", "TPU_V5P", "TPU_V6E", "NVIDIA_H100", "NVIDIA_A100", "CPU"]
+  }
+}
+

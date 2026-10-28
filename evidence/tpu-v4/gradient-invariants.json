@@ -1,0 +1,29 @@
+{
+  "all_invariants_satisfied": true,
+  "case": {
+    "dtype": "float32",
+    "identifier": "gradient-tanh-0",
+    "operation": "tanh",
+    "seed": 0,
+    "value": 0.0
+  },
+  "clairaut_symmetry": {
+    "diff": 0.0,
+    "satisfied": true,
+    "u_Hv": 0.0,
+    "v_Hu": 0.0
+  },
+  "classification": "pass",
+  "hessian_linearity": {
+    "expected_hvp_sum": 0.0,
+    "observed_hvp_sum": 0.0,
+    "satisfied": true
+  },
+  "taylor_consistency": {
+    "finite_difference_second": 0.0,
+    "satisfied": true,
+    "v_Hv": 0.0
+  },
+  "u": 1.0,
+  "v": 0.5
+}

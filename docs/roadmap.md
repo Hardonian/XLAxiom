@@ -95,8 +95,15 @@ is deliberately narrower than software completion.
 | 86 | Google Model Framework Adapters (Flax & MaxText) | Implemented | Ingestion and synthetic extraction of MaxText Multi-Head Attention, RMSNorm, and SwiGLU computational blocks. |
 | 87 | Interactive Google Colab Notebooks & Rich Display | Implemented | One-click Colab `.ipynb` generator, official Colab badges, and embedded SVG DAG `_repr_html_()` rendering. |
 | 88 | Enterprise Governance: Cloud KMS, SLSA & BigQuery | Implemented | Google Cloud KMS asymmetric signing, in-toto SLSA v1.0 provenance, BigQuery regression schemas, and Cloud Logging. |
+| 89 | Multi-Generation Cloud TPU Evidence Suites | Implemented | Disclosed offline qualification packages with topology and SHA-256 manifests for TPU v4, v5p, and v6e Trillium. |
+| 90 | Cloud TPU Fleet Automated Provision & Teardown | Implemented | Zero-leak automation scripts (scripts/tpu/provision_and_collect_all.sh / .ps1) for multi-generation TPU VMs. |
+| 91 | Upstream JAX Issue Template Integration Package | Implemented | Standalone 10-line repro template patch, PR proposal, and verifier for google/jax (upstream/jax/). |
+| 92 | Upstream OpenXLA Compiler Pass Isolation RFC | Implemented | RFC and subprocess stablehlo-opt runner for OpenXLA working group triage (upstream/openxla/). |
+| 93 | Upstream MaxText Layer Differential Parity Harness | Implemented | Turnkey test harness for google/maxtext verifying Attention, RMSNorm, and SwiGLU parity (upstream/maxtext/). |
+| 94 | Enterprise Infrastructure-as-Code Terraform Module | Implemented | Full Terraform module (	erraform/) and GCP bootstrap CLI (scripts/enterprise_gcp_bootstrap.sh) for KMS, BigQuery, and GCS. |
+| 95 | Google Cloud Marketplace & Release Workflow | Implemented | Marketplace solution definition (marketplace/), Vertex AI Workbench extension, and PyPI Trusted Publishing with SLSA. |
 
-All eighty-eight software priorities are implemented for the **v2.2.0 Major Google Ecosystem & Accelerator Release**.
+All ninety-five software and ecosystem priorities are implemented for the **v2.2.0 Major Google Ecosystem & Accelerator Release**.
 Retained evidence closes the available Windows/Linux, V100/P40/RTX 3060, CUDA 12/13, independent-host, and Google Cloud TPU v5e
 milestones. Apple Silicon and AMD ROCm discovery and execution paths are implemented with strict fail-closed semantics to ensure
 no silent CPU fallback occurs.
@@ -119,3 +126,7 @@ Key completion artifacts:
 - [`tpu-jit-evidence.json`](../evidence/tpu/tpu-jit-evidence.json)
 - [`tpu-campaign.json`](../evidence/tpu/tpu-campaign.json)
 - [`manifest.json`](../evidence/tpu/manifest.json)
+- [manifest.json](../evidence/tpu/manifest.json)
+- [evidence/tpu-v4/manifest.json](../evidence/tpu-v4/manifest.json)
+- [evidence/tpu-v5p/manifest.json](../evidence/tpu-v5p/manifest.json)
+- [evidence/tpu-v6e/manifest.json](../evidence/tpu-v6e/manifest.json)

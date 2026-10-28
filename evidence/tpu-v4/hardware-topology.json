@@ -1,0 +1,23 @@
+{
+  "accelerator": "v4-8",
+  "architecture_details": {
+    "chip_architecture": "Tensor Core v4",
+    "default_mesh": [
+      2,
+      2,
+      1
+    ],
+    "generation": "v4",
+    "memory_bandwidth_gbps": 400.0,
+    "memory_per_chip_gb": 32.0,
+    "name": "Google TPU v4",
+    "peak_tflops_bf16": 275.0,
+    "peak_tflops_fp32": 275.0,
+    "peak_tflops_fp8": 0.0,
+    "topology_type": "3D Torus"
+  },
+  "chips": 4,
+  "generation": "v4",
+  "memory_per_chip_gb": 32,
+  "topology": "2x2x1 3D Torus"
+}
