@@ -58,6 +58,12 @@ from .hardware import (
     ordinal_ordering_risk,
     select_variant,
 )
+
+try:
+    from xlaxiom_adapter.epyc_router import env_for_route, select_device_for_task
+except ImportError:
+    select_device_for_task = None  # type: ignore[assignment]
+    env_for_route = None  # type: ignore[assignment]
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .ledger import completed_shard, load_ledger, save_shard
@@ -807,6 +813,55 @@ def command_gpu_validate(args: argparse.Namespace) -> int:
     return 0 if report["summary"]["unsupported"] == 0 else 2
 
 
+def command_gpu_epyc(args: argparse.Namespace) -> int:
+    """Show the EPYC routing decision for a task/model and print the env to apply."""
+    if select_device_for_task is None:
+        raise SystemExit(
+            "xlaxiom_adapter is not installed; install the EPYC adapter to use this command"
+        )
+    route = select_device_for_task(
+        task=args.task,
+        model=args.model,
+        context=args.context,
+        parallel=args.parallel,
+    )
+    env = env_for_route(route)
+    _emit(
+        {
+            "route": {
+                "task": route.task,
+                "cuda_ordinal": route.cuda_ordinal,
+                "gpu_name": route.gpu_name,
+                "reason": route.reason,
+            },
+            "env": env,
+            "apply": " ".join(f"{k}={v}" for k, v in env.items()),
+        }
+    )
+    return 0
+
+
+def _epyc_preferred_ordinal() -> int | None:
+    """If EPYC routing is requested via env vars, return the preferred CUDA ordinal.
+
+    Returns ``None`` when the adapter is unavailable or no routing env vars are set.
+    """
+    if select_device_for_task is None:
+        return None
+    task = os.environ.get("XLAXIOM_EPYC_TASK", "")
+    model = os.environ.get("XLAXIOM_EPYC_MODEL", "")
+    if not task and not model:
+        return None
+    try:
+        route = select_device_for_task(
+            task=task or "default",
+            model=model or "",
+        )
+        return route.cuda_ordinal
+    except Exception:
+        return None
+
+
 def _gpu_interpreter() -> tuple[str, int] | None:
     """Find the isolated interpreter that owns a CUDA-enabled jaxlib for a visible GPU.
 
@@ -819,6 +874,22 @@ def _gpu_interpreter() -> tuple[str, int] | None:
         return None
     if not devices:
         return None
+
+    epyc_ordinal = _epyc_preferred_ordinal()
+    if epyc_ordinal is not None:
+        for device in devices:
+            if device.ordinal != epyc_ordinal:
+                continue
+            variant, _ = select_variant(device)
+            if variant is None:
+                continue
+            interpreter = variant_python(variant)
+            if not os.path.isfile(interpreter):
+                continue
+            if _interpreter_has_gpu(interpreter):
+                return interpreter, device.ordinal
+        # EPYC ordinal requested but not found/usable; fall through to normal scan.
+
     for device in devices:
         variant, _ = select_variant(device)
         if variant is None:
@@ -1996,6 +2067,20 @@ def parser() -> argparse.ArgumentParser:
     gpu_historical_parser.add_argument("--output", help="JSON evidence path")
     gpu_historical_parser.add_argument("--allow-busy", action="store_true")
     gpu_historical_parser.set_defaults(func=command_gpu_historical)
+
+    gpu_epyc_parser = gpu_commands.add_parser(
+        "epyc", help="show EPYC routing decision for a task/model"
+    )
+    gpu_epyc_parser.add_argument(
+        "--task",
+        default="default",
+        choices=("interactive", "batch", "vision", "tensorrt", "comfyui", "default"),
+        help="task category for routing",
+    )
+    gpu_epyc_parser.add_argument("--model", default="", help="model name for routing")
+    gpu_epyc_parser.add_argument("--context", type=int, default=4096, help="context length")
+    gpu_epyc_parser.add_argument("--parallel", type=int, default=1, help="parallel requests")
+    gpu_epyc_parser.set_defaults(func=command_gpu_epyc)
 
     colab_parser = commands.add_parser(
         "colab", help="generate interactive Google Colab reproduction notebook"
