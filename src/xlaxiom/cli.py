@@ -14,7 +14,10 @@ from statistics import median
 from time import perf_counter
 from typing import Any
 
+import numpy as np
+
 from . import __version__
+from .assertions import diff
 from .attestation import (
     load_attestation,
     save_attestation,
@@ -58,6 +61,7 @@ from .hardware import (
     ordinal_ordering_risk,
     select_variant,
 )
+from .quantization import audit_quantization_risk
 
 try:
     from xlaxiom_adapter.epyc_router import env_for_route, select_device_for_task
@@ -172,6 +176,47 @@ def command_run(args: argparse.Namespace) -> int:
     result = run_backend(artifact.workload, args.backend)
     _emit(result.summary())
     return 0 if result.status.value == "ok" else 2
+
+
+def command_diff(args: argparse.Namespace) -> int:
+    actual = np.load(args.actual)
+    desired = np.load(args.desired)
+    d = diff(
+        actual,
+        desired,
+        rtol=args.rtol,
+        atol=args.atol,
+        equal_nan=args.equal_nan,
+        check_signed_zero=args.check_signed_zero,
+    )
+    print(d.format_summary())
+    if args.output:
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        if out_path.suffix == ".html":
+            out_path.write_text(d._repr_html_(), encoding="utf-8")
+        else:
+            save_json(out_path, asdict(d))
+    return 0 if d.is_close else 1
+
+
+def command_quant_audit(args: argparse.Namespace) -> int:
+    tensor = np.load(args.tensor)
+    report = audit_quantization_risk(
+        tensor,
+        target_dtype=args.dtype,
+        scale=args.scale,
+        percentile=args.percentile,
+    )
+    print(report.format_summary())
+    if args.output:
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        if out_path.suffix == ".html":
+            out_path.write_text(report._repr_html_(), encoding="utf-8")
+        else:
+            save_json(out_path, asdict(report))
+    return 0 if report.risk_level != "CRITICAL" else 1
 
 
 def command_compare(args: argparse.Namespace) -> int:
@@ -1640,6 +1685,39 @@ def parser() -> argparse.ArgumentParser:
             "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
         )
         subparser.set_defaults(func=handler)
+    diff_parser = commands.add_parser("diff", help="diagnostic tensor diff and comparison")
+    diff_parser.add_argument("--actual", required=True, help="path to actual .npy tensor")
+    diff_parser.add_argument("--desired", required=True, help="path to desired .npy tensor")
+    diff_parser.add_argument("--rtol", type=float, default=1e-5, help="relative tolerance")
+    diff_parser.add_argument("--atol", type=float, default=1e-8, help="absolute tolerance")
+    diff_parser.add_argument(
+        "--check-signed-zero", action="store_true", help="enforce signed zero equality"
+    )
+    diff_parser.add_argument(
+        "--no-equal-nan",
+        dest="equal_nan",
+        action="store_false",
+        default=True,
+        help="treat NaNs as mismatches",
+    )
+    diff_parser.add_argument("--output", help="optional output path")
+    diff_parser.set_defaults(func=command_diff)
+
+    quant_parser = commands.add_parser("quant-audit", help="quantization precision-loss risk audit")
+    quant_parser.add_argument("--tensor", required=True, help="path to .npy tensor")
+    quant_parser.add_argument(
+        "--dtype",
+        default="fp8_e4m3",
+        choices=["fp8_e4m3", "fp8_e5m2", "fp4_e2m1", "int8", "bfloat16"],
+        help="target precision format",
+    )
+    quant_parser.add_argument("--scale", type=float, help="custom scale factor")
+    quant_parser.add_argument(
+        "--percentile", type=float, default=99.9, help="percentile cutoff for scaling"
+    )
+    quant_parser.add_argument("--output", help="optional output path")
+    quant_parser.set_defaults(func=command_quant_audit)
+
     compare_parser = commands.add_parser("compare", help="compare NumPy and JAX executions")
     compare_parser.add_argument("--case", required=True)
     compare_parser.add_argument("--mode", choices=("jax-eager", "jax-jit", "jax-eager-vs-jit"))

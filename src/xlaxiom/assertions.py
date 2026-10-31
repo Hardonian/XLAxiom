@@ -65,8 +65,8 @@ class NumericalDiff:
     def format_summary(self, title: str = "XLAxiom Numerical Verification") -> str:
         """Format an informative diagnostic report for console and logs."""
         status = "PASSED" if self.is_close else "FAILED"
-        status_icon = "✓" if self.is_close else "✗"
-        snr_str = f"{self.snr_db:.2f} dB" if not math.isinf(self.snr_db) else "∞ dB (exact)"
+        status_icon = "[OK]" if self.is_close else "[FAIL]"
+        snr_str = f"{self.snr_db:.2f} dB" if not math.isinf(self.snr_db) else "inf dB (exact)"
 
         lines = [
             f"=== {title}: {status_icon} {status} ===",

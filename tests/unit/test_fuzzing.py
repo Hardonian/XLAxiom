@@ -77,4 +77,3 @@ def test_fuzz_kernel_exception_recovery() -> None:
     )
     assert res.passed is False
     assert "Kernel execution exception" in (res.repro_script or "")
-

@@ -935,3 +935,62 @@ def test_cli_v2_hlo_efficiency_preflight_and_higher_order(tmp_path) -> None:
     assert grad_data["classification"] == "pass"
     assert "expected_hvp" in grad_data
     assert "observed_hvp" in grad_data
+
+
+def test_cli_diff_and_quant_audit(tmp_path) -> None:
+    import numpy as np
+
+    # 1. Test xlaxiom diff
+    a_path = tmp_path / "actual.npy"
+    b_path = tmp_path / "desired.npy"
+    html_path = tmp_path / "diff.html"
+
+    np.save(a_path, np.array([1.0, 2.0, 3.0]))
+    np.save(b_path, np.array([1.0, 2.0, 3.0]))
+
+    diff_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "diff",
+            "--actual",
+            str(a_path),
+            "--desired",
+            str(b_path),
+            "--output",
+            str(html_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert diff_res.returncode == 0, diff_res.stderr
+    assert "PASSED" in diff_res.stdout
+    assert html_path.exists()
+
+    # 2. Test xlaxiom quant-audit
+    tensor_path = tmp_path / "weights.npy"
+    np.save(tensor_path, np.random.randn(10, 10))
+    quant_json = tmp_path / "quant.json"
+
+    quant_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "quant-audit",
+            "--tensor",
+            str(tensor_path),
+            "--dtype",
+            "fp8_e4m3",
+            "--output",
+            str(quant_json),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert quant_res.returncode == 0, quant_res.stderr
+    assert "Quantization Precision Audit" in quant_res.stdout
+    assert quant_json.exists()

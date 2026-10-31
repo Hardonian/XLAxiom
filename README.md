@@ -50,6 +50,7 @@ print(report.format_table())  # Pinpoints exact layer where divergence originate
 audit = xl.audit_quantization_risk(activations, target_dtype="fp8_e4m3")
 print(audit.format_summary())  # Outlier clipping %, underflow %, and SNR
 
+
 # 5. Hypothesis-like metamorphic invariant testing for neural network operations
 @xl.test_invariants(invariants=["batch_padding", "scale_invariance"])
 def test_attention_layer(x):
@@ -124,6 +125,7 @@ See the [support and verification matrix](docs/support.md) for what is supported
 | Google Ecosystem & Cloud TPUs | `cloud tpu-run`, `cloud tpu-status`, `cloud vertex-spec`, `cloud xpk-spec` |
 | Developer surfaces & Colab | `colab`, `xla pass-isolate` |
 | Enterprise Governance & Telemetry | `bigquery schema`, `bigquery export`, `kms sign`, `kms verify` |
+| Universal Parity & Quantization | `diff`, `quant-audit` |
 
 Run `xlaxiom <command> --help` for the complete interface. The [documentation index](docs/index.md) routes each workflow to the right level of detail.
 
