@@ -994,3 +994,56 @@ def test_cli_diff_and_quant_audit(tmp_path) -> None:
     assert quant_res.returncode == 0, quant_res.stderr
     assert "Quantization Precision Audit" in quant_res.stdout
     assert quant_json.exists()
+
+    # 3. Test xlaxiom ci-gate
+    ci_md = tmp_path / "pr_comment.md"
+    ci_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "ci-gate",
+            "--actual",
+            str(a_path),
+            "--desired",
+            str(b_path),
+            "--commit",
+            "1234567890",
+            "--output",
+            str(ci_md),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert ci_res.returncode == 0, ci_res.stderr
+    assert "Numerical%20Parity-PASSED" in ci_res.stdout
+    assert ci_md.exists()
+
+    # 4. Test xlaxiom checkpoint-audit
+    ckpt_a = tmp_path / "ckpt_a.npz"
+    ckpt_b = tmp_path / "ckpt_b.npz"
+    np.savez(ckpt_a, w1=np.ones((4, 4), dtype=np.float32))
+    np.savez(ckpt_b, w1=np.ones((4, 4), dtype=np.float32))
+    ckpt_json = tmp_path / "ckpt_audit.json"
+
+    ckpt_res = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "xlaxiom",
+            "checkpoint-audit",
+            "--baseline",
+            str(ckpt_a),
+            "--candidate",
+            str(ckpt_b),
+            "--output",
+            str(ckpt_json),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert ckpt_res.returncode == 0, ckpt_res.stderr
+    assert "Checkpoint Weight Parity: PASSED" in ckpt_res.stdout
+    assert ckpt_json.exists()

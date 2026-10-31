@@ -51,7 +51,25 @@ audit = xl.audit_quantization_risk(activations, target_dtype="fp8_e4m3")
 print(audit.format_summary())  # Outlier clipping %, underflow %, and SNR
 
 
-# 5. Hypothesis-like metamorphic invariant testing for neural network operations
+# 5. Continuous Integration regression gate & PR comment generator
+diff_obj = xl.diff(candidate_tensor, baseline_tensor)
+gate = xl.evaluate_ci_gate([("model_output", diff_obj)], min_snr_db=30.0)
+print(gate.summary_markdown)  # Ready to post to GitHub PR comments or step summaries!
+
+# 6. Checkpoint weight parity audit (Safetensors / .npz / PyTorch state_dict)
+ckpt_report = xl.audit_checkpoint_parity("base_model.safetensors", "quantized_model.safetensors")
+print(ckpt_report.format_summary())  # Flags missing/extra keys and top divergent weights
+
+# 7. LLM serving engine parity verification (vLLM / SGLang / TensorRT-LLM vs Reference)
+serving_report = xl.audit_serving_parity(vllm_engine, hf_reference, sample_prompts)
+print(serving_report.format_summary())  # Top-1 token agreement %, Top-5 overlap, and KL divergence
+
+# 8. Automated empirical tolerance calibration (eliminates flaky CI assertions)
+tolerances = xl.calibrate_tolerances(custom_kernel, sample_input, runs=10)
+print(tolerances.format_summary())  # Recommends statistically robust rtol/atol with safety headroom
+
+
+# 9. Hypothesis-like metamorphic invariant testing for neural network operations
 @xl.test_invariants(invariants=["batch_padding", "scale_invariance"])
 def test_attention_layer(x):
     return my_attention(x)

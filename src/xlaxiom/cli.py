@@ -27,6 +27,7 @@ from .attestation import (
 from .bisect import bisect_versions
 from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
+from .ci import evaluate_ci_gate
 from .comparison import Classification
 from .cuda import cuda_capability, driver_capability, recommended_variant
 from .efficiency import profile_efficiency
@@ -61,6 +62,7 @@ from .hardware import (
     ordinal_ordering_risk,
     select_variant,
 )
+from .hf import audit_checkpoint_parity
 from .quantization import audit_quantization_risk
 
 try:
@@ -217,6 +219,32 @@ def command_quant_audit(args: argparse.Namespace) -> int:
         else:
             save_json(out_path, asdict(report))
     return 0 if report.risk_level != "CRITICAL" else 1
+
+
+def command_ci_gate(args: argparse.Namespace) -> int:
+    actual = np.load(args.actual)
+    desired = np.load(args.desired)
+    d = diff(actual, desired, rtol=args.rtol, atol=args.atol)
+    gate = evaluate_ci_gate(
+        [("candidate_output", d)],
+        min_snr_db=args.min_snr,
+        commit_sha=args.commit,
+        baseline_ref=args.baseline_ref,
+    )
+    print(gate.summary_markdown)
+    if args.output:
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(gate.pr_comment_markdown, encoding="utf-8")
+    return 0 if gate.passed else 1
+
+
+def command_checkpoint_audit(args: argparse.Namespace) -> int:
+    report = audit_checkpoint_parity(args.baseline, args.candidate, rtol=args.rtol, atol=args.atol)
+    print(report.format_summary())
+    if args.output:
+        save_json(args.output, asdict(report))
+    return 0 if report.is_identical else 1
 
 
 def command_compare(args: argparse.Namespace) -> int:
@@ -1717,6 +1745,29 @@ def parser() -> argparse.ArgumentParser:
     )
     quant_parser.add_argument("--output", help="optional output path")
     quant_parser.set_defaults(func=command_quant_audit)
+
+    ci_gate_parser = commands.add_parser("ci-gate", help="continuous numerical regression gate")
+    ci_gate_parser.add_argument("--actual", required=True, help="path to candidate .npy tensor")
+    ci_gate_parser.add_argument("--desired", required=True, help="path to baseline .npy tensor")
+    ci_gate_parser.add_argument("--rtol", type=float, default=1e-4, help="relative tolerance")
+    ci_gate_parser.add_argument("--atol", type=float, default=1e-5, help="absolute tolerance")
+    ci_gate_parser.add_argument("--min-snr", type=float, default=20.0, help="minimum SNR in dB")
+    ci_gate_parser.add_argument("--commit", help="Git commit SHA under test")
+    ci_gate_parser.add_argument("--baseline-ref", default="main", help="reference branch name")
+    ci_gate_parser.add_argument("--output", help="path to write PR comment markdown")
+    ci_gate_parser.set_defaults(func=command_ci_gate)
+
+    checkpoint_parser = commands.add_parser(
+        "checkpoint-audit", help="model checkpoint weight parity audit"
+    )
+    checkpoint_parser.add_argument("--baseline", required=True, help="path to baseline checkpoint")
+    checkpoint_parser.add_argument(
+        "--candidate", required=True, help="path to candidate checkpoint"
+    )
+    checkpoint_parser.add_argument("--rtol", type=float, default=1e-4, help="relative tolerance")
+    checkpoint_parser.add_argument("--atol", type=float, default=1e-5, help="absolute tolerance")
+    checkpoint_parser.add_argument("--output", help="optional output json path")
+    checkpoint_parser.set_defaults(func=command_checkpoint_audit)
 
     compare_parser = commands.add_parser("compare", help="compare NumPy and JAX executions")
     compare_parser.add_argument("--case", required=True)
