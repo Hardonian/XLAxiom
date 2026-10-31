@@ -1704,6 +1704,7 @@ cuda13 = [
 ]
 dev = [
     { name = "build" },
+    { name = "jax" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "ruff" },
@@ -1720,6 +1721,7 @@ torch = [
 requires-dist = [
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.2" },
     { name = "jax", marker = "extra == 'all'", specifier = ">=0.4.30" },
+    { name = "jax", marker = "extra == 'dev'", specifier = ">=0.4.30" },
     { name = "jax", marker = "extra == 'jax'", specifier = ">=0.4.30" },
     { name = "jax", extras = ["cuda12"], marker = "sys_platform == 'linux' and extra == 'cuda12'", specifier = ">=0.5,<0.11" },
     { name = "jax", extras = ["cuda13"], marker = "sys_platform == 'linux' and extra == 'cuda13'", specifier = ">=0.5,<0.11" },
