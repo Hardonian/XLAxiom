@@ -29,8 +29,8 @@ class HardwareDriftReport:
             f"=== Cross-Hardware Drift Audit (Baseline: {self.baseline_device}) ===",
             f"Devices evaluated: {', '.join(self.devices_evaluated)}",
             "",
-            "Target Device     Status   Max Abs    SNR (dB)  Signature",
-            "-" * 65,
+            f"{'Target Device':<18} {'Status':<8} {'Max Abs':<11} {'SNR (dB)':<10} {'Signature':<24}",
+            "-" * 75,
         ]
         for dev in self.devices_evaluated:
             if dev == self.baseline_device:
@@ -41,7 +41,9 @@ class HardwareDriftReport:
             sig = self.drift_signatures.get(dev, "unknown")
             st = "PASS" if d.is_close else "DRIFT"
             snr_str = f"{d.snr_db:.1f}" if not math.isinf(d.snr_db) else "inf"
-            line = f"{dev:<17} {st:<8} {d.max_absolute_error:<10.2e} {snr_str:<9} {sig:<18}"
+            line = (
+                f"{dev:<18} {st:<8} {d.max_absolute_error:<11.2e} {snr_str:<10} {sig:<24}"
+            )
             lines.append(line)
         return "\n".join(lines)
 

@@ -54,3 +54,4 @@ def test_audit_hardware_drift_missing_baseline() -> None:
     outputs = {"cuda": np.ones(5)}
     with pytest.raises(ValueError, match="Baseline device 'cpu' not found"):
         audit_hardware_drift(outputs, baseline_device="cpu")
+

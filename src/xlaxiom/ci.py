@@ -79,13 +79,13 @@ def generate_pr_comment(
         "",
         "| Metric | Status |",
         "| :--- | :--- |",
-        f"| **Overall Gate Verdict** | **{'[PASS]' if all_passed else '[REGRESSION]'}** |",
+        f"| **Overall Gate Verdict** | **{'✅ PASS' if all_passed else '❌ REGRESSION'}** |",
         f"| **Tensors Evaluated** | `{total_tensors}` |",
         f"| **Passed Tensors** | `{len(passed_items)} / {total_tensors}` |",
     ]
 
     if failed_items:
-        lines.append(f"| **Regressed Tensors** | `[! {len(failed_items)}]` |")
+        lines.append(f"| **Regressed Tensors** | `⚠️ {len(failed_items)}` |")
         worst_diff = min(
             (d for _, d in failed_items),
             key=lambda d: d.snr_db if not math.isinf(d.snr_db) else 1e9,
@@ -104,7 +104,7 @@ def generate_pr_comment(
     lines.append("| :--- | :---: | :---: | :---: | :---: | :---: | :--- |")
 
     for name, d in items:
-        status_icon = "[OK]" if d.is_close else "[FAIL]"
+        status_icon = "✅" if d.is_close else "❌"
         snr_str = f"{d.snr_db:.1f}" if not math.isinf(d.snr_db) else "inf"
         lines.append(
             f"| `{name}` | {status_icon} | `{d.max_absolute_error:.2e}` | "
@@ -115,7 +115,7 @@ def generate_pr_comment(
     if failed_items:
         lines.append("")
         lines.append(
-            "<details><summary><strong>Reproduction Code for Regressions</strong></summary>"
+            "<details><summary><strong>🔍 Reproduction Code for Regressions</strong></summary>"
         )
         lines.append("")
         for name, d in failed_items[:3]:
