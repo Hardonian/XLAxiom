@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.3.0 - 2026-10-31
+
+- **Major Universal Numerical Parity, Kernel Fuzzing & PyPI Adoption Release**: Comprehensive delivery of drop-in Pythonic assertion APIs, Triton/Pallas custom kernel fuzzing, neural network layer-by-layer parity auditing, quantization risk analysis (FP8/FP4/Int8), and decoupled lightweight packaging (Priorities 96–105).
+- **Decoupled Lightweight PyPI Packaging (`pyproject.toml` / Priority 96)**:
+  - Broadened core compatibility to `numpy>=1.24`, enabling seamless installation in legacy enterprise environments.
+  - Decoupled `jax` and `torch` into clean optional extras (`pip install xlaxiom[jax]`, `pip install xlaxiom[torch]`), dropping base install size under 5MB.
+- **Pythonic `assert_close` with Root-Cause Diagnostics (`xlaxiom.assertions` / Priority 97)**:
+  - Drop-in replacement for `torch.testing.assert_close` and `np.testing.assert_allclose`.
+  - Computes Signal-to-Noise Ratio (SNR in dB), Cosine Similarity, RMS error, and error distribution percentiles (p50, p90, p99).
+  - Automatically diagnoses root cause: catastrophic cancellation, sign-bit flips, subnormal underflow, and non-finite masks.
+  - Generates standalone, 10-line reproduction scripts on assertion failure.
+- **Triton & Pallas Custom Kernel Differential Fuzzer (`xlaxiom.fuzzing` / Priority 98)**:
+  - `fuzz_kernel` differentially validates custom GPU/TPU kernels against eager references.
+  - Fuzzes dynamic shapes with prime-dimension bias (catching tiling boundaries), unaligned power-of-2 strides, and subnormal/extreme values.
+- **Automated Kernel Shape Minimization (`xlaxiom.fuzzing` / Priority 99)**:
+  - Automatically delta-debugs and shrinks multidimensional failing tensors to the minimal shape that reproduces failure.
+- **Neural Network Layer-by-Layer Parity Auditing (`xlaxiom.nn_parity` / Priority 100)**:
+  - `audit_layer_parity` hooks into PyTorch modules, Flax Linen/NNX, and compiled models.
+  - Computes activation drift per layer (MAE, Max Rel Diff, Cosine Similarity, SNR).
+- **Divergence Origin Localization (`xlaxiom.nn_parity` / Priority 101)**:
+  - Automatically identifies the earliest intermediate layer where numerical drift originates during framework migration or compilation.
+- **Quantization & Precision-Loss Risk Auditor (`xlaxiom.quantization` / Priority 102)**:
+  - `audit_quantization_risk` simulates FP8 (`fp8_e4m3`, `fp8_e5m2`), FP4 (`fp4_e2m1` / MXFP4), INT8, and BFloat16 precision formats.
+- **Dynamic Range Outlier & Underflow Analysis (`xlaxiom.quantization` / Priority 103)**:
+  - Quantifies outlier clipping percentage, underflow flush percentage, and yields actionable deployment risk recommendations (LOW, MODERATE, CRITICAL).
+- **Hypothesis-Like Metamorphic Invariant Decorators (`xlaxiom.metamorphic_decorator` / Priority 104)**:
+  - `@test_invariants` / `@metamorphic` validates batch padding invariance, scale invariance/equivariance, and shift invariance on tensor functions.
+- **Pytest Plugin Auto-Reporting for Numerical Assertions (`xlaxiom.pytest_plugin` / Priority 105)**:
+  - Seamlessly intercepts `NumericalAssertionError` during pytest runs and writes out interactive HTML diagnostic report cards to `.xlaxiom-reports/`.
+
 ## 2.2.0 - 2026-10-27
 
 - **Major Google Ecosystem & Enterprise Product Readiness Release**: Full end-to-end integration across Google Cloud Platform (GCP), Cloud TPUs (v4, v5e, v5p, v6e Trillium), Vertex AI, GKE (`xpk`), OpenXLA StableHLO reference interpreter, XLA compiler pass isolation, Google model architectures (Flax, MaxText), Google Colab, BigQuery, and Google Cloud KMS.

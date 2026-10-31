@@ -53,14 +53,25 @@ def xlaxiom_evidence_dir(tmp_path: Path) -> Path:
 def pytest_runtest_makereport(
     item: pytest.Item, call: pytest.CallInfo[Any]
 ) -> Generator[None, Any, None]:
-    """Hook to capture test failures on xlaxiom-marked tests and emit HTML evidence."""
+    """Hook to capture test failures on xlaxiom tests and emit HTML evidence."""
     outcome = yield
     report = outcome.get_result()
 
     if report.when == "call" and report.failed:
+        reports_dir = Path(".xlaxiom-reports")
+        # Check if exception is NumericalAssertionError
+        if call.excinfo and hasattr(call.excinfo.value, "diff"):
+            diff_obj = getattr(call.excinfo.value, "diff", None)
+            if diff_obj and hasattr(diff_obj, "_repr_html_"):
+                reports_dir.mkdir(parents=True, exist_ok=True)
+                report_file = reports_dir / f"{item.name}-diff.html"
+                try:
+                    report_file.write_text(diff_obj._repr_html_(), encoding="utf-8")
+                except Exception:
+                    pass
+
         marker = item.get_closest_marker("xlaxiom")
         if marker:
-            reports_dir = Path(".xlaxiom-reports")
             reports_dir.mkdir(parents=True, exist_ok=True)
             report_file = reports_dir / f"{item.name}-evidence.html"
             try:

@@ -23,6 +23,39 @@ It is independently developed and is not affiliated with, sponsored by, or endor
 | Integrate with Google Cloud, TPUs & Colab | Read the [Google Ecosystem guide](docs/google-ecosystem.md). |
 | Install from source or a verified wheel | Read the [installation guide](docs/installation.md). |
 
+## Everyday Python API
+
+XLAxiom provides drop-in numerical assertions, custom kernel fuzzing, and layer parity auditing for daily ML development:
+
+```python
+import xlaxiom as xl
+
+# 1. Drop-in assertion with root-cause diagnostics, SNR & cosine similarity
+xl.assert_close(actual_tensor, reference_tensor, rtol=1e-4, atol=1e-5)
+
+# 2. Differentially fuzz custom Triton, Pallas, or CUDA kernels across dynamic shapes
+res = xl.fuzz_kernel(
+    my_custom_kernel,
+    reference_fn,
+    shape_spec=((1, 8), (16, 128), [32, 64]),
+    dtypes=["float32"],
+)
+# Automatically shrinks failing tensors to minimal reproducing shapes!
+
+# 3. Audit layer-by-layer activation parity between PyTorch, JAX, or compiled models
+report = xl.audit_layer_parity(model_eager, model_compiled, sample_input)
+print(report.format_table())  # Pinpoints exact layer where divergence originates!
+
+# 4. Audit quantization precision loss and outlier clipping risk
+audit = xl.audit_quantization_risk(activations, target_dtype="fp8_e4m3")
+print(audit.format_summary())  # Outlier clipping %, underflow %, and SNR
+
+# 5. Hypothesis-like metamorphic invariant testing for neural network operations
+@xl.test_invariants(invariants=["batch_padding", "scale_invariance"])
+def test_attention_layer(x):
+    return my_attention(x)
+```
+
 ## Five-minute confidence check
 
 Prerequisite: Python 3.11–3.13 and [uv](https://docs.astral.sh/uv/). From a source checkout:

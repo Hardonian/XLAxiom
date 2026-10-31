@@ -5,22 +5,29 @@ build-backend = "hatchling.build"
 [project]
 name = "xlaxiom"
 dynamic = ["version"]
-description = "Evidence-first differential testing and failure minimization for JAX and OpenXLA numerical workloads."
+description = "Universal numerical verification, kernel fuzzing, and differential testing for PyTorch, JAX, Triton, and OpenXLA."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "XLAxiom contributors" }]
 keywords = [
-  "jax",
-  "openxla",
-  "xla",
+  "assert-close",
   "compiler-testing",
   "differential-testing",
-  "numerical-testing",
-  "property-based-testing",
-  "reproducibility",
   "failure-minimization",
+  "fp8",
+  "jax",
+  "kernel-fuzzing",
+  "numerical-testing",
+  "openxla",
+  "pallas",
+  "property-based-testing",
+  "pytorch",
+  "quantization",
+  "reproducibility",
+  "triton",
+  "xla",
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -37,7 +44,7 @@ classifiers = [
   "Topic :: Software Development :: Testing",
   "Topic :: Scientific/Engineering",
 ]
-dependencies = ["numpy>=2.0,<3", "jax>=0.5,<0.11"]
+dependencies = ["numpy>=1.24"]
 
 [project.urls]
 Homepage = "https://github.com/Hardonian/XLAxiom"
@@ -48,8 +55,11 @@ Changelog = "https://github.com/Hardonian/XLAxiom/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "mypy>=1.13", "pytest>=8.3", "ruff>=0.8", "twine>=6.1"]
+jax = ["jax>=0.4.30"]
+torch = ["torch>=2.0"]
 cuda12 = ["jax[cuda12]>=0.5,<0.11; platform_system == 'Linux'"]
 cuda13 = ["jax[cuda13]>=0.5,<0.11; platform_system == 'Linux'"]
+all = ["jax>=0.4.30"]
 
 [project.scripts]
 xlaxiom = "xlaxiom.cli:main"

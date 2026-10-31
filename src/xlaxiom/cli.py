@@ -62,8 +62,8 @@ from .hardware import (
 try:
     from xlaxiom_adapter.epyc_router import env_for_route, select_device_for_task
 except ImportError:
-    select_device_for_task = None  # type: ignore[assignment]
-    env_for_route = None  # type: ignore[assignment]
+    select_device_for_task = None
+    env_for_route = None
 from .historical import hyperbolic_gradient_study, replay_jax_40634
 from .historical_matrix import run_hyperbolic_matrix
 from .ledger import completed_shard, load_ledger, save_shard
