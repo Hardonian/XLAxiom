@@ -77,7 +77,7 @@ jobs:
             environment="${RUNNER_TEMP}/xlaxiom-${python_version}"
             uv venv --python "${python_version}" "${environment}"
             uv pip install --python "${environment}/bin/python" \
-              "${GITHUB_WORKSPACE}"/dist/*.whl[jax]
+              "${GITHUB_WORKSPACE}"/dist/xlaxiom-*.whl
             cd "$(mktemp -d)"
             "${environment}/bin/xlaxiom" --version
             "${environment}/bin/xlaxiom" property list
@@ -90,7 +90,7 @@ jobs:
           environment="${RUNNER_TEMP}/xlaxiom-sdist"
           uv venv --python 3.12 "${environment}"
           uv pip install --python "${environment}/bin/python" \
-            "${GITHUB_WORKSPACE}"/dist/*.tar.gz[jax]
+            "${GITHUB_WORKSPACE}"/dist/xlaxiom-*.tar.gz jax
           cd "$(mktemp -d)"
           "${environment}/bin/python" -c 'from importlib.resources import files; assert files("xlaxiom").joinpath("py.typed").is_file()'
           "${environment}/bin/xlaxiom" --version

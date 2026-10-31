@@ -83,7 +83,7 @@ jobs:
             local workdir="${smoke_root}/${kind}-work"
 
             uv venv --python 3.12 "${environment}"
-            uv pip install --python "${environment}/bin/python" "${distribution}[jax]"
+            uv pip install --python "${environment}/bin/python" ${distribution} jax
             mkdir -p "${workdir}"
             (
               cd "${workdir}"
