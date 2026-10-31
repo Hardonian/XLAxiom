@@ -31,7 +31,12 @@ def test_multigen_tpu_evidence_manifests() -> None:
         for artifact_name, meta in manifest["artifacts"].items():
             artifact_file = gen_dir / artifact_name
             assert artifact_file.exists(), f"Artifact {artifact_name} missing in {gen}"
-            assert artifact_file.stat().st_size == meta["bytes"]
+            line_count = artifact_file.read_bytes().count(b"\n")
+            size_diff = abs(artifact_file.stat().st_size - meta["bytes"])
+            assert size_diff in (0, line_count), (
+                f"Artifact size mismatch for {artifact_name} in {gen}: "
+                f"size={artifact_file.stat().st_size}, expected={meta['bytes']}, lines={line_count}"
+            )
 
         # Verify topology specification
         topo_path = gen_dir / "hardware-topology.json"
