@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -64,8 +65,12 @@ from .hardware import (
     select_variant,
 )
 from .hf import audit_checkpoint_parity
-from .quantization import audit_quantization_risk
+from .quantization import (
+    audit_checkpoint_quantization,
+    audit_quantization_risk,
+)
 from .safetensors_io import read_checkpoint
+from .ui import generate_checkpoint_html, generate_visualizer_html
 
 try:
     from xlaxiom_adapter.epyc_router import env_for_route, select_device_for_task
@@ -183,44 +188,141 @@ def command_run(args: argparse.Namespace) -> int:
 
 
 def command_diff(args: argparse.Namespace) -> int:
-    actual = np.load(args.actual)
-    desired = np.load(args.desired)
-    d = diff(
-        actual,
-        desired,
-        rtol=args.rtol,
-        atol=args.atol,
-        equal_nan=args.equal_nan,
-        check_signed_zero=args.check_signed_zero,
+    actual_path = None
+    desired_path = None
+    if getattr(args, "paths", None) and len(args.paths) == 2:
+        actual_path = args.paths[0]
+        desired_path = args.paths[1]
+    elif getattr(args, "actual", None) and getattr(args, "desired", None):
+        actual_path = args.actual
+        desired_path = args.desired
+    else:
+        sys.stderr.write(
+            "Error: Must specify two paths to diff "
+            "(e.g. `xlaxiom diff a.safetensors b.safetensors` "
+            "or `--actual a --desired b`)\n"
+        )
+        return 2
+
+    p_act = Path(actual_path)
+    p_des = Path(desired_path)
+    if not p_act.exists():
+        raise FileNotFoundError(f"Actual path not found: {p_act}")
+    if not p_des.exists():
+        raise FileNotFoundError(f"Desired path not found: {p_des}")
+
+    is_checkpoint = (
+        p_act.is_dir()
+        or p_act.suffix.lower() in {".safetensors", ".npz", ".json"}
+        or p_des.is_dir()
+        or p_des.suffix.lower() in {".safetensors", ".npz", ".json"}
     )
-    print(d.format_summary())
-    if args.output:
-        out_path = Path(args.output)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        if out_path.suffix == ".html":
-            out_path.write_text(d._repr_html_(), encoding="utf-8")
-        else:
-            save_json(out_path, asdict(d))
-    return 0 if d.is_close else 1
+
+    if is_checkpoint:
+        report = audit_checkpoint_parity(
+            actual_path,
+            desired_path,
+            rtol=args.rtol,
+            atol=args.atol,
+        )
+        print(report.format_summary())
+        if getattr(args, "html", None):
+            out_html = Path(args.html)
+            out_html.parent.mkdir(parents=True, exist_ok=True)
+            out_html.write_text(generate_checkpoint_html(report), encoding="utf-8")
+        if getattr(args, "output", None):
+            out_p = Path(args.output)
+            out_p.parent.mkdir(parents=True, exist_ok=True)
+            if out_p.suffix == ".html":
+                out_p.write_text(generate_checkpoint_html(report), encoding="utf-8")
+            else:
+                save_json(out_p, asdict(report))
+
+        min_snr = getattr(args, "min_snr", None)
+        if min_snr is not None:
+            for _, d in report.weight_diffs:
+                if not math.isnan(d.snr_db) and d.snr_db < min_snr:
+                    return 1
+        return 0 if report.is_identical else 1
+    else:
+        actual = np.load(actual_path)
+        desired = np.load(desired_path)
+        d = diff(
+            actual,
+            desired,
+            rtol=args.rtol,
+            atol=args.atol,
+            equal_nan=args.equal_nan,
+            check_signed_zero=args.check_signed_zero,
+        )
+        print(d.format_summary())
+        if getattr(args, "html", None):
+            out_html = Path(args.html)
+            out_html.parent.mkdir(parents=True, exist_ok=True)
+            out_html.write_text(generate_visualizer_html(d), encoding="utf-8")
+        if getattr(args, "output", None):
+            out_p = Path(args.output)
+            out_p.parent.mkdir(parents=True, exist_ok=True)
+            if out_p.suffix == ".html":
+                out_p.write_text(generate_visualizer_html(d), encoding="utf-8")
+            else:
+                save_json(out_p, asdict(d))
+        return 0 if d.is_close else 1
 
 
 def command_quant_audit(args: argparse.Namespace) -> int:
-    tensor = np.load(args.tensor)
-    report = audit_quantization_risk(
-        tensor,
-        target_dtype=args.dtype,
-        scale=args.scale,
-        percentile=args.percentile,
-    )
+    target_str = getattr(args, "target", None) or getattr(args, "tensor", None)
+    if not target_str:
+        sys.stderr.write("Error: Must specify tensor or checkpoint path for quant-audit.\n")
+        return 2
+
+    p = Path(target_str)
+    if not p.exists():
+        raise FileNotFoundError(f"Target path not found: {p}")
+
+    is_checkpoint = p.is_dir() or p.suffix.lower() in {".safetensors", ".npz", ".json"}
+    if is_checkpoint:
+        ckpt_report = audit_checkpoint_quantization(p, target_dtype=args.dtype)
+        print(ckpt_report.format_summary())
+        if getattr(args, "output", None):
+            out_p = Path(args.output)
+            out_p.parent.mkdir(parents=True, exist_ok=True)
+            save_json(out_p, asdict(ckpt_report))
+        return 0 if ckpt_report.critical_risk_weights == 0 else 1
+    else:
+        tensor = np.load(p)
+        report = audit_quantization_risk(
+            tensor,
+            target_dtype=args.dtype,
+            scale=args.scale,
+            percentile=args.percentile,
+        )
+        print(report.format_summary())
+        if getattr(args, "output", None):
+            out_path = Path(args.output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            if out_path.suffix == ".html":
+                out_path.write_text(report._repr_html_(), encoding="utf-8")
+            else:
+                save_json(out_path, asdict(report))
+        return 0 if report.risk_level != "CRITICAL" else 1
+
+
+def command_lint_checkpoint(args: argparse.Namespace) -> int:
+    from .lint import lint_checkpoint
+
+    report = lint_checkpoint(args.checkpoint)
     print(report.format_summary())
-    if args.output:
-        out_path = Path(args.output)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        if out_path.suffix == ".html":
-            out_path.write_text(report._repr_html_(), encoding="utf-8")
-        else:
-            save_json(out_path, asdict(report))
-    return 0 if report.risk_level != "CRITICAL" else 1
+    if getattr(args, "output", None):
+        out_p = Path(args.output)
+        out_p.parent.mkdir(parents=True, exist_ok=True)
+        save_json(out_p, asdict(report))
+
+    if report.status == "CORRUPTED":
+        return 1
+    if report.status == "WARNING" and getattr(args, "fail_on_warning", False):
+        return 1
+    return 0
 
 
 def _load_cli_tensors(path_str: str) -> dict[str, np.ndarray[Any, Any]]:
@@ -1805,11 +1907,20 @@ def parser() -> argparse.ArgumentParser:
             "--backend", choices=("numpy", "jax-eager", "jax-jit"), default="jax-jit"
         )
         subparser.set_defaults(func=handler)
-    diff_parser = commands.add_parser("diff", help="diagnostic tensor diff and comparison")
-    diff_parser.add_argument("--actual", required=True, help="path to actual .npy tensor")
-    diff_parser.add_argument("--desired", required=True, help="path to desired .npy tensor")
-    diff_parser.add_argument("--rtol", type=float, default=1e-5, help="relative tolerance")
-    diff_parser.add_argument("--atol", type=float, default=1e-8, help="absolute tolerance")
+    diff_parser = commands.add_parser(
+        "diff", help="diagnostic tensor and checkpoint diff comparison"
+    )
+    diff_parser.add_argument("paths", nargs="*", help="positional paths: actual desired")
+    diff_parser.add_argument("--actual", help="path to actual tensor or checkpoint")
+    diff_parser.add_argument("--desired", help="path to desired tensor or checkpoint")
+    diff_parser.add_argument("--rtol", type=float, default=1e-4, help="relative tolerance")
+    diff_parser.add_argument("--atol", type=float, default=1e-5, help="absolute tolerance")
+    diff_parser.add_argument(
+        "--top-k", type=int, default=10, help="number of top divergent layers to display"
+    )
+    diff_parser.add_argument(
+        "--min-snr", type=float, default=None, help="minimum required SNR in dB"
+    )
     diff_parser.add_argument(
         "--check-signed-zero", action="store_true", help="enforce signed zero equality"
     )
@@ -1820,11 +1931,29 @@ def parser() -> argparse.ArgumentParser:
         default=True,
         help="treat NaNs as mismatches",
     )
+    diff_parser.add_argument("--html", help="optional interactive HTML report path")
     diff_parser.add_argument("--output", help="optional output path")
     diff_parser.set_defaults(func=command_diff)
 
+    lint_parser = commands.add_parser(
+        "lint-checkpoint", help="sanity, safety, and latency-risk linter for model weights"
+    )
+    lint_parser.add_argument(
+        "checkpoint", help="path to .safetensors, .npz, or checkpoint directory"
+    )
+    lint_parser.add_argument(
+        "--fail-on-warning", action="store_true", help="fail on subnormal or dead weights"
+    )
+    lint_parser.add_argument("--output", help="optional output path for JSON report")
+    lint_parser.set_defaults(func=command_lint_checkpoint)
+
     quant_parser = commands.add_parser("quant-audit", help="quantization precision-loss risk audit")
-    quant_parser.add_argument("--tensor", required=True, help="path to .npy tensor")
+    quant_parser.add_argument(
+        "target",
+        nargs="?",
+        help="path to tensor or checkpoint (.safetensors, .npz, .npy, dir)",
+    )
+    quant_parser.add_argument("--tensor", help="legacy path to .npy tensor")
     quant_parser.add_argument(
         "--dtype",
         default="fp8_e4m3",

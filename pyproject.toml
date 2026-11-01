@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "xlaxiom"
 dynamic = ["version"]
-description = "Universal numerical verification, kernel fuzzing, and differential testing for PyTorch, JAX, Triton, and OpenXLA."
+description = "Universal numerical verification, bit-exact ULP analysis, Safetensors checkpoint diffing, and differential testing for PyTorch, JAX, and LLM serving."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
@@ -13,24 +13,38 @@ license-files = ["LICENSE"]
 authors = [{ name = "XLAxiom contributors" }]
 keywords = [
   "assert-close",
+  "checkpoint-diff",
   "compiler-testing",
+  "deep-learning",
   "differential-testing",
   "failure-minimization",
   "fp8",
+  "golden-testing",
+  "huggingface",
   "jax",
   "kernel-fuzzing",
+  "llm",
+  "model-parity",
   "numerical-testing",
+  "numerical-verification",
   "openxla",
   "pallas",
+  "pre-commit",
   "property-based-testing",
+  "pytest",
   "pytorch",
   "quantization",
   "reproducibility",
+  "safetensors",
+  "sglang",
   "triton",
+  "ulp",
+  "vllm",
   "xla",
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
+  "Framework :: Pytest",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: Apache Software License",
@@ -42,7 +56,9 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Typing :: Typed",
   "Topic :: Software Development :: Testing",
+  "Topic :: Software Development :: Testing :: Unit",
   "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = ["numpy>=1.24"]
 

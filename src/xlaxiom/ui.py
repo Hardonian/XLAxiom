@@ -352,7 +352,9 @@ def generate_checkpoint_html(
       </div>
       <div class="card">
         <div class="card-title">Regressed Weights</div>
-        <div class="card-value" style="color: {"#ef4444" if regressed > 0 else "#10b981"};">{regressed}</div>
+        <div class="card-value" style="color: {"#ef4444" if regressed > 0 else "#10b981"};">
+          {regressed}
+        </div>
       </div>
       <div class="card">
         <div class="card-title">Minimum SNR</div>
@@ -367,13 +369,22 @@ def generate_checkpoint_html(
     {missing_html}
 
     <div class="controls" style="margin-top: 24px;">
-      <input type="text" id="searchBox" class="search-box" placeholder="Filter layers by name (e.g. attn, mlp, down_proj)..." oninput="applyFilters()" />
-      <button class="filter-btn active" id="btnAll" onclick="setFilter('all')">All Layers ({total})</button>
-      <button class="filter-btn" id="btnDiverged" onclick="setFilter('diverged')">Diverged Only ({regressed})</button>
-      <button class="filter-btn" id="btnMatched" onclick="setFilter('matched')">Matched ({matched})</button>
+      <input type="text" id="searchBox" class="search-box"
+             placeholder="Filter layers by name (e.g. attn, mlp, down_proj)..."
+             oninput="applyFilters()" />
+      <button class="filter-btn active" id="btnAll" onclick="setFilter('all')">
+        All Layers ({total})
+      </button>
+      <button class="filter-btn" id="btnDiverged" onclick="setFilter('diverged')">
+        Diverged Only ({regressed})
+      </button>
+      <button class="filter-btn" id="btnMatched" onclick="setFilter('matched')">
+        Matched ({matched})
+      </button>
     </div>
 
-    <div style="overflow-x: auto; max-height: 600px; border: 1px solid #e2e8f0; border-radius: 8px;">
+    <div style="overflow-x: auto; max-height: 600px; border: 1px solid #e2e8f0;
+                border-radius: 8px;">
       <table>
         <thead>
           <tr>

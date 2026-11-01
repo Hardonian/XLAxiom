@@ -1,27 +1,87 @@
-# XLAxiom — turn numerical discrepancies into evidence
+# XLAxiom — Universal Numerical Verification & Model Diffing
 
+[![PyPI version](https://img.shields.io/pypi/v/xlaxiom.svg?color=blue)](https://pypi.org/project/xlaxiom/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/xlaxiom.svg?color=brightgreen)](https://pypi.org/project/xlaxiom/)
+[![Python 3.11–3.13](https://img.shields.io/pypi/pyversions/xlaxiom.svg)](https://pypi.org/project/xlaxiom/)
+[![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![CI](https://github.com/Hardonian/XLAxiom/actions/workflows/ci.yml/badge.svg)](https://github.com/Hardonian/XLAxiom/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
-[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%E2%80%933.13-blue.svg)](https://www.python.org/)
 
-**XLAxiom turns a suspicious JAX/OpenXLA numerical result into a minimized, reproducible, portable, evidence-backed case.** It gives compiler, platform, and ML infrastructure teams a disciplined path from “this changed” to an artifact another engineer can inspect, rerun, and compare.
+**XLAxiom is the standard numerical verification, model diffing, and differential testing toolkit for modern AI systems.** Built on a zero-dependency pure-NumPy core (`numpy>=1.24`), it provides bit-exact ULP error analysis, zero-code `pytest` assertion interception, Safetensors model weight diffing, checkpoint sanity linting, and FP8 quantization risk profiling.
+
+It gives AI engineers, compiler developers, and ML infrastructure teams a disciplined path from "this changed" to an evidence-backed diagnostic artifact another engineer can inspect, rerun, and compare.
 
 It is independently developed and is not affiliated with, sponsored by, or endorsed by Google.
 
-> **Portfolio signal:** XLAxiom is the ML-infrastructure flagship: a reproducible testing and evidence pipeline for turning JAX/OpenXLA numerical discrepancies into small, reviewable engineering cases.
+---
 
-## Pick your path
+## Why XLAxiom?
 
-| If you need to… | Start here |
-| --- | --- |
-| Prove the pipeline works safely | [Run the five-minute synthetic control](#five-minute-confidence-check). |
-| Investigate a real numerical discrepancy | Follow the [artifact handoff workflow](docs/artifacts.md). |
-| Add bounded regression coverage to CI | Run the [curated property corpus](docs/corpus.md). |
-| Compare CPU, GPU, or version-specific evidence | Use the [support matrix](docs/support.md) and [quickstart](docs/quickstart.md). |
-| Inspect physical TPU qualification | Review the [retained 4-chip TPU evidence](evidence/tpu/manifest.json). |
-| Qualify TPU workflows without accelerator cost | Run the [offline TPU qualification](docs/offline-tpu.md). |
-| Integrate with Google Cloud, TPUs & Colab | Read the [Google Ecosystem guide](docs/google-ecosystem.md). |
-| Install from source or a verified wheel | Read the [installation guide](docs/installation.md). |
+| Feature | `np.testing.assert_allclose` | `torch.testing.assert_close` | **XLAxiom** |
+| :--- | :---: | :---: | :---: |
+| **Signal-to-Noise Ratio (SNR in dB)** | ❌ | ❌ | ✅ **Exact in dB** |
+| **Cosine Similarity** | ❌ | ❌ | ✅ **Exact [-1.0, 1.0]** |
+| **Bit-exact ULP Distance** | ❌ | ❌ | ✅ **Float16, BF16, Float32, Float64** |
+| **Subnormal / Denormal Detection** | ❌ | ❌ | ✅ **Detects 10x-100x latency traps** |
+| **Catastrophic Cancellation Flag** | ❌ | ❌ | ✅ **Automated root-cause diagnosis** |
+| **Error Distribution Percentiles** | ❌ | ❌ | ✅ **p50, p90, p99, RMS, Max** |
+| **Minimal Reproduction Snippet** | ❌ | ❌ | ✅ **Generated copy-pasteable script** |
+| **Offline Interactive HTML Reports** | ❌ | ❌ | ✅ **Standalone SVG & CSS dashboard** |
+| **Zero-Code Pytest Interception** | ❌ | ❌ | ✅ **`pytest --xlaxiom-rich-asserts`** |
+| **Safetensors Checkpoint Diffing** | ❌ | ❌ | ✅ **`xlaxiom diff a.safetensors b.safetensors`** |
+| **Checkpoint Health & NaN Linter** | ❌ | ❌ | ✅ **`xlaxiom lint-checkpoint`** |
+| **FP8 / INT4 Quantization Profiler**| ❌ | ❌ | ✅ **`xlaxiom quant-audit`** |
+| **Turnkey Pre-commit & CI Action** | ❌ | ❌ | ✅ **`.pre-commit-hooks.yaml` & `action.yml`** |
+| **Zero Heavy Dependencies** | ✅ | ❌ (requires torch) | ✅ **Pure NumPy core (`numpy>=1.24`)** |
+
+---
+
+## ⚡ Supercharged 1-Minute Workflows
+
+### 1. Upgrade Any Existing Test Suite with Zero Code Changes
+
+Supercharge every `torch.testing.assert_close` and `np.testing.assert_allclose` across your repository to output rich SNR, cosine similarity, bitwise ULP, and root-cause diagnostics:
+
+```bash
+pytest --xlaxiom-rich-asserts --xlaxiom-save-html
+```
+
+Or enable it globally in your root `conftest.py`:
+
+```python
+import xlaxiom as xl
+
+xl.enable_rich_asserts(save_html=True)
+```
+
+### 2. Diff Any Two Model Checkpoints or Weights Files
+
+Inspect layer-by-layer parameter drift between base and fine-tuned models, merged models, or quantized weights:
+
+```bash
+# Compare two Safetensors models with top-10 divergence table and interactive HTML dashboard
+xlaxiom diff model_v1.safetensors model_v2.safetensors --top-k 10 --html diff.html
+```
+
+### 3. Checkpoint Health & Latency-Risk Linter
+
+Detect silent model collapse (NaNs/Infs), dead weights, and subnormal floating-point numbers (which cause 10x-100x GPU/CPU inference latency spikes due to microcode assist traps):
+
+```bash
+# Pre-deployment or pre-commit checkpoint audit
+xlaxiom lint-checkpoint model.safetensors --fail-on-warning
+```
+
+### 4. FP8 / INT4 Quantization Risk Profiling
+
+Identify sensitive layers that will suffer precision collapse before quantizing your LLM:
+
+```bash
+# Audits entire checkpoint and outputs recommended BF16 fallback whitelist
+xlaxiom quant-audit model.safetensors --dtype fp8_e4m3
+```
+
+---
 
 ## Everyday Python API
 
@@ -33,60 +93,64 @@ import xlaxiom as xl
 # 1. Drop-in assertion with root-cause diagnostics, SNR & cosine similarity
 xl.assert_close(actual_tensor, reference_tensor, rtol=1e-4, atol=1e-5)
 
-# 2. Differentially fuzz custom Triton, Pallas, or CUDA kernels across dynamic shapes
+# 2. Bit-level ULP distance assertions across float16/bfloat16/float32/float64
+xl.assert_ulp_close(actual_tensor, reference_tensor, max_ulp=2.0)
+
+# 3. Record-once, verify-forever golden snapshot testing
+xl.check_golden("model_golden.npz", output_tensor, max_ulp=4.0)
+
+# 4. Checkpoint weight parity audit (Safetensors / .npz / PyTorch state_dict)
+ckpt_report = xl.audit_checkpoint_parity("base.safetensors", "quantized.safetensors")
+print(ckpt_report.format_summary())
+
+# 5. Checkpoint health linter (NaNs, Infs, subnormals, dead weights)
+health = xl.lint_checkpoint("model.safetensors")
+print(health.format_summary())
+
+# 6. Audit quantization precision loss and outlier clipping risk across model
+quant_report = xl.audit_checkpoint_quantization("model.safetensors", target_dtype="fp8_e4m3")
+print(quant_report.format_summary())
+
+# 7. Differentially fuzz custom Triton, Pallas, or CUDA kernels across dynamic shapes
 res = xl.fuzz_kernel(
     my_custom_kernel,
     reference_fn,
     shape_spec=((1, 8), (16, 128), [32, 64]),
     dtypes=["float32"],
 )
-# Automatically shrinks failing tensors to minimal reproducing shapes!
 
-# 3. Audit layer-by-layer activation parity between PyTorch, JAX, or compiled models
+# 8. Audit layer-by-layer activation parity between PyTorch, JAX, or compiled models
 report = xl.audit_layer_parity(model_eager, model_compiled, sample_input)
-print(report.format_table())  # Pinpoints exact layer where divergence originates!
+print(report.format_table())
 
-# 4. Audit quantization precision loss and outlier clipping risk
-audit = xl.audit_quantization_risk(activations, target_dtype="fp8_e4m3")
-print(audit.format_summary())  # Outlier clipping %, underflow %, and SNR
+# 9. LLM serving engine parity verification (vLLM / SGLang / TensorRT-LLM vs Reference)
+serving_report = xl.audit_serving_parity(vllm_engine, hf_reference, sample_prompts)
+print(serving_report.format_summary())
 
-
-# 5. Continuous Integration regression gate & PR comment generator
+# 10. Continuous Integration regression gate & PR comment generator
 diff_obj = xl.diff(candidate_tensor, baseline_tensor)
 gate = xl.evaluate_ci_gate([("model_output", diff_obj)], min_snr_db=30.0)
-print(gate.summary_markdown)  # Ready to post to GitHub PR comments or step summaries!
-
-# 6. Checkpoint weight parity audit (Safetensors / .npz / PyTorch state_dict)
-ckpt_report = xl.audit_checkpoint_parity("base_model.safetensors", "quantized_model.safetensors")
-print(ckpt_report.format_summary())  # Flags missing/extra keys and top divergent weights
-
-# 7. LLM serving engine parity verification (vLLM / SGLang / TensorRT-LLM vs Reference)
-serving_report = xl.audit_serving_parity(vllm_engine, hf_reference, sample_prompts)
-print(serving_report.format_summary())  # Top-1 token agreement %, Top-5 overlap, and KL divergence
-
-# 8. Automated empirical tolerance calibration (eliminates flaky CI assertions)
-tolerances = xl.calibrate_tolerances(custom_kernel, sample_input, runs=10)
-print(tolerances.format_summary())  # Recommends statistically robust rtol/atol with safety headroom
-
-
-# 9. Hypothesis-like metamorphic invariant testing for neural network operations
-@xl.test_invariants(invariants=["batch_padding", "scale_invariance"])
-def test_attention_layer(x):
-    return my_attention(x)
-
-
-# 10. Bit-level ULP distance assertions across float16/float32/float64
-xl.assert_ulp_close(actual_tensor, reference_tensor, max_ulp=2.0)
-
-# 11. Record-once, verify-forever golden snapshot testing
-xl.check_golden("model_golden.npz", output_tensor, max_ulp=4.0)
-
-# 12. Serving engine top-k logprob parity (vLLM / SGLang / OpenAI-compatible API)
-topk_report = xl.audit_topk_parity(vllm_topk_fn, hf_topk_fn, prompts=["Hello world"])
-print(topk_report.format_summary())
+print(gate.summary_markdown)
 ```
 
-### Turnkey GitHub Actions CI/CD Integration
+---
+
+## Pre-Commit Hook Integration
+
+Add XLAxiom to your `.pre-commit-config.yaml` to ensure no corrupted checkpoints or regressions are committed:
+
+```yaml
+repos:
+  - repo: https://github.com/Hardonian/XLAxiom
+    rev: v3.1.0
+    hooks:
+      - id: xlaxiom-lint-checkpoint
+      - id: xlaxiom-snapshot-check
+```
+
+---
+
+## Turnkey GitHub Actions CI/CD Integration
 
 Drop automated numerical regression gates into your GitHub workflows with zero boilerplate:
 
@@ -94,10 +158,13 @@ Drop automated numerical regression gates into your GitHub workflows with zero b
 - name: Verify Numerical Parity Gate
   uses: Hardonian/XLAxiom@v3
   with:
-    actual: "candidate_weights.npz"
-    desired: "reference_weights.npz"
+    actual: "candidate_weights.safetensors"
+    desired: "reference_weights.safetensors"
     rtol: "1e-4"
     atol: "1e-5"
+    min-snr: "25.0"
+    comment-on-pr: "true"
+```
     min-snr: "25.0"
     comment-on-pr: "true"
 ```

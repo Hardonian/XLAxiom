@@ -136,23 +136,22 @@ def enable(save_html: bool = False, output_dir: str | Path = ".xlaxiom-reports")
 
     # Patch numpy.testing
     _ORIGINAL_NP_ASSERT_ALLCLOSE = np.testing.assert_allclose
-    np.testing.assert_allclose = _patched_np_assert_allclose
+    np.testing.assert_allclose = _patched_np_assert_allclose  # type: ignore[assignment]
 
     # Patch torch.testing if imported or available
-    if "torch" in sys.modules:
-        torch_mod = sys.modules["torch"]
+    torch_mod = sys.modules.get("torch")
+    if torch_mod is None:
+        try:
+            import importlib
+
+            torch_mod = importlib.import_module("torch")
+        except ImportError:
+            torch_mod = None
+
+    if torch_mod is not None:
         if hasattr(torch_mod, "testing") and hasattr(torch_mod.testing, "assert_close"):
             _ORIGINAL_TORCH_ASSERT_CLOSE = torch_mod.testing.assert_close
             torch_mod.testing.assert_close = _patched_torch_assert_close
-    else:
-        try:
-            import torch  # type: ignore[import-untyped]
-
-            if hasattr(torch, "testing") and hasattr(torch.testing, "assert_close"):
-                _ORIGINAL_TORCH_ASSERT_CLOSE = torch.testing.assert_close
-                torch.testing.assert_close = _patched_torch_assert_close
-        except ImportError:
-            pass
 
     _IS_PATCHED = True
 

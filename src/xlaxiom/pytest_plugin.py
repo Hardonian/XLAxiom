@@ -31,8 +31,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         action="store_true",
         default=False,
         help=(
-            "Supercharge torch.testing and numpy.testing assertions with rich "
-            "XLAxiom diagnostics."
+            "Supercharge torch.testing and numpy.testing assertions with rich XLAxiom diagnostics."
         ),
     )
     parser.addoption(
@@ -64,16 +63,16 @@ def pytest_configure(config: pytest.Config) -> None:
     )
     if rich_asserts:
         save_html = bool(config.getoption("--xlaxiom-save-html"))
-        from . import patch_testing
+        from .patch_testing import enable as enable_rich_asserts
 
-        patch_testing.enable(save_html=save_html)
+        enable_rich_asserts(save_html=save_html)
 
 
 def pytest_unconfigure(config: pytest.Config) -> None:
     """Tear down global hooks and restore testing assert functions."""
-    from . import patch_testing
+    from .patch_testing import disable as disable_rich_asserts
 
-    patch_testing.disable()
+    disable_rich_asserts()
 
 
 @pytest.fixture

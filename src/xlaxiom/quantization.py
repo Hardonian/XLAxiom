@@ -352,7 +352,8 @@ def audit_checkpoint_quantization(
     source: str | Path | dict[str, Any],
     *,
     target_dtype: str = "fp8_e4m3",
-    scale_method: str = "max_abs",
+    scale: float | None = None,
+    percentile: float = 99.9,
 ) -> CheckpointQuantAuditReport:
     """Audit quantization risk across all weight tensors in a model checkpoint.
 
@@ -362,8 +363,10 @@ def audit_checkpoint_quantization(
         Path to checkpoint file (.safetensors, .npz, directory) or in-memory dictionary.
     target_dtype : str, optional
         Target precision format ('fp8_e4m3', 'fp8_e5m2', 'fp4_e2m1', 'int8', 'bfloat16').
-    scale_method : str, optional
-        Scale factor determination method ('max_abs' or 'percentile_99_9').
+    scale : float, optional
+        Explicit scale factor override.
+    percentile : float, optional
+        Percentile cutoff for scaling (default: 99.9).
 
     Returns
     -------
@@ -382,7 +385,7 @@ def audit_checkpoint_quantization(
 
     for name, tensor in weights.items():
         audit = audit_quantization_risk(
-            tensor, target_dtype=target_dtype, scale_method=scale_method
+            tensor, target_dtype=target_dtype, scale=scale, percentile=percentile
         )
         layer_audits.append((name, audit))
 

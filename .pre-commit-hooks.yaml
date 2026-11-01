@@ -1,0 +1,15 @@
+- id: xlaxiom-lint-checkpoint
+  name: XLAxiom Checkpoint Linter
+  description: Audit Safetensors and NumPy model weights for NaNs, Infs, subnormal floats, and dead weights.
+  entry: xlaxiom lint-checkpoint
+  language: python
+  types: [file]
+  files: \.(safetensors|npz)$
+
+- id: xlaxiom-snapshot-check
+  name: XLAxiom Golden Snapshot Check
+  description: Verify that numerical golden snapshots match recorded reference checkpoints.
+  entry: xlaxiom snapshot check
+  language: python
+  files: \.(safetensors|npz)$
+
