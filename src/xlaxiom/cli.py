@@ -25,6 +25,8 @@ from .attestation import (
     verify_subject_attestation,
 )
 from .bisect import bisect_versions
+from .golden import check_golden, save_golden
+from .safetensors_io import read_checkpoint
 from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .ci import evaluate_ci_gate
@@ -221,15 +223,56 @@ def command_quant_audit(args: argparse.Namespace) -> int:
     return 0 if report.risk_level != "CRITICAL" else 1
 
 
+def _load_cli_tensors(path_str: str) -> dict[str, np.ndarray[Any, Any]]:
+    p = Path(path_str)
+    if not p.exists():
+        raise FileNotFoundError(f"Input path not found: {p}")
+    if p.is_dir() or p.suffix.lower() in (".safetensors", ".json"):
+        return read_checkpoint(p)
+    if p.suffix.lower() == ".npz":
+        with np.load(p, allow_pickle=False) as data:
+            return {k: np.asarray(data[k]) for k in data.files if not k.startswith("__")}
+    return {"output": np.load(p, allow_pickle=False)}
+
+
+def _write_junit_xml(diffs: list[tuple[str, Any]], out_path: Path) -> None:
+    total = len(diffs)
+    failures = sum(1 for _, d in diffs if not d.is_close)
+    lines = [
+        '<?xml version="1.0" encoding="utf-8"?>',
+        f'<testsuite name="xlaxiom-ci-gate" tests="{total}" failures="{failures}" errors="0" time="0.000">',
+    ]
+    for name, d in diffs:
+        lines.append(f'  <testcase classname="xlaxiom.ci" name="{name}">')
+        if not d.is_close:
+            diag = d.diagnosis.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+            lines.append(f'    <failure message="{diag}">{diag}</failure>')
+        lines.append("  </testcase>")
+    lines.append("</testsuite>")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def command_ci_gate(args: argparse.Namespace) -> int:
     try:
-        actual = np.load(args.actual, allow_pickle=False)
-        desired = np.load(args.desired, allow_pickle=False)
+        dict_actual = _load_cli_tensors(args.actual)
+        dict_desired = _load_cli_tensors(args.desired)
     except (FileNotFoundError, ValueError) as exc:
         raise SystemExit(f"ci-gate could not load inputs: {exc}") from exc
-    d = diff(actual, desired, rtol=args.rtol, atol=args.atol)
+
+    common_keys = sorted(set(dict_actual) & set(dict_desired))
+    if not common_keys:
+        raise SystemExit(
+            f"ci-gate error: no matching tensor keys between candidate ({list(dict_actual.keys())[:5]}) "
+            f"and baseline ({list(dict_desired.keys())[:5]})."
+        )
+
+    diff_items = [
+        (k, diff(dict_actual[k], dict_desired[k], rtol=args.rtol, atol=args.atol))
+        for k in common_keys
+    ]
     gate = evaluate_ci_gate(
-        [("candidate_output", d)],
+        diff_items,
         min_snr_db=args.min_snr,
         commit_sha=args.commit,
         baseline_ref=args.baseline_ref,
@@ -239,7 +282,38 @@ def command_ci_gate(args: argparse.Namespace) -> int:
         out_path = Path(args.output)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(gate.pr_comment_markdown, encoding="utf-8")
+    if getattr(args, "junit_xml", None):
+        _write_junit_xml(diff_items, Path(args.junit_xml))
     return 0 if gate.passed else 1
+
+
+def command_snapshot(args: argparse.Namespace) -> int:
+    if args.snapshot_command == "record":
+        try:
+            tensors = _load_cli_tensors(args.input)
+        except Exception as exc:
+            raise SystemExit(f"snapshot record failed to read input: {exc}") from exc
+        payload = tensors if len(tensors) > 1 or "output" not in tensors else tensors["output"]
+        save_golden(args.path, payload)
+        print(f"Recorded golden snapshot to '{args.path}' ({len(tensors)} tensor(s)).")
+        return 0
+    elif args.snapshot_command == "check":
+        try:
+            tensors = _load_cli_tensors(args.input)
+            payload = tensors if len(tensors) > 1 or "output" not in tensors else tensors["output"]
+            diffs = check_golden(
+                args.path,
+                payload,
+                rtol=args.rtol,
+                atol=args.atol,
+                max_ulp=args.max_ulp,
+            )
+            print(f"Snapshot check PASSED against '{args.path}' ({len(diffs)} tensor(s) verified).")
+            return 0
+        except Exception as exc:
+            print(f"Snapshot check FAILED: {exc}")
+            return 1
+    return 0
 
 
 def command_checkpoint_audit(args: argparse.Namespace) -> int:
@@ -1763,7 +1837,24 @@ def parser() -> argparse.ArgumentParser:
     ci_gate_parser.add_argument("--commit", help="Git commit SHA under test")
     ci_gate_parser.add_argument("--baseline-ref", default="main", help="reference branch name")
     ci_gate_parser.add_argument("--output", help="path to write PR comment markdown")
+    ci_gate_parser.add_argument("--junit-xml", help="optional path to write JUnit XML test results")
     ci_gate_parser.set_defaults(func=command_ci_gate)
+
+    snapshot_parser = commands.add_parser("snapshot", help="golden file snapshot recording and checking")
+    snapshot_sub = snapshot_parser.add_subparsers(dest="snapshot_command", required=True)
+    
+    snap_rec = snapshot_sub.add_parser("record", help="record golden snapshot file")
+    snap_rec.add_argument("--path", required=True, help="golden .npz destination path")
+    snap_rec.add_argument("--input", required=True, help="input tensor file (.npy, .npz, or checkpoint)")
+    snap_rec.set_defaults(func=command_snapshot)
+
+    snap_chk = snapshot_sub.add_parser("check", help="verify tensor against golden file")
+    snap_chk.add_argument("--path", required=True, help="golden .npz reference path")
+    snap_chk.add_argument("--input", required=True, help="input tensor file to verify")
+    snap_chk.add_argument("--rtol", type=float, default=1e-5, help="relative tolerance")
+    snap_chk.add_argument("--atol", type=float, default=1e-8, help="absolute tolerance")
+    snap_chk.add_argument("--max-ulp", type=float, default=None, help="maximum allowable ULP distance")
+    snap_chk.set_defaults(func=command_snapshot)
 
     checkpoint_parser = commands.add_parser(
         "checkpoint-audit", help="model checkpoint weight parity audit"

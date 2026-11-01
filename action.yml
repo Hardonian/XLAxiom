@@ -1,0 +1,148 @@
+name: "XLAxiom Numerical CI Regression Gate"
+description: "Turnkey numerical parity gate, SNR drift detection, and sticky PR commenting bot."
+author: "XLAxiom contributors"
+
+branding:
+  icon: "check-circle"
+  color: "green"
+
+inputs:
+  actual:
+    description: "Path to candidate output tensor (.npy, .npz, or directory)"
+    required: true
+  desired:
+    description: "Path to baseline reference tensor (.npy, .npz, or directory)"
+    required: true
+  rtol:
+    description: "Relative tolerance"
+    required: false
+    default: "1e-4"
+  atol:
+    description: "Absolute tolerance"
+    required: false
+    default: "1e-5"
+  min-snr:
+    description: "Minimum acceptable Signal-to-Noise Ratio (SNR) in dB"
+    required: false
+    default: "20.0"
+  summary:
+    description: "Whether to append diagnostic report to GITHUB_STEP_SUMMARY"
+    required: false
+    default: "true"
+  github-token:
+    description: "GitHub token for posting PR comments"
+    required: false
+    default: "${{ github.token }}"
+  comment-on-pr:
+    description: "Whether to post/update sticky regression report comment on Pull Request"
+    required: false
+    default: "true"
+
+outputs:
+  passed:
+    description: "Gate verdict: 'true' if all tensors passed tolerance and SNR floors, 'false' otherwise"
+    value: "${{ steps.gate.outputs.passed }}"
+  worst-snr:
+    description: "Lowest SNR observed across evaluated tensors (in dB)"
+    value: "${{ steps.gate.outputs.worst_snr }}"
+  regressed-tensors:
+    description: "Count of tensors exceeding tolerance or SNR thresholds"
+    value: "${{ steps.gate.outputs.regressed_tensors }}"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install XLAxiom
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install "xlaxiom>=3.0.0"
+
+    - name: Run XLAxiom CI Gate
+      id: gate
+      shell: bash
+      env:
+        ACTUAL: "${{ inputs.actual }}"
+        DESIRED: "${{ inputs.desired }}"
+        RTOL: "${{ inputs.rtol }}"
+        ATOL: "${{ inputs.atol }}"
+        MIN_SNR: "${{ inputs.min-snr }}"
+        ENABLE_SUMMARY: "${{ inputs.summary }}"
+        GH_TOKEN: "${{ inputs.github-token }}"
+        COMMENT_PR: "${{ inputs.comment-on-pr }}"
+      run: |
+        python -c "
+        import os, sys, math
+        from pathlib import Path
+        import numpy as np
+        from xlaxiom import evaluate_ci_gate, diff
+        from xlaxiom.safetensors_io import read_checkpoint
+
+        actual_path = Path(os.environ['ACTUAL'])
+        desired_path = Path(os.environ['DESIRED'])
+        rtol = float(os.environ.get('RTOL', '1e-4'))
+        atol = float(os.environ.get('ATOL', '1e-5'))
+        min_snr = float(os.environ.get('MIN_SNR', '20.0'))
+
+        def load_tensors(p):
+            if p.is_dir() or p.suffix.lower() in ('.safetensors', '.json'):
+                return read_checkpoint(p)
+            if p.suffix.lower() == '.npz':
+                with np.load(p, allow_pickle=False) as data:
+                    return {k: np.asarray(data[k]) for k in data.files if not k.startswith('__')}
+            return {'output': np.load(p, allow_pickle=False)}
+
+        dict_act = load_tensors(actual_path)
+        dict_des = load_tensors(desired_path)
+
+        common = sorted(set(dict_act) & set(dict_des))
+        if not common:
+            print('Error: No matching tensor keys found between candidate and baseline', file=sys.stderr)
+            sys.exit(1)
+
+        diffs = []
+        for k in common:
+            d = diff(dict_act[k], dict_des[k], rtol=rtol, atol=atol)
+            diffs.append((k, d))
+
+        gate = evaluate_ci_gate(diffs, min_snr_db=min_snr)
+
+        # Write GITHUB_OUTPUT
+        out_file = os.environ.get('GITHUB_OUTPUT')
+        if out_file:
+            with open(out_file, 'a', encoding='utf-8') as f:
+                f.write(f'passed={\"true\" if gate.passed else \"false\"}\n')
+                f.write(f'worst_snr={gate.worst_snr_db}\n')
+                f.write(f'regressed_tensors={gate.regressed_tensors}\n')
+
+        # Step summary
+        if os.environ.get('ENABLE_SUMMARY') == 'true':
+            summary_file = os.environ.get('GITHUB_STEP_SUMMARY')
+            if summary_file:
+                with open(summary_file, 'a', encoding='utf-8') as f:
+                    f.write(gate.summary_markdown + '\n')
+
+        # Save comment to temp file
+        with open('xlaxiom-pr-comment.md', 'w', encoding='utf-8') as f:
+            f.write(gate.pr_comment_markdown)
+
+        print(gate.summary_markdown)
+        if not gate.passed:
+            sys.exit(1)
+        "
+
+    - name: Post PR Comment
+      if: always() && inputs.comment-on-pr == 'true' && github.event_name == 'pull_request' && inputs.github-token != ''
+      shell: bash
+      env:
+        GH_TOKEN: "${{ inputs.github-token }}"
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: |
+        if [ -f xlaxiom-pr-comment.md ]; then
+          gh pr comment "$PR_NUMBER" --body-file xlaxiom-pr-comment.md || true
+        fi
