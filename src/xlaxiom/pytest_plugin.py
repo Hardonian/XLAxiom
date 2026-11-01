@@ -13,8 +13,19 @@ from typing import Any
 import pytest
 
 from .generation import GenerationConfig, generate
+from .golden import UPDATE_ENV_VAR, check_golden
 from .model import Workload
 from .reporting import write_html_report
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Add the golden-file update switch."""
+    parser.addoption(
+        "--xlaxiom-update-golden",
+        action="store_true",
+        default=False,
+        help=f"Rewrite XLAxiom golden files instead of comparing (or set {UPDATE_ENV_VAR}=1).",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -47,6 +58,23 @@ def xlaxiom_evidence_dir(tmp_path: Path) -> Path:
     evidence_dir = tmp_path / "xlaxiom_evidence"
     evidence_dir.mkdir(parents=True, exist_ok=True)
     return evidence_dir
+
+
+@pytest.fixture
+def xlaxiom_golden(request: pytest.FixtureRequest) -> Any:
+    """Golden-file checker: ``xlaxiom_golden("name", actual, rtol=..., atol=..., max_ulp=...)``.
+
+    Files live in ``__xlaxiom_golden__/<test module>/<name>.npz`` beside the test file. A missing
+    file fails the test; record it with ``pytest --xlaxiom-update-golden``.
+    """
+    root = Path(str(request.path)).parent / "__xlaxiom_golden__" / Path(str(request.path)).stem
+    update = bool(request.config.getoption("--xlaxiom-update-golden")) or None
+
+    def _check(name: str, actual: Any, **tolerances: Any) -> Any:
+        safe = "".join(c if c.isalnum() or c in "-_." else "_" for c in name)
+        return check_golden(root / f"{safe}.npz", actual, update=update, **tolerances)
+
+    return _check
 
 
 @pytest.hookimpl(hookwrapper=True)

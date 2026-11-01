@@ -15,6 +15,7 @@ from typing import Any
 import numpy as np
 
 from .assertions import NumericalDiff, _to_numpy, diff
+from .safetensors_io import read_checkpoint
 
 _TOP_K = 5
 
@@ -61,7 +62,11 @@ class CheckpointParityReport:
 
 
 def _load_weights(source: dict[str, Any] | str | Path) -> dict[str, np.ndarray[Any, Any]]:
-    """Load weight tensors from dictionary, .npz, or .safetensors file."""
+    """Load weight tensors from a dict, ``.npz``, ``.safetensors``, shard index, or directory.
+
+    ``bfloat16`` tensors are widened to ``float32``. Sharded checkpoints are resolved through
+    ``model.safetensors.index.json``; no third-party ``safetensors`` package is required.
+    """
     if isinstance(source, dict):
         return {k: _to_numpy(v) for k, v in source.items()}
 
@@ -69,23 +74,22 @@ def _load_weights(source: dict[str, Any] | str | Path) -> dict[str, np.ndarray[A
     if not p.exists():
         raise FileNotFoundError(f"Checkpoint file not found: {p}")
 
+    if p.is_dir():
+        return read_checkpoint(p)
+
     suffix = p.suffix.lower()
     if suffix == ".npz":
         # Context manager releases the file handle (open handles lock files on Windows).
         with np.load(p, allow_pickle=False) as data:
             return {k: np.asarray(data[k]) for k in data.files}
 
-    if suffix == ".safetensors":
-        try:
-            from safetensors.numpy import load_file
-        except ImportError as err:
-            raise ImportError(
-                "safetensors package required to read .safetensors files. "
-                "Run `pip install safetensors`."
-            ) from err
-        return load_file(str(p))
+    if suffix in {".safetensors", ".json"}:
+        return read_checkpoint(p)
 
-    raise ValueError(f"Unsupported checkpoint format for file '{p}'. Supported: .npz, .safetensors")
+    raise ValueError(
+        f"Unsupported checkpoint format for '{p}'. "
+        "Supported: .npz, .safetensors, model.safetensors.index.json, or a checkpoint directory."
+    )
 
 
 def audit_checkpoint_parity(
