@@ -87,3 +87,4 @@ def test_assert_ulp_close_fails() -> None:
 def test_ulp_shape_mismatch_raises() -> None:
     with pytest.raises(ValueError, match="Shape mismatch"):
         ulp_distance(np.ones(2), np.ones(3))
+

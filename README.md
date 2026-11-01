@@ -74,6 +74,7 @@ print(tolerances.format_summary())  # Recommends statistically robust rtol/atol 
 def test_attention_layer(x):
     return my_attention(x)
 
+
 # 10. Bit-level ULP distance assertions across float16/float32/float64
 xl.assert_ulp_close(actual_tensor, reference_tensor, max_ulp=2.0)
 

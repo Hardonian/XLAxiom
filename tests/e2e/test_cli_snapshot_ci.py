@@ -69,3 +69,4 @@ def test_cli_snapshot_record_and_check(tmp_path: Path, capsys) -> None:
     assert ret_chk_bad == 1
     captured_bad = capsys.readouterr()
     assert "FAILED" in captured_bad.out
+

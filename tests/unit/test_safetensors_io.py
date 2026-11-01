@@ -119,3 +119,4 @@ def test_corrupt_safetensors_raises(tmp_path: Path) -> None:
     bad_header.write_bytes((100).to_bytes(8, "little") + b"not valid json")
     with pytest.raises(ValueError, match="invalid safetensors header length|corrupt"):
         read_safetensors(bad_header)
+

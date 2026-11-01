@@ -70,3 +70,4 @@ def test_topk_invalid_k_raises() -> None:
 def test_topk_nonfinite_logprob_raises() -> None:
     with pytest.raises(ValueError, match="Non-finite logprob"):
         audit_topk_parity(lambda p: {"a": float("nan")}, lambda p: {"a": -0.1}, ["prompt"])
+

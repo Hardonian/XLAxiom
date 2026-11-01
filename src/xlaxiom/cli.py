@@ -25,8 +25,6 @@ from .attestation import (
     verify_subject_attestation,
 )
 from .bisect import bisect_versions
-from .golden import check_golden, save_golden
-from .safetensors_io import read_checkpoint
 from .bundle import create_bundle, run_bundle, validate_bundle
 from .campaign import CAMPAIGN_PROFILES, configure_campaign, run_cpu_campaign
 from .ci import evaluate_ci_gate
@@ -41,6 +39,7 @@ from .environment import (
 )
 from .execution import benchmark_jax, doctor
 from .generation import GenerationConfig, generate, synthetic_control
+from .golden import check_golden, save_golden
 from .gpu_campaign import (
     CampaignBudget,
     replay_jax_40634_on_gpu,
@@ -66,6 +65,7 @@ from .hardware import (
 )
 from .hf import audit_checkpoint_parity
 from .quantization import audit_quantization_risk
+from .safetensors_io import read_checkpoint
 
 try:
     from xlaxiom_adapter.epyc_router import env_for_route, select_device_for_task
@@ -240,12 +240,20 @@ def _write_junit_xml(diffs: list[tuple[str, Any]], out_path: Path) -> None:
     failures = sum(1 for _, d in diffs if not d.is_close)
     lines = [
         '<?xml version="1.0" encoding="utf-8"?>',
-        f'<testsuite name="xlaxiom-ci-gate" tests="{total}" failures="{failures}" errors="0" time="0.000">',
+        (
+            f'<testsuite name="xlaxiom-ci-gate" tests="{total}" '
+            f'failures="{failures}" errors="0" time="0.000">'
+        ),
     ]
     for name, d in diffs:
         lines.append(f'  <testcase classname="xlaxiom.ci" name="{name}">')
         if not d.is_close:
-            diag = d.diagnosis.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+            diag = (
+                d.diagnosis.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace('"', "&quot;")
+            )
             lines.append(f'    <failure message="{diag}">{diag}</failure>')
         lines.append("  </testcase>")
     lines.append("</testsuite>")
@@ -262,9 +270,11 @@ def command_ci_gate(args: argparse.Namespace) -> int:
 
     common_keys = sorted(set(dict_actual) & set(dict_desired))
     if not common_keys:
+        cands = list(dict_actual.keys())[:5]
+        bases = list(dict_desired.keys())[:5]
         raise SystemExit(
-            f"ci-gate error: no matching tensor keys between candidate ({list(dict_actual.keys())[:5]}) "
-            f"and baseline ({list(dict_desired.keys())[:5]})."
+            f"ci-gate error: no matching tensor keys between "
+            f"candidate ({cands}) and baseline ({bases})."
         )
 
     diff_items = [
@@ -1840,12 +1850,16 @@ def parser() -> argparse.ArgumentParser:
     ci_gate_parser.add_argument("--junit-xml", help="optional path to write JUnit XML test results")
     ci_gate_parser.set_defaults(func=command_ci_gate)
 
-    snapshot_parser = commands.add_parser("snapshot", help="golden file snapshot recording and checking")
+    snapshot_parser = commands.add_parser(
+        "snapshot", help="golden file snapshot recording and checking"
+    )
     snapshot_sub = snapshot_parser.add_subparsers(dest="snapshot_command", required=True)
-    
+
     snap_rec = snapshot_sub.add_parser("record", help="record golden snapshot file")
     snap_rec.add_argument("--path", required=True, help="golden .npz destination path")
-    snap_rec.add_argument("--input", required=True, help="input tensor file (.npy, .npz, or checkpoint)")
+    snap_rec.add_argument(
+        "--input", required=True, help="input tensor file (.npy, .npz, or checkpoint)"
+    )
     snap_rec.set_defaults(func=command_snapshot)
 
     snap_chk = snapshot_sub.add_parser("check", help="verify tensor against golden file")
@@ -1853,7 +1867,9 @@ def parser() -> argparse.ArgumentParser:
     snap_chk.add_argument("--input", required=True, help="input tensor file to verify")
     snap_chk.add_argument("--rtol", type=float, default=1e-5, help="relative tolerance")
     snap_chk.add_argument("--atol", type=float, default=1e-8, help="absolute tolerance")
-    snap_chk.add_argument("--max-ulp", type=float, default=None, help="maximum allowable ULP distance")
+    snap_chk.add_argument(
+        "--max-ulp", type=float, default=None, help="maximum allowable ULP distance"
+    )
     snap_chk.set_defaults(func=command_snapshot)
 
     checkpoint_parser = commands.add_parser(
