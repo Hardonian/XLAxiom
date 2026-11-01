@@ -26,6 +26,7 @@ class CalibratedTolerances:
     observed_max_abs_diff: float
     observed_max_rel_diff: float
     runs_evaluated: int
+    safety_factor: float = 2.5
 
     def format_summary(self) -> str:
         """Format an informative summary for test authors."""
@@ -35,7 +36,7 @@ class CalibratedTolerances:
             f"Evaluated runs: {self.runs_evaluated}",
             f"Observed peak absolute variance: {self.observed_max_abs_diff:.4e}",
             f"Observed peak relative variance: {self.observed_max_rel_diff:.4e}",
-            "Recommended CI Boundaries (with 2.5x safety headroom):",
+            f"Recommended CI Boundaries ({self.safety_factor:g}x safety headroom):",
             f"  rtol = {self.recommended_rtol:.2e}",
             f"  atol = {self.recommended_atol:.2e}",
             (
@@ -70,15 +71,34 @@ def calibrate_tolerances(
     -------
     CalibratedTolerances
         Statistical calibration report and recommended (rtol, atol) settings.
+
+    Raises
+    ------
+    ValueError
+        If ``runs < 2``, ``safety_factor < 1``, a run returns non-finite values, or runs
+        disagree in shape. Non-finite output cannot be calibrated and must not be reported
+        as "deterministic".
     """
     if runs < 2:
         raise ValueError("At least 2 runs are required to calibrate variance.")
+    if safety_factor < 1.0:
+        raise ValueError("safety_factor must be >= 1.0 so tolerances cover observed variance.")
 
     outputs: list[np.ndarray[Any, Any]] = []
-    for _ in range(runs):
+    for run_index in range(runs):
         res = fn(*sample_inputs)
         val = res[0] if isinstance(res, tuple) else res
-        outputs.append(_to_numpy(val).astype(np.float64))
+        arr = _to_numpy(val).astype(np.float64)
+        if not np.all(np.isfinite(arr)):
+            raise ValueError(
+                f"Run {run_index} produced NaN/inf values; calibrate on finite outputs only."
+            )
+        if outputs and arr.shape != outputs[0].shape:
+            raise ValueError(
+                f"Run {run_index} output shape {arr.shape} differs from run 0 "
+                f"shape {outputs[0].shape}."
+            )
+        outputs.append(arr)
 
     ref = outputs[0]
     max_abs = 0.0
@@ -117,4 +137,5 @@ def calibrate_tolerances(
         observed_max_abs_diff=max_abs,
         observed_max_rel_diff=max_rel,
         runs_evaluated=runs,
+        safety_factor=safety_factor,
     )

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **CI gate**: the PR comment verdict now uses the same predicate as the gate exit status, so a tensor below `min_snr_db` can no longer be reported as `PASS`. The comment is ASCII-only (safe to print on cp1252 consoles), the badge URL no longer contains a raw space, table cells escape `|`, and "worst-case" drift is the maximum across all regressed tensors. `evaluate_ci_gate([])` now raises instead of passing vacuously.
+- **Serving parity**: top-1/top-5 percentages are averaged per token position (sequence logits previously produced values above 100%). NaN/+inf logits can no longer look like agreement, shape mismatches and empty inputs raise `ValueError`, and KL divergence is computed in log space without probability clipping. `rtol`/`atol` were previously ignored; they are now enforced when supplied. Added `min_top1_agreement_pct`.
+- **Checkpoint audit**: the summary lists the lowest-SNR weights first (it previously listed the first five weights), `.npz` handles are closed (Windows file locking), and file suffixes are case-insensitive. CLI commands report load errors without a traceback.
+- **Calibration**: NaN/inf and shape-changing runs raise instead of being reported as "deterministic"; `safety_factor < 1` is rejected and the summary shows the factor actually used.
+- **Drift auditor**: shape mismatches and NaN/Inf outputs are classified explicitly rather than as FMA contraction; the report notes signatures are heuristics.
+- **HTML visualizer**: no longer crashes on NaN/inf errors, adds a viewport meta tag, and escapes shape/dtype text. The chart is described as error percentiles (no heatmap is produced).
+
 ## 3.0.0 - 2026-10-31
 
 - **Major Enterprise Production GA Release**: Completion of CI/CD regression gates, PR commenting bot, HuggingFace/Safetensors weight auditing, LLM serving engine parity verification, automated empirical tolerance calibration, and cross-hardware numerical drift diagnosis (Priorities 106–115).

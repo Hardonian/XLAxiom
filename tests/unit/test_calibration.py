@@ -49,4 +49,3 @@ def test_calibrate_tolerances_invalid_runs() -> None:
 
     with pytest.raises(ValueError, match="At least 2 runs are required"):
         calibrate_tolerances(fn, np.array([1.0]), runs=1)
-

@@ -2,6 +2,9 @@
 
 Formats GitHub Actions step summaries, sticky PR comments, and CI/CD quality gate
 verdicts with actionable diagnostics, SNR tables, and failure prevention.
+
+All markers are plain ASCII so the output can be printed on legacy Windows consoles
+(cp1252) without raising ``UnicodeEncodeError``.
 """
 
 from __future__ import annotations
@@ -26,12 +29,36 @@ class CIRegressionGateResult:
     total_tensors: int
 
 
+def _is_regression(d: NumericalDiff, min_snr_db: float | None) -> bool:
+    """Return True when a tensor comparison must fail the gate.
+
+    A tensor regresses when it is outside tolerance, or when a finite SNR falls below the
+    optional ``min_snr_db`` floor. Using one predicate for both the verdict and the report
+    guarantees the PR comment can never disagree with the exit status.
+    """
+    if not d.is_close:
+        return True
+    if min_snr_db is None or math.isinf(d.snr_db) or math.isnan(d.snr_db):
+        return False
+    return d.snr_db < min_snr_db
+
+
+def _md_cell(text: str) -> str:
+    """Escape text for safe use inside a single-line Markdown table cell."""
+    return text.replace("\\", "\\\\").replace("|", "\\|").replace("`", "'").replace("\n", " ")
+
+
+def _format_snr(snr_db: float) -> str:
+    return "inf" if math.isinf(snr_db) else f"{snr_db:.1f}"
+
+
 def generate_pr_comment(
     diff_or_diffs: NumericalDiff | list[tuple[str, NumericalDiff]],
     *,
     commit_sha: str | None = None,
     baseline_ref: str = "main",
     pr_number: int | None = None,
+    min_snr_db: float | None = None,
 ) -> str:
     """Format a rich GitHub Flavored Markdown comment for PR automation bots.
 
@@ -45,6 +72,9 @@ def generate_pr_comment(
         Reference baseline branch or tag (default: "main").
     pr_number : int, optional
         GitHub Pull Request number.
+    min_snr_db : float, optional
+        Minimum acceptable finite SNR. Tensors below it are reported as regressions even if
+        they are inside ``rtol``/``atol``. ``None`` (default) applies tolerance checks only.
 
     Returns
     -------
@@ -54,14 +84,15 @@ def generate_pr_comment(
     if isinstance(diff_or_diffs, NumericalDiff):
         items = [("output", diff_or_diffs)]
     else:
-        items = diff_or_diffs
+        items = list(diff_or_diffs)
 
     total_tensors = len(items)
-    passed_items = [item for item in items if item[1].is_close]
-    failed_items = [item for item in items if not item[1].is_close]
-    all_passed = len(failed_items) == 0
+    failed_items = [item for item in items if _is_regression(item[1], min_snr_db)]
+    passed_count = total_tensors - len(failed_items)
+    all_passed = not failed_items
 
-    badge_status = "PASSED" if all_passed else "REGRESSION DETECTED"
+    status_text = "PASSED" if all_passed else "REGRESSION DETECTED"
+    badge_status = status_text.replace(" ", "%20")
     badge_color = "brightgreen" if all_passed else "red"
     badge_md = (
         f"![XLAxiom Parity](https://img.shields.io/badge/Numerical%20Parity-"
@@ -69,31 +100,33 @@ def generate_pr_comment(
     )
 
     commit_str = f" for commit `{commit_sha[:7]}`" if commit_sha else ""
-    pr_str = f" on PR #{pr_number}" if pr_number else ""
+    pr_str = f" on PR #{pr_number}" if pr_number is not None else ""
 
     lines = [
         f"## {badge_md}",
         "",
         f"**XLAxiom Numerical Regression Gate Report**{commit_str}{pr_str}",
-        f"Comparing candidate against baseline (`{baseline_ref}`).",
+        f"Status: **{status_text}**",
+        f"Comparing candidate against baseline (`{_md_cell(baseline_ref)}`).",
         "",
         "| Metric | Status |",
         "| :--- | :--- |",
-        f"| **Overall Gate Verdict** | **{'✅ PASS' if all_passed else '❌ REGRESSION'}** |",
+        f"| **Overall Gate Verdict** | **{'[PASS]' if all_passed else '[REGRESSION]'}** |",
         f"| **Tensors Evaluated** | `{total_tensors}` |",
-        f"| **Passed Tensors** | `{len(passed_items)} / {total_tensors}` |",
+        f"| **Passed Tensors** | `{passed_count} / {total_tensors}` |",
     ]
 
     if failed_items:
-        lines.append(f"| **Regressed Tensors** | `⚠️ {len(failed_items)}` |")
-        worst_diff = min(
-            (d for _, d in failed_items),
-            key=lambda d: d.snr_db if not math.isinf(d.snr_db) else 1e9,
-        )
-        snr_display = f"{worst_diff.snr_db:.1f} dB" if not math.isinf(worst_diff.snr_db) else "inf"
+        failed_diffs = [d for _, d in failed_items]
+        finite_snrs = [d.snr_db for d in failed_diffs if not math.isnan(d.snr_db)]
+        lowest_snr = min(finite_snrs) if finite_snrs else float("nan")
+        worst_abs = max(d.max_absolute_error for d in failed_diffs)
+        worst_rel = max(d.max_relative_error for d in failed_diffs)
+        snr_display = "n/a" if math.isnan(lowest_snr) else f"{_format_snr(lowest_snr)} dB"
+        lines.append(f"| **Regressed Tensors** | `[! {len(failed_items)}]` |")
         lines.append(f"| **Lowest SNR** | `{snr_display}` |")
-        lines.append(f"| **Worst-case Absolute Drift** | `{worst_diff.max_absolute_error:.3e}` |")
-        lines.append(f"| **Worst-case Relative Drift** | `{worst_diff.max_relative_error:.3e}` |")
+        lines.append(f"| **Worst-case Absolute Drift** | `{worst_abs:.3e}` |")
+        lines.append(f"| **Worst-case Relative Drift** | `{worst_rel:.3e}` |")
 
     lines.append("")
     lines.append("### Detailed Tensor Parity Breakdown")
@@ -104,25 +137,26 @@ def generate_pr_comment(
     lines.append("| :--- | :---: | :---: | :---: | :---: | :---: | :--- |")
 
     for name, d in items:
-        status_icon = "✅" if d.is_close else "❌"
-        snr_str = f"{d.snr_db:.1f}" if not math.isinf(d.snr_db) else "inf"
+        status_icon = "[FAIL]" if _is_regression(d, min_snr_db) else "[OK]"
         lines.append(
-            f"| `{name}` | {status_icon} | `{d.max_absolute_error:.2e}` | "
-            f"`{d.max_relative_error:.2e}` | `{snr_str}` | `{d.cosine_similarity:.5f}` | "
-            f"{d.diagnosis} |"
+            f"| `{_md_cell(name)}` | {status_icon} | `{d.max_absolute_error:.2e}` | "
+            f"`{d.max_relative_error:.2e}` | `{_format_snr(d.snr_db)}` | "
+            f"`{d.cosine_similarity:.5f}` | {_md_cell(d.diagnosis)} |"
         )
 
     if failed_items:
         lines.append("")
         lines.append(
-            "<details><summary><strong>🔍 Reproduction Code for Regressions</strong></summary>"
+            "<details><summary><strong>Reproduction Code for Regressions</strong></summary>"
         )
         lines.append("")
         for name, d in failed_items[:3]:
-            lines.append(f"#### Regressed Tensor: `{name}`")
+            lines.append(f"#### Regressed Tensor: `{_md_cell(name)}`")
             lines.append("```python")
             lines.append(d.repro_snippet.strip())
             lines.append("```")
+        if len(failed_items) > 3:
+            lines.append(f"_{len(failed_items) - 3} additional regressed tensor(s) not shown._")
         lines.append("</details>")
 
     lines.append("")
@@ -139,29 +173,41 @@ def evaluate_ci_gate(
     min_snr_db: float = 20.0,
     commit_sha: str | None = None,
     baseline_ref: str = "main",
+    pr_number: int | None = None,
 ) -> CIRegressionGateResult:
-    """Evaluate a complete CI regression gate against tolerance thresholds."""
-    all_passed = True
+    """Evaluate a complete CI regression gate against tolerance thresholds.
+
+    Raises
+    ------
+    ValueError
+        If ``diffs`` is empty. A gate that checked nothing must not report success.
+    """
+    if not diffs:
+        raise ValueError("evaluate_ci_gate requires at least one (name, NumericalDiff) pair.")
+
     worst_snr = float("inf")
     max_abs = 0.0
     max_rel = 0.0
     regressed_count = 0
 
     for _, d in diffs:
-        if not d.is_close or (not math.isinf(d.snr_db) and d.snr_db < min_snr_db):
-            all_passed = False
+        if _is_regression(d, min_snr_db):
             regressed_count += 1
         if d.snr_db < worst_snr:
             worst_snr = d.snr_db
-        if d.max_absolute_error > max_abs:
-            max_abs = d.max_absolute_error
-        if d.max_relative_error > max_rel:
-            max_rel = d.max_relative_error
+        max_abs = max(max_abs, d.max_absolute_error)
+        max_rel = max(max_rel, d.max_relative_error)
 
-    comment = generate_pr_comment(diffs, commit_sha=commit_sha, baseline_ref=baseline_ref)
+    comment = generate_pr_comment(
+        diffs,
+        commit_sha=commit_sha,
+        baseline_ref=baseline_ref,
+        pr_number=pr_number,
+        min_snr_db=min_snr_db,
+    )
 
     return CIRegressionGateResult(
-        passed=all_passed,
+        passed=regressed_count == 0,
         summary_markdown=comment,
         pr_comment_markdown=comment,
         worst_snr_db=worst_snr,

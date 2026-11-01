@@ -1,7 +1,8 @@
 """Interactive tensor diff visualizer and offline HTML dashboard generator.
 
-Generates standalone, responsive single-file dashboards with SVG error heatmaps,
-distribution histograms, and copyable forensic reproduction scripts.
+Generates standalone, responsive single-file dashboards with an SVG error-percentile
+chart, summary statistic cards, and a copyable forensic reproduction script. The output
+has no external assets or scripts, so it renders identically offline.
 """
 
 from __future__ import annotations
@@ -10,6 +11,17 @@ import html
 import math
 
 from .assertions import NumericalDiff
+
+
+def _bar_height(value: float, max_val: float) -> int:
+    """Scale an error value to a 4-80px bar height, tolerating NaN/inf inputs."""
+    if math.isnan(value) or math.isnan(max_val):
+        return 4
+    if math.isinf(value):
+        return 80
+    if math.isinf(max_val) or max_val <= 0.0:
+        return 4
+    return max(4, int((value / max_val) * 80))
 
 
 def generate_visualizer_html(
@@ -35,7 +47,7 @@ def generate_visualizer_html(
     badge_color = "#10b981" if diff_obj.is_close else "#ef4444"
     snr_str = f"{diff_obj.snr_db:.1f} dB" if not math.isinf(diff_obj.snr_db) else "inf (exact)"
 
-    # Build an SVG Error Histogram
+    # Build an SVG error-percentile chart
     svg_bars = []
     percentiles = [
         ("p50", diff_obj.p50_absolute_error),
@@ -43,10 +55,10 @@ def generate_visualizer_html(
         ("p99", diff_obj.p99_absolute_error),
         ("max", diff_obj.max_absolute_error),
     ]
-    max_val = max(1e-12, diff_obj.max_absolute_error)
+    max_val = diff_obj.max_absolute_error
 
     for i, (label, val) in enumerate(percentiles):
-        height = max(4, int((val / max_val) * 80))
+        height = _bar_height(val, max_val)
         y_pos = 90 - height
         x_pos = 40 + i * 80
         svg_bars.append(
@@ -58,20 +70,25 @@ def generate_visualizer_html(
         )
 
     histogram_svg = f"""
-    <svg width="360" height="120" viewBox="0 0 360 120"
-         style="background: #f8fafc; border-radius: 6px; padding: 10px;">
+    <svg width="100%" style="max-width: 360px; background: #f8fafc; border-radius: 6px;
+         padding: 10px;" viewBox="0 0 360 120" role="img"
+         aria-label="Absolute error percentiles (p50, p90, p99, max)">
       <line x1="20" y1="90" x2="340" y2="90" stroke="#cbd5e1" stroke-width="1" />
       {"".join(svg_bars)}
     </svg>
     """
 
     escaped_repro = html.escape(diff_obj.repro_snippet)
+    escaped_title = html.escape(title)
+    shape_str = html.escape(str(diff_obj.shape_a))
+    dtype_str = html.escape(str(diff_obj.dtype_a))
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{html.escape(title)}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{escaped_title}</title>
   <style>
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -110,7 +127,7 @@ def generate_visualizer_html(
       <div>
         <h1 style="margin: 0; font-size: 20px;">{html.escape(title)}</h1>
         <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
-          Shape: {diff_obj.shape_a} | Dtype: {diff_obj.dtype_a}
+          Shape: {shape_str} | Dtype: {dtype_str}
         </div>
       </div>
       <span class="badge">{status_text}</span>
@@ -153,7 +170,7 @@ def generate_visualizer_html(
       </div>
     </div>
 
-    <h3>Error Distribution Histogram</h3>
+    <h3>Absolute Error Percentiles</h3>
     {histogram_svg}
 
     <h3 style="margin-top: 24px;">Standalone Minimal Reproduction Script</h3>

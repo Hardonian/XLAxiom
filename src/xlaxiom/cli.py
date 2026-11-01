@@ -222,8 +222,11 @@ def command_quant_audit(args: argparse.Namespace) -> int:
 
 
 def command_ci_gate(args: argparse.Namespace) -> int:
-    actual = np.load(args.actual)
-    desired = np.load(args.desired)
+    try:
+        actual = np.load(args.actual, allow_pickle=False)
+        desired = np.load(args.desired, allow_pickle=False)
+    except (FileNotFoundError, ValueError) as exc:
+        raise SystemExit(f"ci-gate could not load inputs: {exc}") from exc
     d = diff(actual, desired, rtol=args.rtol, atol=args.atol)
     gate = evaluate_ci_gate(
         [("candidate_output", d)],
@@ -240,7 +243,12 @@ def command_ci_gate(args: argparse.Namespace) -> int:
 
 
 def command_checkpoint_audit(args: argparse.Namespace) -> int:
-    report = audit_checkpoint_parity(args.baseline, args.candidate, rtol=args.rtol, atol=args.atol)
+    try:
+        report = audit_checkpoint_parity(
+            args.baseline, args.candidate, rtol=args.rtol, atol=args.atol
+        )
+    except (FileNotFoundError, ValueError, ImportError) as exc:
+        raise SystemExit(f"checkpoint-audit failed: {exc}") from exc
     print(report.format_summary())
     if args.output:
         save_json(args.output, asdict(report))

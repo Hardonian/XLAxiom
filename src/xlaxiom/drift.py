@@ -25,11 +25,12 @@ class HardwareDriftReport:
 
     def format_summary(self) -> str:
         """Format terminal diagnostic report."""
+        header = f"{'Target Device':<18} {'Status':<8} {'Max Abs':<11} {'SNR (dB)':<10} Signature"
         lines = [
             f"=== Cross-Hardware Drift Audit (Baseline: {self.baseline_device}) ===",
             f"Devices evaluated: {', '.join(self.devices_evaluated)}",
             "",
-            f"{'Target Device':<18} {'Status':<8} {'Max Abs':<11} {'SNR (dB)':<10} {'Signature':<24}",
+            header,
             "-" * 75,
         ]
         for dev in self.devices_evaluated:
@@ -41,10 +42,9 @@ class HardwareDriftReport:
             sig = self.drift_signatures.get(dev, "unknown")
             st = "PASS" if d.is_close else "DRIFT"
             snr_str = f"{d.snr_db:.1f}" if not math.isinf(d.snr_db) else "inf"
-            line = (
-                f"{dev:<18} {st:<8} {d.max_absolute_error:<11.2e} {snr_str:<10} {sig:<24}"
-            )
-            lines.append(line)
+            lines.append(f"{dev:<18} {st:<8} {d.max_absolute_error:<11.2e} {snr_str:<10} {sig}")
+        lines.append("")
+        lines.append("Signatures are heuristics inferred from error magnitude, not proof of cause.")
         return "\n".join(lines)
 
 
@@ -52,6 +52,10 @@ def _classify_drift_signature(d: NumericalDiff) -> str:
     """Classify the root architectural cause of hardware floating-point drift."""
     if d.is_close:
         return "Bitwise / Exact Match"
+    if d.shape_a != d.shape_b:
+        return "Shape Mismatch"
+    if d.nan_mismatches or d.inf_mismatches:
+        return "Non-Finite Values (NaN/Inf)"
     # TF32 truncation (10-bit mantissa) typical relative error ~ 1e-3 (2^-10 = ~9.7e-4)
     if 5e-4 <= d.max_relative_error <= 5e-3:
         return "NVIDIA TF32 Truncation (10-bit mantissa)"
