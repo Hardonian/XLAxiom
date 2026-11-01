@@ -66,4 +66,3 @@ def test_enable_and_disable_lifecycle() -> None:
     assert is_enabled()
     disable()
     assert not is_enabled()
-
