@@ -146,7 +146,21 @@ Key completion artifacts:
 - [`tpu-jit-evidence.json`](../evidence/tpu/tpu-jit-evidence.json)
 - [`tpu-campaign.json`](../evidence/tpu/tpu-campaign.json)
 - [`manifest.json`](../evidence/tpu/manifest.json)
-- [manifest.json](../evidence/tpu/manifest.json)
-- [evidence/tpu-v4/manifest.json](../evidence/tpu-v4/manifest.json)
-- [evidence/tpu-v5p/manifest.json](../evidence/tpu-v5p/manifest.json)
-- [evidence/tpu-v6e/manifest.json](../evidence/tpu-v6e/manifest.json)
+- [`evidence/tpu-v4/manifest.json`](../evidence/tpu-v4/manifest.json)
+- [`evidence/tpu-v5p/manifest.json`](../evidence/tpu-v5p/manifest.json)
+- [`evidence/tpu-v6e/manifest.json`](../evidence/tpu-v6e/manifest.json)
+
+---
+
+## v3.1.0 Strategic Parity, Snapshot, and Multi-Engine Ecosystem Roadmap
+
+| Priority | Capability | Component | Status | Description |
+|---|---|---|---|---|
+| **116** | **ULP Distance & Statistics** | `xlaxiom.ulp` | **Implemented** | Bit-level integer ULP distance across float16, float32, and float64 with subnormal and signed zero equivalence (`ulp_distance`, `max_ulp_error`, `assert_ulp_close`). |
+| **117** | **Golden Snapshot Testing** | `xlaxiom.golden` & `pytest_plugin` | **Implemented** | Record-once, compare-forever golden file snapshots with SHA-256 tamper-evident metadata and `--xlaxiom-update-golden` pytest fixture (`check_golden`, `save_golden`, `load_golden`). |
+| **118** | **Dependency-Free Safetensors & BF16 IO** | `xlaxiom.safetensors_io` | **Implemented** | Pure-NumPy zero-dependency `.safetensors` reader and writer with exact BFloat16 bit-widening and automatic sharded index resolution (`model.safetensors.index.json`). |
+| **119** | **Turnkey GitHub Action** | `action.yml` | **Implemented** | Composite GitHub Action (`Hardonian/XLAxiom@v3`) for one-line numerical regression gating, step summary generation, and sticky PR commenting bot. |
+| **120** | **Top-K Logprob Parity for Serving** | `xlaxiom.serving` | **Implemented** | Distributional top-k next-token logprob auditing across OpenAI-compatible serving endpoints (vLLM, SGLang, HuggingFace causal models) with tokenizer normalization (`audit_topk_parity`). |
+| **121** | **Multi-Tensor & JUnit XML CI Gate** | `xlaxiom.cli` (`ci-gate`, `snapshot`) | **Implemented** | Multi-tensor `.npz` and directory evaluations for CI gate with JUnit XML output generation for GitHub Actions and GitLab CI test UIs. |
+| **122** | **Full Multi-Platform CI Matrix** | `.github/workflows/ci.yml` | **Implemented** | Automated Windows CI runner (`windows-latest`), PyTorch FX integration testing, and packaging smoke verification across operating systems. |
+

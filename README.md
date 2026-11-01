@@ -73,6 +73,32 @@ print(tolerances.format_summary())  # Recommends statistically robust rtol/atol 
 @xl.test_invariants(invariants=["batch_padding", "scale_invariance"])
 def test_attention_layer(x):
     return my_attention(x)
+
+# 10. Bit-level ULP distance assertions across float16/float32/float64
+xl.assert_ulp_close(actual_tensor, reference_tensor, max_ulp=2.0)
+
+# 11. Record-once, verify-forever golden snapshot testing
+xl.check_golden("model_golden.npz", output_tensor, max_ulp=4.0)
+
+# 12. Serving engine top-k logprob parity (vLLM / SGLang / OpenAI-compatible API)
+topk_report = xl.audit_topk_parity(vllm_topk_fn, hf_topk_fn, prompts=["Hello world"])
+print(topk_report.format_summary())
+```
+
+### Turnkey GitHub Actions CI/CD Integration
+
+Drop automated numerical regression gates into your GitHub workflows with zero boilerplate:
+
+```yaml
+- name: Verify Numerical Parity Gate
+  uses: Hardonian/XLAxiom@v3
+  with:
+    actual: "candidate_weights.npz"
+    desired: "reference_weights.npz"
+    rtol: "1e-4"
+    atol: "1e-5"
+    min-snr: "25.0"
+    comment-on-pr: "true"
 ```
 
 ## Five-minute confidence check

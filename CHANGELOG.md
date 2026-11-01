@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+- **ULP Distance & Statistics (`xlaxiom.ulp`)**: Integer-exact floating-point ULP distance measurement across float16, float32, and float64 (`ulp_distance`, `max_ulp_error`, `ulp_stats`, `assert_ulp_close`). Equates signed zeroes (+0 == -0) and handles subnormals and matching NaNs cleanly.
+- **Golden File Snapshot Testing (`xlaxiom.golden` & pytest fixture)**: Record-once, verify-forever snapshot assertions (`check_golden`, `save_golden`, `load_golden`). Features SHA-256 tamper-evident checksums, max ULP enforcement, and the `--xlaxiom-update-golden` pytest fixture flag. CLI subcommands: `xlaxiom snapshot record` and `xlaxiom snapshot check`.
+- **Dependency-Free Safetensors & BF16 IO (`xlaxiom.safetensors_io`)**: Zero-dependency pure-NumPy `.safetensors` reader and writer (`read_safetensors`, `write_safetensors`, `read_checkpoint`) supporting exact BFloat16 bit-widening to float32 and sharded checkpoint index auto-resolution (`model.safetensors.index.json`).
+- **Turnkey GitHub Action (`action.yml`)**: Composite Action (`Hardonian/XLAxiom@v3`) for one-line CI/CD numerical regression gating, step summary generation, and sticky PR commenting bot.
+- **Serving Top-K Logprob Parity (`xlaxiom.serving`)**: Distributional top-k next-token logprob parity auditor (`audit_topk_parity`) with OpenAI-compatible serving adapter (`openai_compatible_topk`), logits adapter (`topk_from_logits`), and HuggingFace causal LM adapter (`huggingface_topk`).
+- **Multi-Tensor & JUnit XML CI Gate**: `xlaxiom ci-gate` now accepts `.npz` files and checkpoint directories containing multiple tensors, and outputs standard JUnit XML test reports (`--junit-xml`) for CI UI visualization.
+- **Multi-Platform CI Matrix**: Added automated Windows CI runner (`windows-latest`) and PyTorch FX integration runner (`test-torch`) to `.github/workflows/ci.yml`.
+
 ### Fixed
 
 - **CI gate**: the PR comment verdict now uses the same predicate as the gate exit status, so a tensor below `min_snr_db` can no longer be reported as `PASS`. The comment is ASCII-only (safe to print on cp1252 consoles), the badge URL no longer contains a raw space, table cells escape `|`, and "worst-case" drift is the maximum across all regressed tensors. `evaluate_ci_gate([])` now raises instead of passing vacuously.
