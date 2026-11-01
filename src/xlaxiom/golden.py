@@ -52,11 +52,11 @@ def save_golden(path: str | Path, actual: Any) -> Path:
     meta = {
         "xlaxiom_version": __version__,
         "sha256": _digest(tensors),
-        "tensors": {
-            k: {"dtype": str(v.dtype), "shape": list(v.shape)} for k, v in tensors.items()
-        },
+        "tensors": {k: {"dtype": str(v.dtype), "shape": list(v.shape)} for k, v in tensors.items()},
     }
-    np.savez(out, **tensors, **{_META_KEY: np.array(json.dumps(meta, sort_keys=True))})
+    save_kwargs: dict[str, Any] = dict(tensors)
+    save_kwargs[_META_KEY] = np.array(json.dumps(meta, sort_keys=True))
+    np.savez(str(out), **save_kwargs)
     return out
 
 

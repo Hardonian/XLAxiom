@@ -212,4 +212,3 @@ def read_checkpoint(path: str | Path) -> dict[str, np.ndarray[Any, Any]]:
     if p.suffix.lower() == ".json":
         return _read_sharded(p)
     return read_safetensors(p)
-

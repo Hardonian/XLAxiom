@@ -172,11 +172,15 @@ def openai_compatible_topk(
         except urllib.error.HTTPError as err:
             raise RuntimeError(f"Serving endpoint returned HTTP {err.code}: {err.reason}") from err
         except urllib.error.URLError as err:
-            raise RuntimeError(f"Could not reach serving endpoint {endpoint}: {err.reason}") from err
+            raise RuntimeError(
+                f"Could not reach serving endpoint {endpoint}: {err.reason}"
+            ) from err
         try:
             top = payload["choices"][0]["logprobs"]["top_logprobs"][0]
         except (KeyError, IndexError, TypeError) as err:
-            raise RuntimeError("Response did not contain choices[0].logprobs.top_logprobs[0].") from err
+            raise RuntimeError(
+                "Response did not contain choices[0].logprobs.top_logprobs[0]."
+            ) from err
         return {str(token): float(logprob) for token, logprob in top.items()}
 
     return _query
@@ -235,4 +239,3 @@ def huggingface_topk(
         return out
 
     return topk_from_logits(_logits, lambda i: tokenizer.decode([i]), k=k)
-

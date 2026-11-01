@@ -128,4 +128,3 @@ def assert_ulp_close(actual: Any, desired: Any, *, max_ulp: float = 4.0) -> None
         f"{max_ulp:g} ULP. Worst at index {tuple(int(i) for i in index)}: "
         f"actual={a[index]!r}, desired={b[index]!r}, distance={dist[index]:.6g} ULP."
     )
-

@@ -198,4 +198,3 @@ def test_visualizer_is_responsive_and_escapes_title() -> None:
     doc = generate_visualizer_html(d, title="<script>alert(1)</script>")
     assert 'name="viewport"' in doc
     assert "<script>alert(1)</script>" not in doc
-
