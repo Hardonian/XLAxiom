@@ -1,5 +1,33 @@
 # Changelog
 
+## 3.2.0 - 2026-11-01
+
+### Added
+
+- **Universal Pytest Interception & Rich Diagnostics (`xlaxiom.patch_testing`)**:
+  - Supercharges `torch.testing.assert_close` and `numpy.testing.assert_allclose` across any repository without changing test code (`enable_rich_asserts()`, `disable_rich_asserts()`, `patch_testing()` context manager).
+  - CLI switch `pytest --xlaxiom-rich-asserts` and ini setting `xlaxiom_rich_asserts = true`.
+  - Automatically enriches assertion failure reports with Signal-to-Noise Ratio (SNR), Cosine Similarity, bitwise ULP distance, subnormal underflow traps, catastrophic cancellations, and error percentiles (p50, p90, p99).
+  - Flag `--xlaxiom-save-html` writes offline single-file interactive SVG/HTML diff visualizers into `.xlaxiom-reports/`.
+- **Universal Model Checkpoint & Tensor Diffing CLI (`xlaxiom diff`)**:
+  - Supports positional arguments: `xlaxiom diff <actual> <desired>` and flags `--actual`/`--desired`.
+  - Automatically detects whether inputs are single `.npy` tensors or whole model checkpoints (`.safetensors`, `.npz`, sharded directories).
+  - Flags: `--top-k N` (top divergent layers ranking), `--min-snr <dB>` (CI parity gate threshold), `--html <path>` (interactive HTML dashboard), `--json <path>`.
+- **Interactive Checkpoint Parity HTML Dashboard (`xlaxiom.ui.generate_checkpoint_html`)**:
+  - Standalone, offline-safe, responsive HTML dashboard for checkpoint weight comparison.
+  - Features real-time client-side layer name search/filter, status filtering (All, Diverged Only, Matched Only), KPI cards, and divergence metrics.
+  - Automatically renders directly in Jupyter Notebooks and Google Colab via `_repr_html_()`.
+- **Checkpoint Health & Sanity Linter (`xlaxiom.lint` & `xlaxiom lint-checkpoint`)**:
+  - `lint_checkpoint` and `lint_tensor` detect silent model defects across Safetensors, NumPy, and PyTorch weights.
+  - Audits non-finites (NaNs, Infs), subnormal/denormal floats (which trigger 10x-100x CPU/GPU inference latency degradation via microcode traps), dead/zero weights, and extreme outliers (> 6 sigma).
+  - CLI command: `xlaxiom lint-checkpoint <path> [--fail-on-warning] [--output <report.json>]`.
+- **Checkpoint Quantization Risk Profiler (`xlaxiom.quantization.audit_checkpoint_quantization`)**:
+  - Evaluates entire checkpoints against modern AI precision formats: FP8 (E4M3, E5M2), FP4 (E2M1 / MXFP4), INT8, and BFloat16.
+  - Generates recommended BF16/FP16 fallback whitelists for sensitive layers (e.g. `down_proj`, `lm_head`) to preserve LLM generation quality.
+  - Subcommand `xlaxiom quant-audit <checkpoint> --dtype fp8_e4m3` accepts model files and directories.
+- **Turnkey Pre-Commit Hook (`.pre-commit-hooks.yaml`)**:
+  - Provides `xlaxiom-lint-checkpoint` and `xlaxiom-snapshot-check` hooks for Git repositories to prevent corrupted model checkpoints and numerical drifts from reaching production.
+
 ## 3.1.0 - 2026-11-01
 
 ### Added
