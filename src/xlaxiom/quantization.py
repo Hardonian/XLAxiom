@@ -8,12 +8,15 @@ SNR degradation, and generates actionable precision recommendations.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from .assertions import _to_numpy, diff
+from .hf import _load_weights
 
 
 @dataclass(frozen=True)
@@ -289,4 +292,121 @@ def audit_quantization_risk(
         cosine_similarity=cos_sim,
         risk_level=risk,
         recommendation=recommendation,
+    )
+
+
+@dataclass(frozen=True)
+class CheckpointQuantAuditReport:
+    """Comprehensive quantization risk audit across an entire model checkpoint."""
+
+    checkpoint_path: str
+    target_dtype: str
+    total_weights: int
+    low_risk_weights: int
+    moderate_risk_weights: int
+    critical_risk_weights: int
+    average_snr_db: float
+    recommended_fallback_layers: tuple[str, ...]
+    layer_audits: tuple[tuple[str, QuantizationAuditReport], ...]
+
+    def format_summary(self) -> str:
+        """Format an informative diagnostic report for the console."""
+        overall_status = (
+            "CRITICAL RISK"
+            if self.critical_risk_weights > 0
+            else ("MODERATE RISK" if self.moderate_risk_weights > 0 else "LOW RISK")
+        )
+        avg_snr = f"{self.average_snr_db:.1f} dB" if not math.isinf(self.average_snr_db) else "∞"
+        lines = [
+            f"=== Checkpoint Quantization Audit: {self.target_dtype} [{overall_status}] ===",
+            f"Checkpoint: {self.checkpoint_path}",
+            f"Total Weights Evaluated: {self.total_weights}",
+            (
+                f"Risk Breakdown: {self.low_risk_weights} Low, "
+                f"{self.moderate_risk_weights} Moderate, {self.critical_risk_weights} Critical"
+            ),
+            f"Average Simulated SNR: {avg_snr}",
+        ]
+
+        if self.critical_risk_weights > 0:
+            lines.append(
+                f"\n[ACTION REQUIRED] {self.critical_risk_weights} layers have severe "
+                f"precision collapse under {self.target_dtype}."
+            )
+            lines.append("Recommended BF16/FP16 Fallback Whitelist (Do NOT quantize these):")
+            for name in self.recommended_fallback_layers[:10]:
+                lines.append(f"  - {name}")
+            if len(self.recommended_fallback_layers) > 10:
+                more = len(self.recommended_fallback_layers) - 10
+                lines.append(f"  ... and {more} more layers.")
+        else:
+            lines.append(
+                f"\n[OK] Model is safe for uniform {self.target_dtype} quantization "
+                "with standard per-tensor/per-channel scaling."
+            )
+
+        return "\n".join(lines)
+
+
+def audit_checkpoint_quantization(
+    source: str | Path | dict[str, Any],
+    *,
+    target_dtype: str = "fp8_e4m3",
+    scale_method: str = "max_abs",
+) -> CheckpointQuantAuditReport:
+    """Audit quantization risk across all weight tensors in a model checkpoint.
+
+    Parameters
+    ----------
+    source : str, Path, or dict
+        Path to checkpoint file (.safetensors, .npz, directory) or in-memory dictionary.
+    target_dtype : str, optional
+        Target precision format ('fp8_e4m3', 'fp8_e5m2', 'fp4_e2m1', 'int8', 'bfloat16').
+    scale_method : str, optional
+        Scale factor determination method ('max_abs' or 'percentile_99_9').
+
+    Returns
+    -------
+    CheckpointQuantAuditReport
+        Detailed audit report identifying high-risk layers and mixed-precision recommendations.
+    """
+    ckpt_path_str = str(source) if not isinstance(source, dict) else "<in-memory dict>"
+    weights = _load_weights(source)
+
+    layer_audits: list[tuple[str, QuantizationAuditReport]] = []
+    low_count = 0
+    mod_count = 0
+    crit_count = 0
+    fallback_layers: list[str] = []
+    snr_list: list[float] = []
+
+    for name, tensor in weights.items():
+        audit = audit_quantization_risk(
+            tensor, target_dtype=target_dtype, scale_method=scale_method
+        )
+        layer_audits.append((name, audit))
+
+        if audit.risk_level == "CRITICAL":
+            crit_count += 1
+            fallback_layers.append(name)
+        elif audit.risk_level == "MODERATE":
+            mod_count += 1
+        else:
+            low_count += 1
+
+        if not math.isinf(audit.snr_db) and not math.isnan(audit.snr_db):
+            snr_list.append(audit.snr_db)
+
+    avg_snr = float(np.mean(snr_list)) if snr_list else float("inf")
+
+    return CheckpointQuantAuditReport(
+        checkpoint_path=ckpt_path_str,
+        target_dtype=target_dtype,
+        total_weights=len(layer_audits),
+        low_risk_weights=low_count,
+        moderate_risk_weights=mod_count,
+        critical_risk_weights=crit_count,
+        average_snr_db=avg_snr,
+        recommended_fallback_layers=tuple(fallback_layers),
+        layer_audits=tuple(layer_audits),
     )

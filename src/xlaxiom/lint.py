@@ -12,7 +12,6 @@ Safetensors, PyTorch, and NumPy checkpoints:
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -68,7 +67,10 @@ class CheckpointHealthReport:
             f"=== Checkpoint Health Audit: [{self.status}] ===",
             f"Checkpoint: {self.checkpoint_path}",
             f"Total Tensors: {self.total_tensors} | Total Parameters: {self.total_elements:,}",
-            f"Healthy: {self.healthy_tensors} | Warnings: {self.warning_tensors} | Corrupted: {self.corrupted_tensors}",
+            (
+                f"Healthy: {self.healthy_tensors} | Warnings: {self.warning_tensors} | "
+                f"Corrupted: {self.corrupted_tensors}"
+            ),
         ]
 
         if self.total_nans > 0 or self.total_infs > 0:
@@ -77,11 +79,13 @@ class CheckpointHealthReport:
             )
         if self.total_subnormals > 0:
             lines.append(
-                f"[WARNING] Subnormal floats detected: {self.total_subnormals} (Risk: 10x-100x inference latency degradation)"
+                f"[WARNING] Subnormal floats detected: {self.total_subnormals} "
+                "(Risk: 10x-100x inference latency degradation)"
             )
         if self.total_dead_tensors > 0:
             lines.append(
-                f"[WARNING] Dead / all-zero tensors: {self.total_dead_tensors} (Possible uninitialized weights)"
+                f"[WARNING] Dead / all-zero tensors: {self.total_dead_tensors} "
+                "(Possible uninitialized weights)"
             )
 
         problematic = [r for r in self.records if not r.is_healthy]

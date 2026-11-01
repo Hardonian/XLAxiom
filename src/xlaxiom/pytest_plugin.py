@@ -30,7 +30,10 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--xlaxiom-rich-asserts",
         action="store_true",
         default=False,
-        help="Supercharge torch.testing and numpy.testing assertions with rich XLAxiom diagnostics.",
+        help=(
+            "Supercharge torch.testing and numpy.testing assertions with rich "
+            "XLAxiom diagnostics."
+        ),
     )
     parser.addoption(
         "--xlaxiom-save-html",

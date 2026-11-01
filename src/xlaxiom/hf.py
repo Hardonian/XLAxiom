@@ -60,6 +60,12 @@ class CheckpointParityReport:
                 )
         return "\n".join(lines)
 
+    def _repr_html_(self) -> str:
+        """Interactive HTML dashboard for Jupyter Notebooks and Google Colab."""
+        from .ui import generate_checkpoint_html
+
+        return generate_checkpoint_html(self)
+
 
 def _load_weights(source: dict[str, Any] | str | Path) -> dict[str, np.ndarray[Any, Any]]:
     """Load weight tensors from a dict, ``.npz``, ``.safetensors``, shard index, or directory.
