@@ -55,19 +55,23 @@ def float32_to_bfloat16_bits(values: np.ndarray[Any, Any]) -> np.ndarray[Any, An
     return result
 
 
-def _parse_header(path: Path, raw: bytes | memoryview) -> tuple[dict[str, Any], int]:
-    if len(raw) < 8:
+def _parse_header_from_file(handle: Any, path: Path) -> dict[str, Any]:
+    len_bytes = handle.read(8)
+    if len(len_bytes) < 8:
         raise ValueError(f"'{path}' is not a safetensors file (shorter than 8 bytes).")
-    header_len = int.from_bytes(bytes(raw[:8]), "little")
-    if header_len > _MAX_HEADER_BYTES or 8 + header_len > len(raw):
+    header_len = int.from_bytes(len_bytes, "little")
+    if header_len > _MAX_HEADER_BYTES:
+        raise ValueError(f"'{path}' has an invalid safetensors header length ({header_len}).")
+    header_raw = handle.read(header_len)
+    if len(header_raw) < header_len:
         raise ValueError(f"'{path}' has an invalid safetensors header length ({header_len}).")
     try:
-        header = json.loads(bytes(raw[8 : 8 + header_len]).decode("utf-8"))
+        header = json.loads(header_raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as err:
         raise ValueError(f"'{path}' has a corrupt safetensors JSON header: {err}") from err
     if not isinstance(header, dict):
         raise ValueError(f"'{path}' safetensors header must be a JSON object.")
-    return header, 8 + header_len
+    return header
 
 
 def read_safetensors(path: str | Path) -> dict[str, np.ndarray[Any, Any]]:
@@ -77,9 +81,9 @@ def read_safetensors(path: str | Path) -> dict[str, np.ndarray[Any, Any]]:
     files raise ``ValueError`` with the offending tensor name.
     """
     p = Path(path)
-    raw = np.fromfile(p, dtype=np.uint8)
-    header, data_start = _parse_header(p, memoryview(raw))
-    data = raw[data_start:]
+    with p.open("rb") as f:
+        header = _parse_header_from_file(f, p)
+        data = np.fromfile(f, dtype=np.uint8)
     tensors: dict[str, np.ndarray[Any, Any]] = {}
 
     for name, info in header.items():
