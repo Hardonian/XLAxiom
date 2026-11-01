@@ -82,4 +82,3 @@ def test_golden_max_ulp_enforcement(tmp_path: Path) -> None:
     v2 = np.array([1.0001], dtype=np.float32)
     with pytest.raises(NumericalAssertionError, match="max ULP error"):
         check_golden(path, v2, rtol=1e-2, atol=1e-2, max_ulp=2.0)
-
