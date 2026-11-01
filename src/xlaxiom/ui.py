@@ -9,8 +9,12 @@ from __future__ import annotations
 
 import html
 import math
+from typing import TYPE_CHECKING, Any
 
 from .assertions import NumericalDiff
+
+if TYPE_CHECKING:
+    from .hf import CheckpointParityReport
 
 
 def _bar_height(value: float, max_val: float) -> int:
