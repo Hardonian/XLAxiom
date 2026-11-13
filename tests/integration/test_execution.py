@@ -63,6 +63,38 @@ def test_platform_present_matches_the_device_name_prefix() -> None:
     assert _platform_present(jax_stub, "gpu") is False
 
 
+def test_platform_present_queries_the_requested_platform_not_the_default_backend() -> None:
+    """Regression (EPYC RTX 3060): ``jax.devices()`` lists only the default backend.
+
+    A GPU-default host still has a CPU device via ``jax.devices("cpu")``; the
+    probe must find it. An absent platform must still be reported absent —
+    the query must never be satisfied by a different backend's devices.
+    """
+
+    class _Device:
+        def __init__(self, name: str, plat: str) -> None:
+            self._name = name
+            self.platform = plat
+
+        def __str__(self) -> str:
+            return self._name
+
+    def devices(backend: str | None = None) -> list[_Device]:
+        if backend is None:
+            return [_Device("cuda:0", "gpu")]  # default backend: GPU only
+        if backend == "cpu":
+            return [_Device("cpu:0", "cpu")]
+        if backend == "gpu":
+            return [_Device("cuda:0", "gpu")]
+        raise RuntimeError(f"No backend for platform {backend!r}.")
+
+    jax_stub = MagicMock()
+    jax_stub.devices.side_effect = devices
+    assert _platform_present(jax_stub, "cpu") is True
+    assert _platform_present(jax_stub, "gpu") is True
+    assert _platform_present(jax_stub, "tpu") is False
+
+
 @pytest.fixture
 def fake_jax() -> Generator[Any, None, None]:
     """Install a controllable ``jax`` module for the duration of one test."""
