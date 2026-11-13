@@ -153,7 +153,7 @@ class TestNoCpuFallback:
         result = execute_jax(generate(GenerationConfig(seed=2)), jit=True, requested_platform="gpu")
         if result.status == ExecutionStatus.OK:
             # A real GPU is present: placement must still be verified from the array.
-            assert result.device is not None and "gpu" in result.device.lower()
+            assert result.device is not None and "cuda" in result.device.lower()
         else:
             assert result.status == ExecutionStatus.UNSUPPORTED_BACKEND
             assert result.error is not None
@@ -203,7 +203,7 @@ class TestExplicitDevicePlacement:
         if result.status != ExecutionStatus.OK:
             pytest.skip("no GPU is available in this environment")
         assert result.environment is not None
-        assert result.environment["actual_devices"].startswith("gpu")
+        assert result.environment["actual_devices"].startswith("cuda")
         assert result.environment["device_index"] == "0"
 
     def test_mismatched_platform_is_reported_not_relabelled(self) -> None:
@@ -212,7 +212,7 @@ class TestExplicitDevicePlacement:
             generate(GenerationConfig(seed=3)), jit=True, requested_platform="gpu", device_index=0
         )
         if result.status == ExecutionStatus.OK:
-            assert result.device is not None and "gpu" in result.device.lower()
+            assert result.device is not None and "cuda" in result.device.lower()
             return
         assert result.status == ExecutionStatus.UNSUPPORTED_BACKEND
         assert "no gpu device is available" in (result.error or "")

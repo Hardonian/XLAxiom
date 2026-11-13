@@ -423,10 +423,22 @@ def _device_prefix(requested_platform: str) -> str:
 
 
 def _platform_present(jax_module: Any, requested_platform: str) -> bool:
-    """True when a device of the requested platform is really initialized."""
+    """True when a device of the requested platform is really initialized.
+
+    Query the requested platform explicitly via ``jax.devices(platform)``.
+    ``jax.devices()`` with no argument returns only the *default* backend's
+    devices, so on a GPU-default host a CPU request would look absent even
+    though ``jax.devices("cpu")`` initializes ``cpu:0``. A platform whose
+    query fails or returns no matching device is still reported absent: this
+    never substitutes another backend.
+    """
     target = requested_platform.lower()
     prefix = _device_prefix(requested_platform).lower()
-    for device in jax_module.devices():
+    try:
+        devices = list(jax_module.devices(requested_platform))
+    except Exception:
+        return False
+    for device in devices:
         platform_attr = getattr(device, "platform", None)
         if platform_attr is not None and str(platform_attr).lower() == target:
             return True
