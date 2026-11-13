@@ -43,7 +43,14 @@ def test_gradient_campaign_segregates_known_historical_observations() -> None:
     acosh_is_candidate = jax.__version__ < "0.11.2"
     expected_candidates = 3 if acosh_is_candidate else 2
     expected_operations = {"tanh", "acosh"} if acosh_is_candidate else {"tanh"}
-    assert result["counts"]["known_historical_discrepancy"] == 1
+    # The known-historical discrepancy (JAX #40634, arcsinh at |x| >= 1e20) is a
+    # property of the CPU/XLA float32 reduction: CUDA kernels agree with the
+    # analytic oracle, so a GPU-default host legitimately sees zero. Probe THIS
+    # runtime directly and require the campaign's segregation to match the probe,
+    # instead of hard-coding one backend's behavior.
+    probe = run_gradient_case(GradientCase("probe", "arcsinh", 1e22))
+    expected_known = 1 if probe["classification"] == "gradient_discrepancy" else 0
+    assert result["counts"]["known_historical_discrepancy"] == expected_known
     assert result["counts"]["candidate_discrepancy"] == expected_candidates
     assert {candidate["case"]["operation"] for candidate in result["candidate_anomalies"]} == (
         expected_operations
