@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Revision pinning for HuggingFace reference models (`xlaxiom.huggingface_topk`)**: new optional `revision` parameter pins tokenizer and model weights to an exact commit SHA or tag. For reproducible parity audits, callers should pin a revision; the default (`None`) preserves tracking the mutable `main` branch.
+
+### Fixed
+
+- **Static-analysis debt sweep**: `mypy src` now reports 0 errors (honest `jax._src.core` type narrowing in `trace_jax` instead of string-name checks); bandit MEDIUM findings cleared — serving endpoints are validated as absolute http(s) URLs before any request is issued, and the JAX nightly index fetch asserts its trusted `https://storage.googleapis.com` constant (CWE-22 / CWE-494 root causes addressed, no config weakening).
+
 ## 3.2.0 - 2026-11-01
 
 ### Added
