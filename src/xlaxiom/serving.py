@@ -151,6 +151,12 @@ def openai_compatible_topk(
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError(f"base_url must be an http(s) URL, got {base_url!r}.")
     endpoint = base_url.rstrip("/") + "/v1/completions"
+    # Defense in depth: re-assert the final endpoint's scheme/netloc before any request
+    # is built, so file:/custom schemes can never reach urlopen even if URL assembly
+    # above changes.
+    parsed_endpoint = urllib.parse.urlparse(endpoint)
+    if parsed_endpoint.scheme not in {"http", "https"} or not parsed_endpoint.netloc:
+        raise ValueError(f"serving endpoint must be an http(s) URL, got {endpoint!r}.")
 
     def _query(prompt: str) -> dict[str, float]:
         body = json.dumps(
@@ -167,7 +173,11 @@ def openai_compatible_topk(
             headers["Authorization"] = f"Bearer {api_key}"
         request = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
+            # nosec B310 - endpoint is validated as an absolute http(s) URL (scheme +
+            # netloc) above before this closure exists; bandit's blacklist check has no
+            # dataflow analysis, so a genuinely dynamic (user-configured) endpoint can
+            # only be cleared by justified nosec after the root-cause guard is in place.
+            with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310  # nosec B310
                 payload: Any = json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as err:
             raise RuntimeError(f"Serving endpoint returned HTTP {err.code}: {err.reason}") from err
@@ -213,10 +223,15 @@ def huggingface_topk(
     k: int = 20,
     device: str = "cpu",
     torch_dtype: str | None = None,
+    revision: str | None = None,
 ) -> TopKFn:
     """Reference ``prompt -> top-k logprobs`` from a HuggingFace causal LM.
 
     Requires ``transformers`` and ``torch`` (imported lazily).
+
+    ``revision`` pins the model weights and tokenizer to an exact commit SHA or tag.
+    For reproducible parity audits, callers should pin a revision; leaving it ``None``
+    tracks the mutable ``main`` branch of the Hub repo.
     """
     try:
         import torch
@@ -226,11 +241,17 @@ def huggingface_topk(
             "huggingface_topk requires `transformers` and `torch` (pip install transformers torch)."
         ) from err
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    kwargs: dict[str, Any] = {}
+    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
+    model_kwargs: dict[str, Any] = {}
     if torch_dtype is not None:
-        kwargs["torch_dtype"] = getattr(torch, torch_dtype)
-    model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs).to(device).eval()
+        model_kwargs["torch_dtype"] = getattr(torch, torch_dtype)
+    # ``revision`` is passed explicitly (never via **kwargs) so static auditors — and
+    # readers — can see the download is pinnable (bandit B615 / CWE-494).
+    model = (
+        AutoModelForCausalLM.from_pretrained(model_id, revision=revision, **model_kwargs)
+        .to(device)
+        .eval()
+    )
 
     def _logits(prompt: str) -> Any:
         inputs = tokenizer(prompt, return_tensors="pt").to(device)

@@ -109,6 +109,7 @@ GCS_JAX_NIGHTLY_INDEX = "https://storage.googleapis.com/jax-releases/jax_nightly
 def query_gcs_nightly_wheels(timeout_s: float = 5.0) -> list[str]:
     """Discover available JAX nightly releases from Google Cloud Storage wheel repository."""
     import re
+    import urllib.parse
     import urllib.request
 
     try:
@@ -116,7 +117,14 @@ def query_gcs_nightly_wheels(timeout_s: float = 5.0) -> list[str]:
             GCS_JAX_NIGHTLY_INDEX,
             headers={"User-Agent": "XLAxiom-Compiler-Forensics/2.1.0"},
         )
-        with urllib.request.urlopen(req, timeout=timeout_s) as response:
+        parsed = urllib.parse.urlparse(GCS_JAX_NIGHTLY_INDEX)
+        if parsed.scheme != "https" or parsed.netloc != "storage.googleapis.com":
+            raise RuntimeError(
+                f"refusing to query unexpected GCS nightly index URL: {GCS_JAX_NIGHTLY_INDEX!r}"
+            )
+        # nosec B310: URL is the module-level https://storage.googleapis.com constant,
+        # scheme+host validated immediately above; no user input reaches this call.
+        with urllib.request.urlopen(req, timeout=timeout_s) as response:  # nosec B310
             html = response.read().decode("utf-8", "ignore")
         # Extract version strings like jax-0.5.1.dev20261019-py3...
         matches = re.findall(r"jax-([0-9]+\.[0-9]+\.[0-9]+(?:\.dev[0-9]+)?)[-_]", html)
