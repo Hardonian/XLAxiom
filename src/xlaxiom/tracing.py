@@ -63,8 +63,14 @@ def trace_jax(
     """Trace a JAX-compatible callable into a verified declarative Workload."""
     try:
         import jax
+        from jax._src import core as jax_core
     except ImportError as exc:
         raise TracingError(f"JAX is required for tracing: {exc}") from exc
+
+    # ``jax_core.Var.aval`` is declared as ``AbstractValue`` (no shape/dtype), and jaxpr
+    # invars are ``Var | Literal``. The concrete classes below give the type checker honest
+    # narrowing; the public ``jax.core`` aliases were removed in JAX 0.11, so the canonical
+    # ``jax._src.core`` home is used (same class objects the jaxpr atoms are instances of).
 
     if not sample_inputs:
         raise TracingError("trace_jax requires at least one sample input")
@@ -85,8 +91,12 @@ def trace_jax(
     for idx, (var, _sample) in enumerate(zip(jaxpr.invars, sample_inputs, strict=False)):
         name = f"in_{idx}"
         var_map[id(var)] = name
-        shape = tuple(int(dim) for dim in var.aval.shape)
-        dtype = str(var.aval.dtype)
+        # Array inputs always carry a ShapedArray aval; narrow so .shape/.dtype are typed.
+        in_aval = var.aval
+        if not isinstance(in_aval, jax_core.ShapedArray):
+            raise TracingError(f"input {idx} has non-shaped abstract value {in_aval!r}")
+        shape = tuple(int(dim) for dim in in_aval.shape)
+        dtype = str(in_aval.dtype)
         if dtype not in {"float32", "float64", "int32", "int64"}:
             dtype = "float32"
         input_specs.append(InputSpec(name=name, shape=shape, dtype=dtype))
@@ -107,7 +117,7 @@ def trace_jax(
             var_id = id(invar)
             if var_id in var_map:
                 arg_names.append(var_map[var_id])
-            elif type(invar).__name__ == "Literal":
+            elif isinstance(invar, jax_core.Literal):
                 const_name = f"const_{const_count}"
                 const_count += 1
                 var_map[var_id] = const_name
@@ -135,7 +145,13 @@ def trace_jax(
 
         params: dict[str, Any] = {}
         if mapped_op == "reshape":
-            params["shape"] = [int(d) for d in out_var.aval.shape]
+            # Equation results always carry a ShapedArray aval; narrow for .shape.
+            out_aval = out_var.aval
+            if not isinstance(out_aval, jax_core.ShapedArray):
+                raise TracingError(
+                    f"reshape output {out_name!r} has non-shaped abstract value {out_aval!r}"
+                )
+            params["shape"] = [int(d) for d in out_aval.shape]
         elif mapped_op in {"sum", "max", "min", "prod", "mean"}:
             axes = eqn.params.get("axes")
             if axes is not None:
